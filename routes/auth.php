@@ -6,7 +6,9 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\SuperAdminAuthenticatedSessionController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -33,6 +35,10 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    Route::get('superadmin/login', [SuperAdminAuthenticatedSessionController::class, 'create'])->name('superamdin.login.index');
+    Route::post('superadmin/login', [SuperAdminAuthenticatedSessionController::class, 'store'])
+        ->name('superadmin.login')->middleware([HandlePrecognitiveRequests::class]);
 });
 
 Route::middleware('auth')->group(function () {
