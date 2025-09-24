@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DataBidangController;
+use App\Http\Controllers\Admin\DataLocationController;
 use App\Http\Controllers\Admin\DataPegawaiController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,6 +20,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/employees', [DataPegawaiController::class, 'index'])->name('employees.index');
         Route::get('/employees/create', [DataPegawaiController::class, 'create'])->name('employees.create');
+
+        Route::get('/locations', [DataLocationController::class, 'index'])->name('locations.index');
     });
 
 

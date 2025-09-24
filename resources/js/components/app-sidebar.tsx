@@ -35,32 +35,32 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Data Assets',
         href: '#',
-        icon: HardDrive, // Icon untuk aset/perangkat keras
+        icon: HardDrive,
     },
     {
         title: 'Data Tipe',
         href: '#',
-        icon: Tag, // Icon untuk kategori/tipe
+        icon: Tag,
     },
     {
         title: 'Data Model',
         href: '#',
-        icon: Monitor, // Icon untuk model perangkat
+        icon: Monitor,
     },
     {
         title: 'Data Lokasi',
-        href: '#',
-        icon: MapPin, // Icon untuk lokasi
+        href: '/master/locations',
+        icon: MapPin,
     },
     {
         title: 'Data Bidang',
         href: '/master/org-units',
-        icon: Building2, // Icon untuk departemen/bidang
+        icon: Building2,
     },
     {
         title: 'Data Pegawai',
         href: '/master/employees',
-        icon: Users, // Icon untuk pegawai/pengguna
+        icon: Users,
     },
 ];
 
