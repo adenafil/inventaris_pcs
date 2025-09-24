@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
+import { toast } from 'sonner';
 
 export function LoginForm({
     type = "super admin"
@@ -26,8 +27,12 @@ export function LoginForm({
             onPrecognitionSuccess: () => {
                 console.log('Precognition success, no validation errors');
             },
-            onValidationError: () => {
+            onValidationError: (error) => {
                 console.log('Validation errors occurred');
+                if (error.data) {
+                    toast.error(error.data.message);
+                };
+
             }
         });
     }
@@ -79,8 +84,8 @@ export function LoginForm({
                         <p className="mt-1 text-sm text-red-600">{formLogin.errors.password}</p>
                     )}
                 </div>
-                <Button type="submit" className="w-full">
-                    Login
+                <Button type="submit" className="w-full" disabled={formLogin.processing}>
+                    {formLogin.processing ? 'Logging in...' : 'Login'}
                 </Button>
             </div>
             {type !== 'super admin' && (

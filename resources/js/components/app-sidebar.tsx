@@ -13,7 +13,17 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import {
+    BookOpen,
+    LayoutGrid,
+    HardDrive,
+    Tag,
+    Monitor,
+    MapPin,
+    Building2,
+    Users,
+    Folder
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -22,6 +32,36 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Data Assets',
+        href: '#',
+        icon: HardDrive, // Icon untuk aset/perangkat keras
+    },
+    {
+        title: 'Data Tipe',
+        href: '#',
+        icon: Tag, // Icon untuk kategori/tipe
+    },
+    {
+        title: 'Data Model',
+        href: '#',
+        icon: Monitor, // Icon untuk model perangkat
+    },
+    {
+        title: 'Data Lokasi',
+        href: '#',
+        icon: MapPin, // Icon untuk lokasi
+    },
+    {
+        title: 'Data Bidang',
+        href: '#',
+        icon: Building2, // Icon untuk departemen/bidang
+    },
+    {
+        title: 'Data Pegawai',
+        href: '#',
+        icon: Users, // Icon untuk pegawai/pengguna
+    }
 ];
 
 const footerNavItems: NavItem[] = [
@@ -57,7 +97,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
