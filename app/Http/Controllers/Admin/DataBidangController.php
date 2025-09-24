@@ -13,8 +13,4 @@ class DataBidangController extends Controller
         return Inertia::render('data-bidang/page');
     }
 
-    public function create()
-    {
-        return Inertia::render('data-bidang/add/page');
-    }
 }
