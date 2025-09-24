@@ -59,9 +59,9 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Data Pegawai',
-        href: '#',
+        href: '/master/employees',
         icon: Users, // Icon untuk pegawai/pengguna
-    }
+    },
 ];
 
 const footerNavItems: NavItem[] = [
