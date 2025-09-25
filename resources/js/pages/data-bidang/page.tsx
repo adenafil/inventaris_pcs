@@ -1,3 +1,13 @@
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -26,7 +36,7 @@ import { Edit, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import { toast } from 'sonner';
-import { PageProps } from './_types';
+import { OrgUnit, PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,10 +58,13 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
     console.log({ orgunits, pagination });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
     const formAddBidang = useForm('post', '/master/org-units', {
         code: '',
         name: '',
     });
+    
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -61,18 +74,33 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
             onSuccess: () => {
                 setIsModalOpen(false);
                 formAddBidang.reset();
-                router.get(
-                    '/master/org-units',
-                    {},
-                    { preserveScroll: true, replace: true },
-                );
-                toast.success('Bidang berhasil ditambahkan');
+                router.reload({
+                    onSuccess: () => {
+                        toast.success('Bidang berhasil ditambahkan');
+                    },
+                });
             },
             onValidationError: (error) => {
                 console.log({ error });
-                toast.error('Terjadi kesalahan. Silakan coba lagi.');
+                toast.error(error.data.message || 'Terjadi kesalahan');
             },
         });
+    };
+
+    const handleDelete = (id: number) => {
+        router.delete(`/master/org-units/${id}`, {
+            preserveScroll: true,
+            onBefore: () => setLoading(true),
+            onFinish: () => setLoading(false),
+            onSuccess: () => {
+                console.log('berhasil dihapus');
+                toast.success('Bidang berhasil dihapus');
+            },
+        });
+    };
+
+    const handleEditClick = (orgUnit: OrgUnit) => {
+
     };
 
     useEffect(() => {
@@ -208,6 +236,9 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button
+                                                        onClick={() => {
+                                                            setIsEditModalOpen(true)
+                                                         }}
                                                         variant="outline"
                                                         size="sm"
                                                         className="flex items-center gap-1"
@@ -215,14 +246,66 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                                         <Edit className="h-3 w-3" />
                                                         Edit
                                                     </Button>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        className="flex items-center gap-1"
-                                                    >
-                                                        <Trash2 className="h-3 w-3" />
-                                                        Delete
-                                                    </Button>
+
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger
+                                                            asChild
+                                                        >
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                                Delete
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>
+                                                                    Are you sure
+                                                                    you want to
+                                                                    delete this
+                                                                    bidang?
+                                                                </AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action
+                                                                    cannot be
+                                                                    undone. This
+                                                                    will
+                                                                    permanently
+                                                                    delete your
+                                                                    account and
+                                                                    remove your
+                                                                    data from
+                                                                    our servers.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>
+                                                                    Cancel
+                                                                </AlertDialogCancel>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    disabled={
+                                                                        loading
+                                                                    }
+                                                                    className="flex items-center gap-1"
+                                                                    onClick={() =>
+                                                                        handleDelete(
+                                                                            bidang.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <Trash2 className="h-3 w-3" />
+                                                                    {loading
+                                                                        ? 'Loading...'
+                                                                        : 'Delete'}
+                                                                </Button>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -277,6 +360,66 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                         </CardContent>
                     </Card>
                 </div>
+
+                <Dialog
+                    open={isEditModalOpen}
+                    onOpenChange={setIsEditModalOpen}
+                >
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Edit Bidang</DialogTitle>
+                        </DialogHeader>
+                        <DialogDescription asChild>
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="namaBidang">
+                                        Nama Bidang
+                                    </Label>
+                                    <Input
+                                        id="namaBidang"
+                                        type="text"
+                                        value={formAddBidang.data.name}
+                                        onChange={(e) =>
+                                            formAddBidang.setData(
+                                                'name',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            formAddBidang.validate('name')
+                                        }
+                                        className="w-full"
+                                        placeholder="Masukkan nama bidang"
+                                        required
+                                    />
+                                    {formAddBidang.invalid('name') && (
+                                        <p className="text-sm text-red-600">
+                                            {formAddBidang.errors.name}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="flex flex-1 items-center gap-2"
+                                    >
+                                        Back
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="flex flex-1 items-center gap-2"
+                                    >
+                                        <Save className="h-4 w-4" />
+                                        Simpan
+                                    </Button>
+                                </div>
+                            </form>
+                        </DialogDescription>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );

@@ -12,7 +12,7 @@ class DataBidangController extends Controller
 {
     public function index()
     {
-        $orgUnits = OrgUnit::orderBy('created_at', 'desc')->paginate(20);
+        $orgUnits = OrgUnit::paginate(20);
         $page = request()->get('page', 1);
         return Inertia::render('data-bidang/page', [
             'orgunits' => Inertia::merge($orgUnits->items()),
@@ -28,5 +28,12 @@ class DataBidangController extends Controller
         OrgUnit::create($validatedData);
 
         return redirect()->back()->with('success', 'Data bidang berhasil ditambahkan.');
+    }
+
+    public function destroy(OrgUnit $orgunit)
+    {
+        $orgunit->delete();
+
+        return redirect()->back()->with('success', 'Data bidang berhasil dihapus.');
     }
 }

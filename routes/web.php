@@ -23,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/org-units', [DataBidangController::class, 'store'])->name('org-units.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::delete('/org-units/{orgunit}', [DataBidangController::class, 'destroy'])->name('org-units.destroy');
 
         Route::get('/employees', [DataPegawaiController::class, 'index'])->name('employees.index');
         Route::get('/employees/create', [DataPegawaiController::class, 'create'])->name('employees.create');
