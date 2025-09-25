@@ -59,6 +59,17 @@ interface DataType {
 //     { id: 8, namaTipe: 'Array' },
 // ];
 
+const initialDataTipe: { id: number; tipe: string }[] = [
+    { id: 1, tipe: 'Tipe 1' },
+    { id: 2, tipe: 'Tipe 1' },
+    { id: 3, tipe: 'Tipe 2' },
+    { id: 4, tipe: 'Tipe 2' },
+    { id: 5, tipe: 'Tipe 3' },
+    { id: 6, tipe: 'Tipe 3' },
+    { id: 7, tipe: 'Tipe 4' },
+    { id: 8, tipe: 'Tipe 4' },
+];
+
 const initialDataAset: DataType[] = [
     {
         id: 1,
@@ -158,19 +169,21 @@ export default function Page() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<DataType | null>(null);
     const [formData, setFormData] = useState({ nomorInventaris: '' });
+    const [selectedTipe, setSelectedTipe] = useState<string>('Semua');
 
     const filteredData = dataTypes.filter(
         (item) =>
-            item.nomorInventaris
+            (selectedTipe === 'Semua' || item.tipe === selectedTipe) &&
+            (item.nomorInventaris
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
-            item.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.tipe.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.pemakai.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.bidang.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.lokasi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.tahun.toLowerCase().includes(searchTerm.toLowerCase()),
+                item.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.tipe.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.pemakai.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.bidang.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.lokasi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.tahun.toLowerCase().includes(searchTerm.toLowerCase())),
     );
 
     // const handleAdd = () => {
@@ -308,38 +321,46 @@ export default function Page() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline">
-                                                Semua Tipe
+                                                {selectedTipe.length === 0
+                                                    ? 'Tipe'
+                                                    : selectedTipe}
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        {/* <DropdownMenuContent className="w-56">
+                                        <DropdownMenuContent className="w-56">
                                             <DropdownMenuLabel>
-                                                Appearance
+                                                Pilih tipe
                                             </DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuCheckboxItem
-                                                checked={showStatusBar}
-                                                onCheckedChange={
-                                                    setShowStatusBar
+                                                checked={
+                                                    selectedTipe === 'Semua'
+                                                }
+                                                onCheckedChange={() =>
+                                                    setSelectedTipe('Semua')
                                                 }
                                             >
-                                                Status Bar
+                                                Semua
                                             </DropdownMenuCheckboxItem>
-                                            <DropdownMenuCheckboxItem
-                                                checked={showActivityBar}
-                                                onCheckedChange={
-                                                    setShowActivityBar
-                                                }
-                                                disabled
-                                            >
-                                                Activity Bar
-                                            </DropdownMenuCheckboxItem>
-                                            <DropdownMenuCheckboxItem
-                                                checked={showPanel}
-                                                onCheckedChange={setShowPanel}
-                                            >
-                                                Panel
-                                            </DropdownMenuCheckboxItem>
-                                        </DropdownMenuContent> */}
+                                            {Array.from(
+                                                new Set(
+                                                    initialDataTipe.map(
+                                                        (t) => t.tipe,
+                                                    ),
+                                                ),
+                                            ).map((tipe) => (
+                                                <DropdownMenuCheckboxItem
+                                                    key={tipe}
+                                                    checked={
+                                                        selectedTipe === tipe
+                                                    }
+                                                    onCheckedChange={() =>
+                                                        setSelectedTipe(tipe)
+                                                    }
+                                                >
+                                                    {tipe}
+                                                </DropdownMenuCheckboxItem>
+                                            ))}
+                                        </DropdownMenuContent>
                                     </DropdownMenu>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -347,7 +368,7 @@ export default function Page() {
                                                 Filter
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        {/* <DropdownMenuContent className="w-56">
+                                        <DropdownMenuContent className="w-56">
                                             <DropdownMenuLabel>
                                                 Appearance
                                             </DropdownMenuLabel>
@@ -375,7 +396,7 @@ export default function Page() {
                                             >
                                                 Panel
                                             </DropdownMenuCheckboxItem>
-                                        </DropdownMenuContent> */}
+                                        </DropdownMenuContent>
                                     </DropdownMenu>
                                     <Dialog
                                         open={isAddModalOpen}
