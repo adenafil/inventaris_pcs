@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/locations', [DataLocationController::class, 'index'])->name('locations.index');
 
         Route::get('/models', [DataModelController::class, 'index'])->name('data-model.index');
+        Route::get('/models/create', [DataModelController::class, 'create'])->name('data-model.create');
     });
 
 

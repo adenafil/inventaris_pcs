@@ -92,10 +92,10 @@ export default function Page() {
                                         className="pl-10"
                                     />
                                 </div>
-                                <Link href="/tambah-pegawai">
+                                <Link href="/master/employees/create">
                                     <Button className="w-full sm:w-auto">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Tambah Pegawai
+                                        Tambah
                                     </Button>
                                 </Link>
                             </div>
@@ -111,7 +111,7 @@ export default function Page() {
                                             <TableHead>Bidang</TableHead>
                                             <TableHead>Status</TableHead>
                                             <TableHead className="text-right">
-                                                Aksi
+                                                Actions
                                             </TableHead>
                                         </TableRow>
                                     </TableHeader>

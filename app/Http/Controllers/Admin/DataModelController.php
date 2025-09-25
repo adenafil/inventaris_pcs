@@ -12,4 +12,9 @@ class DataModelController extends Controller
     {
         return Inertia::render('data-model/page');
     }
+
+    public function create()
+    {
+        return Inertia::render('data-model/add/page');
+    }
 }

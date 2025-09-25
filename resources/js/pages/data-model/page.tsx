@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -54,7 +54,7 @@ export default function Page() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Data Lokasi" />
+            <Head title="Data Model" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 {/* Main Content */}
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
@@ -92,9 +92,9 @@ export default function Page() {
 
                                 {/* Add Data Modal */}
                                 <div className="flex items-center space-x-2">
-                                    <Button className="flex items-center gap-2 w-full md:w-auto">
+                                    <Button onClick={() => router.visit('/master/models/create')} className="flex items-center gap-2 w-full md:w-auto">
                                         <Plus className="h-4 w-4" />
-                                        Tambah Lokasi
+                                        Tambah
                                     </Button>
                                 </div>
                             </div>

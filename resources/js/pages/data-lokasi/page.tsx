@@ -164,7 +164,7 @@ export default function Page() {
                                     <DialogTrigger asChild>
                                         <Button className="flex items-center gap-2">
                                             <Plus className="h-4 w-4" />
-                                            Tambah Lokasi
+                                            Tambah
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent>
@@ -226,7 +226,7 @@ export default function Page() {
                                             </TableHead>
                                             <TableHead>Nama Lokasi</TableHead>
                                             <TableHead className="w-32 text-center">
-                                                Action
+                                                Actions
                                             </TableHead>
                                         </TableRow>
                                     </TableHeader>
