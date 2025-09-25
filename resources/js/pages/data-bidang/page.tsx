@@ -1,8 +1,15 @@
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Table,
     TableBody,
@@ -13,9 +20,15 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { Edit, Plus, Save, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Head, router, WhenVisible } from '@inertiajs/react';
+import { useForm } from 'laravel-precognition-react';
+import { Edit, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useEffectOnce } from 'react-use';
+import { toast } from 'sonner';
+import AddDialogDataBidang from './_components/add-dialog-data-bidang';
+import EditDialogDataBidang from './_components/edit-dialog-data-bidang';
+import { OrgUnit, PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,46 +37,102 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Dummy data
-const initialBidangData = [
-  { id: 1, namaBidang: "Teknologi Informasi" },
-  { id: 2, namaBidang: "Sumber Daya Manusia" },
-  { id: 3, namaBidang: "Keuangan" },
-  { id: 4, namaBidang: "Pemasaran" },
-  { id: 5, namaBidang: "Operasional" },
-]
+export default function Page({ orgunits, pagination, page }: PageProps) {
+    console.log({ orgunits, pagination });
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const formAddBidang = useForm('post', '/master/org-units', {
+        code: '',
+        name: '',
+    });
+    const [activeOrgUnit, setActiveOrgUnit] = useState<OrgUnit | null>(null);
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const uuid = crypto.randomUUID();
+        formAddBidang.setData('code', uuid);
+        formAddBidang.submit({
+            onSuccess: () => {
+                setIsModalOpen(false);
+                formAddBidang.reset();
+                router.visit('/master/org-units', {
+                    onSuccess: () => {
+                        toast.success('Bidang berhasil ditambahkan');
+                    },
+                    preserveScroll: true,
+                });
+            },
+            onValidationError: (error) => {
+                console.log({ error });
+                toast.error(error.data.message || 'Terjadi kesalahan');
+            },
+        });
+    };
 
-export default function Page() {
-  const [bidangData, setBidangData] = useState(initialBidangData);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [namaBidang, setNamaBidang] = useState('');
+    const handleEditModalOpen = (orgUnit: OrgUnit) => {
+        setActiveOrgUnit(orgUnit);
+        setIsEditModalOpen(true);
+    };
 
-  const handleEdit = (id: number, namaBidang: string) => {
-      console.log('Edit bidang:', { id, namaBidang });
-  };
+    const handleEdit = () => {
+        if (!activeOrgUnit) return;
 
-  const handleDelete = (id: number, namaBidang: string) => {
-      console.log('Delete bidang:', { id, namaBidang });
-      // Optional: Remove from state for demo purposes
-      setBidangData((prev) => prev.filter((item) => item.id !== id));
-  };
+        router.patch(
+            `/master/org-units/${activeOrgUnit.id}`,
+            {
+                name: activeOrgUnit.name,
+            },
+            {
+                onBefore: () => setLoading(true),
+                onFinish: () => setLoading(false),
+                onSuccess: () => {
+                    setIsEditModalOpen(false);
+                    router.visit('/master/org-units', {
+                        onSuccess: () => {
+                            toast.success('Bidang berhasil diupdate');
+                        },
+                        preserveScroll: true,
+                    });
+                },
+                onError: (error) => {
+                    toast.error(error.message || 'Terjadi kesalahan');
+                },
+            },
+        );
+    };
 
-  const handleSimpan = (e: React.FormEvent) => {
-      e.preventDefault();
-      console.log('Simpan bidang:', { namaBidang });
+    const handleDelete = (id: number) => {
+        router.delete(`/master/org-units/${id}`, {
+            preserveScroll: true,
+            onBefore: () => setLoading(true),
+            onFinish: () => setLoading(false),
+            onSuccess: () => {
+                console.log('berhasil dihapus');
+                router.visit('/master/org-units', {
+                    onSuccess: () => {
+                        toast.success('Bidang berhasil dihapus');
+                    },
+                    preserveScroll: true,
+                });
+            },
+        });
+    };
 
-      // Add new bidang to the list (demo purposes)
-      const newId = Math.max(...bidangData.map((b) => b.id)) + 1;
-      setBidangData((prev) => [...prev, { id: newId, namaBidang }]);
+    useEffect(() => {
+        console.log(formAddBidang.data);
+    }, [formAddBidang.data]);
 
-      // Reset form and close modal
-      setNamaBidang('');
-      setIsModalOpen(false);
-  };
+    useEffectOnce(() => {
+        console.log('page reload or visit');
 
-
+        if (page && page !== 1) {
+            router.visit('/master/org-units', {
+                preserveScroll: true,
+            });
+        }
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -87,64 +156,12 @@ export default function Page() {
                             <CardTitle className="text-2xl font-bold">
                                 Master Bidang
                             </CardTitle>
-                            <Dialog
-                                open={isModalOpen}
-                                onOpenChange={setIsModalOpen}
-                            >
-                                <DialogTrigger asChild>
-                                    <Button className="flex items-center gap-2">
-                                        <Plus className="h-4 w-4" />
-                                        Tambah
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
-                                    <DialogHeader>
-                                        <DialogTitle>Tambah Bidang</DialogTitle>
-                                    </DialogHeader>
-                                    <form
-                                        onSubmit={handleSimpan}
-                                        className="space-y-6"
-                                    >
-                                        <div className="space-y-2">
-                                            <Label htmlFor="namaBidang">
-                                                Nama Bidang
-                                            </Label>
-                                            <Input
-                                                id="namaBidang"
-                                                type="text"
-                                                value={namaBidang}
-                                                onChange={(e) =>
-                                                    setNamaBidang(
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Masukkan nama bidang"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="flex gap-3 pt-4">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() =>
-                                                    setIsModalOpen(false)
-                                                }
-                                                className="flex flex-1 items-center gap-2"
-                                            >
-                                                Back
-                                            </Button>
-                                            <Button
-                                                type="submit"
-                                                className="flex flex-1 items-center gap-2"
-                                            >
-                                                <Save className="h-4 w-4" />
-                                                Simpan
-                                            </Button>
-                                        </div>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
+                            <AddDialogDataBidang
+                                isModalOpen={isModalOpen}
+                                setIsModalOpen={setIsModalOpen}
+                                formAddBidang={formAddBidang}
+                                handleSubmit={handleSubmit}
+                            />
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -157,50 +174,150 @@ export default function Page() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {bidangData.map((bidang) => (
-                                        <TableRow key={bidang.id}>
+                                    {orgunits.map((bidang) => (
+                                        <TableRow key={`bidang-${bidang.id}`}>
                                             <TableCell className="font-medium">
-                                                {bidang.namaBidang}
+                                                {bidang.name}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button
-                                                        variant="outline"
-                                                        size="sm"
                                                         onClick={() =>
-                                                            handleEdit(
-                                                                bidang.id,
-                                                                bidang.namaBidang,
+                                                            handleEditModalOpen(
+                                                                bidang,
                                                             )
                                                         }
+                                                        variant="outline"
+                                                        size="sm"
                                                         className="flex items-center gap-1"
                                                     >
                                                         <Edit className="h-3 w-3" />
                                                         Edit
                                                     </Button>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                bidang.id,
-                                                                bidang.namaBidang,
-                                                            )
-                                                        }
-                                                        className="flex items-center gap-1"
-                                                    >
-                                                        <Trash2 className="h-3 w-3" />
-                                                        Delete
-                                                    </Button>
+
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger
+                                                            asChild
+                                                        >
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                                Delete
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>
+                                                                    Are you sure
+                                                                    you want to
+                                                                    delete this
+                                                                    bidang?
+                                                                </AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action
+                                                                    cannot be
+                                                                    undone. This
+                                                                    will
+                                                                    permanently
+                                                                    delete your
+                                                                    account and
+                                                                    remove your
+                                                                    data from
+                                                                    our servers.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>
+                                                                    Cancel
+                                                                </AlertDialogCancel>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    disabled={
+                                                                        loading
+                                                                    }
+                                                                    className="flex items-center gap-1"
+                                                                    onClick={() =>
+                                                                        handleDelete(
+                                                                            bidang.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <Trash2 className="h-3 w-3" />
+                                                                    {loading
+                                                                        ? 'Loading...'
+                                                                        : 'Delete'}
+                                                                </Button>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
+
+                                    {pagination.current_page <
+                                        pagination.last_page && (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={2}
+                                                className="text-center"
+                                            >
+                                                <WhenVisible
+                                                    always={
+                                                        pagination.current_page <
+                                                        pagination.last_page
+                                                    }
+                                                    params={{
+                                                        data: {
+                                                            page:
+                                                                pagination.current_page <
+                                                                pagination.last_page
+                                                                    ? pagination.current_page +
+                                                                      1
+                                                                    : pagination.current_page,
+                                                        },
+                                                        only: [
+                                                            'orgunits',
+                                                            'pagination',
+                                                        ],
+                                                    }}
+                                                    buffer={0.1}
+                                                    fallback={
+                                                        <p>data not found.</p>
+                                                    }
+                                                    as="div"
+                                                >
+                                                    {pagination.current_page >=
+                                                    pagination.last_page ? (
+                                                        <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                    ) : (
+                                                        <div className="p-2 text-center text-sm text-muted-foreground">
+                                                            Loading more data...
+                                                        </div>
+                                                    )}
+                                                </WhenVisible>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>
                     </Card>
                 </div>
+
+                <EditDialogDataBidang
+                    loading={loading}
+                    isEditModalOpen={isEditModalOpen}
+                    setIsEditModalOpen={setIsEditModalOpen}
+                    activeOrgUnit={activeOrgUnit}
+                    handleEdit={handleEdit}
+                    setActiveOrgUnit={setActiveOrgUnit}
+                    setIsModalOpen={setIsModalOpen}
+                />
             </div>
         </AppLayout>
     );
