@@ -39,7 +39,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Data Tipe',
-        href: '#',
+        href: '/master/types',
         icon: Tag,
     },
     {
