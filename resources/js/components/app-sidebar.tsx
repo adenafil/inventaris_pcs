@@ -44,7 +44,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Data Model',
-        href: '#',
+        href: '/master/models',
         icon: Monitor,
     },
     {
