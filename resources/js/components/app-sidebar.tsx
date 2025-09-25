@@ -34,7 +34,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Data Assets',
-        href: '#',
+        href: '/master/assets',
         icon: HardDrive,
     },
     {
