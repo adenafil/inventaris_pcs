@@ -1,6 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -13,9 +19,14 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router, WhenVisible } from '@inertiajs/react';
+import { DialogDescription } from '@radix-ui/react-dialog';
+import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Save, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useEffectOnce } from 'react-use';
+import { toast } from 'sonner';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,44 +37,55 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Dummy data
 const initialBidangData = [
-  { id: 1, namaBidang: "Teknologi Informasi" },
-  { id: 2, namaBidang: "Sumber Daya Manusia" },
-  { id: 3, namaBidang: "Keuangan" },
-  { id: 4, namaBidang: "Pemasaran" },
-  { id: 5, namaBidang: "Operasional" },
-]
+    { id: 1, namaBidang: 'Teknologi Informasi' },
+    { id: 2, namaBidang: 'Sumber Daya Manusia' },
+    { id: 3, namaBidang: 'Keuangan' },
+    { id: 4, namaBidang: 'Pemasaran' },
+    { id: 5, namaBidang: 'Operasional' },
+];
 
+export default function Page({ orgunits, pagination, page }: PageProps) {
+    console.log({ orgunits, pagination });
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const formAddBidang = useForm('post', '/master/org-units', {
+        code: '',
+        name: '',
+    });
 
-export default function Page() {
-  const [bidangData, setBidangData] = useState(initialBidangData);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [namaBidang, setNamaBidang] = useState('');
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const uuid = crypto.randomUUID();
+        formAddBidang.setData('code', uuid);
+        formAddBidang.submit({
+            onSuccess: () => {
+                setIsModalOpen(false);
+                formAddBidang.reset();
+                router.get(
+                    '/master/org-units',
+                    {},
+                    { preserveScroll: true, replace: true },
+                );
+                toast.success('Bidang berhasil ditambahkan');
+            },
+            onValidationError: (error) => {
+                console.log({ error });
+                toast.error('Terjadi kesalahan. Silakan coba lagi.');
+            },
+        });
+    };
 
-  const handleEdit = (id: number, namaBidang: string) => {
-      console.log('Edit bidang:', { id, namaBidang });
-  };
+    useEffect(() => {
+        console.log(formAddBidang.data);
+    }, [formAddBidang.data]);
 
-  const handleDelete = (id: number, namaBidang: string) => {
-      console.log('Delete bidang:', { id, namaBidang });
-      // Optional: Remove from state for demo purposes
-      setBidangData((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const handleSimpan = (e: React.FormEvent) => {
-      e.preventDefault();
-      console.log('Simpan bidang:', { namaBidang });
-
-      // Add new bidang to the list (demo purposes)
-      const newId = Math.max(...bidangData.map((b) => b.id)) + 1;
-      setBidangData((prev) => [...prev, { id: newId, namaBidang }]);
-
-      // Reset form and close modal
-      setNamaBidang('');
-      setIsModalOpen(false);
-  };
-
-
+    useEffectOnce(() => {
+        if (page && page !== 1) {
+            router.visit('/master/org-units', {
+                preserveScroll: true,
+            });
+        }
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -101,48 +123,69 @@ export default function Page() {
                                     <DialogHeader>
                                         <DialogTitle>Tambah Bidang</DialogTitle>
                                     </DialogHeader>
-                                    <form
-                                        onSubmit={handleSimpan}
-                                        className="space-y-6"
-                                    >
-                                        <div className="space-y-2">
-                                            <Label htmlFor="namaBidang">
-                                                Nama Bidang
-                                            </Label>
-                                            <Input
-                                                id="namaBidang"
-                                                type="text"
-                                                value={namaBidang}
-                                                onChange={(e) =>
-                                                    setNamaBidang(
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Masukkan nama bidang"
-                                                required
-                                            />
-                                        </div>
+                                    <DialogDescription asChild>
+                                        <form
+                                            onSubmit={handleSubmit}
+                                            className="space-y-6"
+                                        >
+                                            <div className="space-y-2">
+                                                <Label htmlFor="namaBidang">
+                                                    Nama Bidang
+                                                </Label>
+                                                <Input
+                                                    id="namaBidang"
+                                                    type="text"
+                                                    value={
+                                                        formAddBidang.data.name
+                                                    }
+                                                    onChange={(e) =>
+                                                        formAddBidang.setData(
+                                                            'name',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    onBlur={() =>
+                                                        formAddBidang.validate(
+                                                            'name',
+                                                        )
+                                                    }
+                                                    className="w-full"
+                                                    placeholder="Masukkan nama bidang"
+                                                    required
+                                                />
+                                                {formAddBidang.invalid(
+                                                    'name',
+                                                ) && (
+                                                    <p className="text-sm text-red-600">
+                                                        {
+                                                            formAddBidang.errors
+                                                                .name
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
 
-                                        <div className="flex gap-3 pt-4">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() =>
-                                                    setIsModalOpen(false)
-                                                }
-                                                className="flex flex-1 items-center gap-2"
-                                            >
-                                                Back
-                                            </Button>
-                                            <Button
-                                                type="submit"
-                                                className="flex flex-1 items-center gap-2"
-                                            >
-                                                <Save className="h-4 w-4" />
-                                                Simpan
-                                            </Button>
-                                        </div>
-                                    </form>
+                                            <div className="flex gap-3 pt-4">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        setIsModalOpen(false)
+                                                    }
+                                                    className="flex flex-1 items-center gap-2"
+                                                >
+                                                    Back
+                                                </Button>
+                                                <Button
+                                                    type="submit"
+                                                    className="flex flex-1 items-center gap-2"
+                                                >
+                                                    <Save className="h-4 w-4" />
+                                                    Simpan
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </DialogDescription>
                                 </DialogContent>
                             </Dialog>
                         </CardHeader>
@@ -157,22 +200,16 @@ export default function Page() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {bidangData.map((bidang) => (
-                                        <TableRow key={bidang.id}>
+                                    {orgunits.map((bidang) => (
+                                        <TableRow key={`bidang-${bidang.id}`}>
                                             <TableCell className="font-medium">
-                                                {bidang.namaBidang}
+                                                {bidang.name}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() =>
-                                                            handleEdit(
-                                                                bidang.id,
-                                                                bidang.namaBidang,
-                                                            )
-                                                        }
                                                         className="flex items-center gap-1"
                                                     >
                                                         <Edit className="h-3 w-3" />
@@ -181,12 +218,6 @@ export default function Page() {
                                                     <Button
                                                         variant="destructive"
                                                         size="sm"
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                bidang.id,
-                                                                bidang.namaBidang,
-                                                            )
-                                                        }
                                                         className="flex items-center gap-1"
                                                     >
                                                         <Trash2 className="h-3 w-3" />
@@ -196,6 +227,51 @@ export default function Page() {
                                             </TableCell>
                                         </TableRow>
                                     ))}
+
+                                    {pagination.current_page <
+                                        pagination.last_page && (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={2}
+                                                className="text-center"
+                                            >
+                                                <WhenVisible
+                                                    always={
+                                                        pagination.current_page <
+                                                        pagination.last_page
+                                                    }
+                                                    params={{
+                                                        data: {
+                                                            page:
+                                                                pagination.current_page <
+                                                                pagination.last_page
+                                                                    ? pagination.current_page +
+                                                                      1
+                                                                    : pagination.current_page,
+                                                        },
+                                                        only: [
+                                                            'orgunits',
+                                                            'pagination',
+                                                        ],
+                                                    }}
+                                                    buffer={0.1}
+                                                    fallback={
+                                                        <p>data not found.</p>
+                                                    }
+                                                    as="div"
+                                                >
+                                                    {pagination.current_page >=
+                                                    pagination.last_page ? (
+                                                        <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                    ) : (
+                                                        <div className="p-2 text-center text-sm text-muted-foreground">
+                                                            Loading more data...
+                                                        </div>
+                                                    )}
+                                                </WhenVisible>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>
