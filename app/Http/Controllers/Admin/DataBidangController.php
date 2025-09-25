@@ -16,7 +16,7 @@ class DataBidangController extends Controller
         $orgUnits = OrgUnit::paginate(20);
         $page = request()->get('page', 1);
         return Inertia::render('data-bidang/page', [
-            'orgunits' => Inertia::merge($orgUnits->items()),
+            'orgunits' => Inertia::merge(fn () => $orgUnits->items()),
             'pagination' => $orgUnits,
             'page' => $page,
         ]);

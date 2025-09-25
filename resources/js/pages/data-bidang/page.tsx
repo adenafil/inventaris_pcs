@@ -11,15 +11,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
     Table,
     TableBody,
     TableCell,
@@ -30,12 +21,13 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, WhenVisible } from '@inertiajs/react';
-import { DialogDescription } from '@radix-ui/react-dialog';
 import { useForm } from 'laravel-precognition-react';
-import { Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import { toast } from 'sonner';
+import AddDialogDataBidang from './_components/add-dialog-data-bidang';
+import EditDialogDataBidang from './_components/edit-dialog-data-bidang';
 import { OrgUnit, PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -43,15 +35,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         title: 'Master Bidang',
         href: '/master/org-units',
     },
-];
-
-// Dummy data
-const initialBidangData = [
-    { id: 1, namaBidang: 'Teknologi Informasi' },
-    { id: 2, namaBidang: 'Sumber Daya Manusia' },
-    { id: 3, namaBidang: 'Keuangan' },
-    { id: 4, namaBidang: 'Pemasaran' },
-    { id: 5, namaBidang: 'Operasional' },
 ];
 
 export default function Page({ orgunits, pagination, page }: PageProps) {
@@ -74,10 +57,11 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
             onSuccess: () => {
                 setIsModalOpen(false);
                 formAddBidang.reset();
-                router.reload({
+                router.visit('/master/org-units', {
                     onSuccess: () => {
                         toast.success('Bidang berhasil ditambahkan');
                     },
+                    preserveScroll: true,
                 });
             },
             onValidationError: (error) => {
@@ -105,7 +89,12 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                 onFinish: () => setLoading(false),
                 onSuccess: () => {
                     setIsEditModalOpen(false);
-                    toast.success('Bidang berhasil diupdate');
+                    router.visit('/master/org-units', {
+                        onSuccess: () => {
+                            toast.success('Bidang berhasil diupdate');
+                        },
+                        preserveScroll: true,
+                    });
                 },
                 onError: (error) => {
                     toast.error(error.message || 'Terjadi kesalahan');
@@ -121,7 +110,12 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
             onFinish: () => setLoading(false),
             onSuccess: () => {
                 console.log('berhasil dihapus');
-                toast.success('Bidang berhasil dihapus');
+                router.visit('/master/org-units', {
+                    onSuccess: () => {
+                        toast.success('Bidang berhasil dihapus');
+                    },
+                    preserveScroll: true,
+                });
             },
         });
     };
@@ -131,6 +125,8 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
     }, [formAddBidang.data]);
 
     useEffectOnce(() => {
+        console.log('page reload or visit');
+
         if (page && page !== 1) {
             router.visit('/master/org-units', {
                 preserveScroll: true,
@@ -160,90 +156,12 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                             <CardTitle className="text-2xl font-bold">
                                 Master Bidang
                             </CardTitle>
-                            <Dialog
-                                open={isModalOpen}
-                                onOpenChange={setIsModalOpen}
-                            >
-                                <DialogTrigger asChild>
-                                    <Button className="flex items-center gap-2">
-                                        <Plus className="h-4 w-4" />
-                                        Tambah
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
-                                    <DialogHeader>
-                                        <DialogTitle>Tambah Bidang</DialogTitle>
-                                    </DialogHeader>
-                                    <DialogDescription asChild>
-                                        <form
-                                            onSubmit={handleSubmit}
-                                            className="space-y-6"
-                                        >
-                                            <div className="space-y-2">
-                                                <Label htmlFor="namaBidang">
-                                                    Nama Bidang
-                                                </Label>
-                                                <Input
-                                                    id="namaBidang"
-                                                    type="text"
-                                                    value={
-                                                        formAddBidang.data.name
-                                                    }
-                                                    onChange={(e) =>
-                                                        formAddBidang.setData(
-                                                            'name',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    onBlur={() =>
-                                                        formAddBidang.validate(
-                                                            'name',
-                                                        )
-                                                    }
-                                                    className="w-full"
-                                                    placeholder="Masukkan nama bidang"
-                                                    required
-                                                />
-                                                {formAddBidang.invalid(
-                                                    'name',
-                                                ) && (
-                                                    <p className="text-sm text-red-600">
-                                                        {
-                                                            formAddBidang.errors
-                                                                .name
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="flex gap-3 pt-4">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        setIsModalOpen(false)
-                                                    }
-                                                    className="flex flex-1 items-center gap-2"
-                                                >
-                                                    Back
-                                                </Button>
-                                                <Button
-                                                    type="submit"
-                                                    className="flex flex-1 items-center gap-2"
-                                                    disabled={
-                                                        formAddBidang.processing
-                                                    }
-                                                >
-                                                    <Save className="h-4 w-4" />
-                                                    {formAddBidang.processing
-                                                        ? 'Loading...'
-                                                        : 'Simpan'}
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    </DialogDescription>
-                                </DialogContent>
-                            </Dialog>
+                            <AddDialogDataBidang
+                                isModalOpen={isModalOpen}
+                                setIsModalOpen={setIsModalOpen}
+                                formAddBidang={formAddBidang}
+                                handleSubmit={handleSubmit}
+                            />
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -391,63 +309,15 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                     </Card>
                 </div>
 
-                <Dialog
-                    open={isEditModalOpen}
-                    onOpenChange={setIsEditModalOpen}
-                >
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle>Edit Bidang</DialogTitle>
-                        </DialogHeader>
-                        <DialogDescription asChild>
-                            <form className="space-y-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="namaBidang">
-                                        Nama Bidang
-                                    </Label>
-                                    <Input
-                                        id="namaBidang"
-                                        type="text"
-                                        value={activeOrgUnit?.name || ''}
-                                        onChange={(e) =>
-                                            setActiveOrgUnit((prev) =>
-                                                prev
-                                                    ? {
-                                                          ...prev,
-                                                          name: e.target.value,
-                                                      }
-                                                    : null,
-                                            )
-                                        }
-                                        className="w-full"
-                                        placeholder="Masukkan nama bidang"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="flex gap-3 pt-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="flex flex-1 items-center gap-2"
-                                    >
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={handleEdit}
-                                        type="submit"
-                                        className="flex flex-1 items-center gap-2"
-                                        disabled={loading}
-                                    >
-                                        <Save className="h-4 w-4" />
-                                        {loading ? 'Loading...' : 'Simpan'}
-                                    </Button>
-                                </div>
-                            </form>
-                        </DialogDescription>
-                    </DialogContent>
-                </Dialog>
+                <EditDialogDataBidang
+                    loading={loading}
+                    isEditModalOpen={isEditModalOpen}
+                    setIsEditModalOpen={setIsEditModalOpen}
+                    activeOrgUnit={activeOrgUnit}
+                    handleEdit={handleEdit}
+                    setActiveOrgUnit={setActiveOrgUnit}
+                    setIsModalOpen={setIsModalOpen}
+                />
             </div>
         </AppLayout>
     );
