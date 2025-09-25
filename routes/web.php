@@ -24,6 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             HandlePrecognitiveRequests::class
         ]);
         Route::delete('/org-units/{orgunit}', [DataBidangController::class, 'destroy'])->name('org-units.destroy');
+        Route::patch('/org-units/{orgunit}', [DataBidangController::class, 'update'])->name('org-units.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
 
         Route::get('/employees', [DataPegawaiController::class, 'index'])->name('employees.index');
         Route::get('/employees/create', [DataPegawaiController::class, 'create'])->name('employees.create');

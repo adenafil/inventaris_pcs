@@ -64,7 +64,7 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
         code: '',
         name: '',
     });
-    
+    const [activeOrgUnit, setActiveOrgUnit] = useState<OrgUnit | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,6 +87,33 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
         });
     };
 
+    const handleEditModalOpen = (orgUnit: OrgUnit) => {
+        setActiveOrgUnit(orgUnit);
+        setIsEditModalOpen(true);
+    };
+
+    const handleEdit = () => {
+        if (!activeOrgUnit) return;
+
+        router.patch(
+            `/master/org-units/${activeOrgUnit.id}`,
+            {
+                name: activeOrgUnit.name,
+            },
+            {
+                onBefore: () => setLoading(true),
+                onFinish: () => setLoading(false),
+                onSuccess: () => {
+                    setIsEditModalOpen(false);
+                    toast.success('Bidang berhasil diupdate');
+                },
+                onError: (error) => {
+                    toast.error(error.message || 'Terjadi kesalahan');
+                },
+            },
+        );
+    };
+
     const handleDelete = (id: number) => {
         router.delete(`/master/org-units/${id}`, {
             preserveScroll: true,
@@ -97,10 +124,6 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                 toast.success('Bidang berhasil dihapus');
             },
         });
-    };
-
-    const handleEditClick = (orgUnit: OrgUnit) => {
-
     };
 
     useEffect(() => {
@@ -207,9 +230,14 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                                 <Button
                                                     type="submit"
                                                     className="flex flex-1 items-center gap-2"
+                                                    disabled={
+                                                        formAddBidang.processing
+                                                    }
                                                 >
                                                     <Save className="h-4 w-4" />
-                                                    Simpan
+                                                    {formAddBidang.processing
+                                                        ? 'Loading...'
+                                                        : 'Simpan'}
                                                 </Button>
                                             </div>
                                         </form>
@@ -236,9 +264,11 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button
-                                                        onClick={() => {
-                                                            setIsEditModalOpen(true)
-                                                         }}
+                                                        onClick={() =>
+                                                            handleEditModalOpen(
+                                                                bidang,
+                                                            )
+                                                        }
                                                         variant="outline"
                                                         size="sm"
                                                         className="flex items-center gap-1"
@@ -370,7 +400,7 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                             <DialogTitle>Edit Bidang</DialogTitle>
                         </DialogHeader>
                         <DialogDescription asChild>
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form className="space-y-6">
                                 <div className="space-y-2">
                                     <Label htmlFor="namaBidang">
                                         Nama Bidang
@@ -378,25 +408,21 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                     <Input
                                         id="namaBidang"
                                         type="text"
-                                        value={formAddBidang.data.name}
+                                        value={activeOrgUnit?.name || ''}
                                         onChange={(e) =>
-                                            formAddBidang.setData(
-                                                'name',
-                                                e.target.value,
+                                            setActiveOrgUnit((prev) =>
+                                                prev
+                                                    ? {
+                                                          ...prev,
+                                                          name: e.target.value,
+                                                      }
+                                                    : null,
                                             )
-                                        }
-                                        onBlur={() =>
-                                            formAddBidang.validate('name')
                                         }
                                         className="w-full"
                                         placeholder="Masukkan nama bidang"
                                         required
                                     />
-                                    {formAddBidang.invalid('name') && (
-                                        <p className="text-sm text-red-600">
-                                            {formAddBidang.errors.name}
-                                        </p>
-                                    )}
                                 </div>
 
                                 <div className="flex gap-3 pt-4">
@@ -409,11 +435,13 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                         Back
                                     </Button>
                                     <Button
+                                        onClick={handleEdit}
                                         type="submit"
                                         className="flex flex-1 items-center gap-2"
+                                        disabled={loading}
                                     >
                                         <Save className="h-4 w-4" />
-                                        Simpan
+                                        {loading ? 'Loading...' : 'Simpan'}
                                     </Button>
                                 </div>
                             </form>
