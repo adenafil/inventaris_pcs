@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DataBidangController;
 use App\Http\Controllers\Admin\DataLocationController;
 use App\Http\Controllers\Admin\DataModelController;
 use App\Http\Controllers\Admin\DataPegawaiController;
+use App\Http\Controllers\Admin\DataTipeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -26,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/models', [DataModelController::class, 'index'])->name('data-model.index');
         Route::get('/models/create', [DataModelController::class, 'create'])->name('data-model.create');
+
+        Route::get('/types', [DataTipeController::class, 'index'])->name('data-tipe.index');
     });
 
 
