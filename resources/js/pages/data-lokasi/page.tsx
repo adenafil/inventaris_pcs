@@ -1,3 +1,13 @@
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -24,8 +34,8 @@ import { DialogDescription } from '@radix-ui/react-dialog';
 import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { PageProps } from './_types';
 import { toast } from 'sonner';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,20 +49,10 @@ interface Location {
     namaLokasi: string;
 }
 
-const initialLocations: Location[] = [
-    { id: 1, namaLokasi: 'Jakarta Pusat' },
-    { id: 2, namaLokasi: 'Bandung Kota' },
-    { id: 3, namaLokasi: 'Surabaya Timur' },
-    { id: 4, namaLokasi: 'Medan Utara' },
-    { id: 5, namaLokasi: 'Yogyakarta' },
-    { id: 6, namaLokasi: 'Semarang Tengah' },
-    { id: 7, namaLokasi: 'Malang Kota' },
-    { id: 8, namaLokasi: 'Denpasar Selatan' },
-];
 
 export default function Page({ locations, pagination, page }: PageProps) {
     console.log({ locations, pagination, page });
-
+    const [loading, setLoading] = useState(false);
     const formAddLocation = useForm('post', '/master/locations', {
         code: '',
         name: '',
@@ -66,11 +66,11 @@ export default function Page({ locations, pagination, page }: PageProps) {
                 setIsAddModalOpen(false);
                 console.log('Lokasi berhasil ditambahkan');
                 formAddLocation.reset();
-                router.reload({
+                router.visit('/master/locations', {
                     onSuccess: () => {
                         toast.success('Lokasi berhasil ditambahkan');
-                    }
-                })
+                    },
+                });
             },
             onValidationError: (error) => {
                 console.log('Terjadi kesalahan validasi:', error);
@@ -117,8 +117,17 @@ export default function Page({ locations, pagination, page }: PageProps) {
 
     // Delete location
     const handleDeleteLocation = (id: number) => {
-        setLocations(locations.filter((location) => location.id !== id));
-        console.log('Lokasi berhasil dihapus');
+        router.delete(`/master/locations/${id}`, {
+            onBefore: () => setLoading(true),
+            onSuccess: () => {
+                router.visit('/master/locations',{
+                    onSuccess: () => {
+                        toast.success('Lokasi berhasil dihapus');
+                    },
+                    onFinish: () => setLoading(false),
+                });
+            },
+        });
     };
 
     return (
@@ -296,18 +305,76 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                                             >
                                                                 <Edit className="h-4 w-4" />
                                                             </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleDeleteLocation(
-                                                                        location.id,
-                                                                    )
-                                                                }
-                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
+
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger
+                                                                    asChild
+                                                                >
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>
+                                                                            Are
+                                                                            you
+                                                                            sure
+                                                                            you
+                                                                            want
+                                                                            to
+                                                                            delete
+                                                                            this
+                                                                            location?
+                                                                        </AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            This
+                                                                            action
+                                                                            cannot
+                                                                            be
+                                                                            undone.
+                                                                            This
+                                                                            will
+                                                                            permanently
+                                                                            delete
+                                                                            your
+                                                                            account
+                                                                            and
+                                                                            remove
+                                                                            your
+                                                                            data
+                                                                            from
+                                                                            our
+                                                                            servers.
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>
+                                                                            Cancel
+                                                                        </AlertDialogCancel>
+                                                                        <Button
+                                                                            disabled={loading}
+                                                                            variant="destructive"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                handleDeleteLocation(
+                                                                                    location.id,
+                                                                                )
+                                                                            }
+                                                                            className='cursor-pointer'
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                            {loading
+                                                                                ? 'Deleting...'
+                                                                                : 'Delete'}
+                                                                        </Button>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>

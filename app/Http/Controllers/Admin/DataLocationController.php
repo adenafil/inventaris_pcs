@@ -50,4 +50,11 @@ class DataLocationController extends Controller
 
         return redirect()->back()->with('success', 'Data lokasi berhasil ditambahkan.');
     }
+
+    public function destroy(Location $location)
+    {
+        $location->delete();
+
+        return redirect()->back()->with('success', 'Data lokasi berhasil dihapus.');
+    }
 }
