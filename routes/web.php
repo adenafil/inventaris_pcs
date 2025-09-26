@@ -32,6 +32,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/employees/create', [DataPegawaiController::class, 'create'])->name('employees.create');
 
         Route::get('/locations', [DataLocationController::class, 'index'])->name('locations.index');
+        Route::post('/locations', [DataLocationController::class, 'store'])->name('locations.store')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
 
         Route::get('/models', [DataModelController::class, 'index'])->name('data-model.index');
         Route::get('/models/create', [DataModelController::class, 'create'])->name('data-model.create');

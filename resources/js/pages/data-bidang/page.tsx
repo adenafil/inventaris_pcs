@@ -37,7 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Page({ orgunits, pagination, page }: PageProps) {
-    console.log({ orgunits, pagination });
+    console.log({ orgunits, pagination, page });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);

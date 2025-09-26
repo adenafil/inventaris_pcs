@@ -20,6 +20,8 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import { DialogDescription } from '@radix-ui/react-dialog';
+import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -47,6 +49,26 @@ const initialLocations: Location[] = [
 ];
 
 export default function Page() {
+    const formAddLocation = useForm('post', '/master/locations', {
+        code: '',
+        name: '',
+    });
+
+    const handleSubmit = () => {
+        const uuid = crypto.randomUUID();
+        formAddLocation.setData('code', uuid);
+        formAddLocation.submit({
+            onSuccess: () => {
+                setIsAddModalOpen(false);
+                console.log('Lokasi berhasil ditambahkan');
+                formAddLocation.reset();
+            },
+            onValidationError: (error) => {
+                console.log('Terjadi kesalahan validasi:', error);
+            },
+        });
+    };
+
     const [locations, setLocations] = useState<Location[]>(initialLocations);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -62,27 +84,6 @@ export default function Page() {
         location.namaLokasi.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
-    // Add new location
-    const handleAddLocation = () => {
-        if (!newLocationName.trim()) {
-            console.log("Nama lokasi tidak boleh kosong");
-
-            return;
-        }
-
-        const newId = Math.max(...locations.map((l) => l.id)) + 1;
-        const newLocation: Location = {
-            id: newId,
-            namaLokasi: newLocationName.trim(),
-        };
-
-        setLocations([...locations, newLocation]);
-        setNewLocationName('');
-        setIsAddModalOpen(false);
-        console.log("Lokasi berhasil ditambahkan");
-
-    };
-
     // Edit location
     const handleEditLocation = (location: Location) => {
         setEditingLocation(location);
@@ -92,7 +93,7 @@ export default function Page() {
 
     const handleSaveEdit = () => {
         if (!editLocationName.trim()) {
-            console.log("Nama lokasi tidak boleh kosong");
+            console.log('Nama lokasi tidak boleh kosong');
             return;
         }
 
@@ -109,13 +110,13 @@ export default function Page() {
         setIsEditModalOpen(false);
         setEditingLocation(null);
         setEditLocationName('');
-        console.log("Perubahan lokasi berhasil disimpan");
+        console.log('Perubahan lokasi berhasil disimpan');
     };
 
     // Delete location
     const handleDeleteLocation = (id: number) => {
         setLocations(locations.filter((location) => location.id !== id));
-        console.log("Lokasi berhasil dihapus");
+        console.log('Lokasi berhasil dihapus');
     };
 
     return (
@@ -173,45 +174,73 @@ export default function Page() {
                                                 Tambah Lokasi Baru
                                             </DialogTitle>
                                         </DialogHeader>
-                                        <div className="space-y-4 pt-4">
-                                            <div>
-                                                <Label htmlFor="new-location-name">
-                                                    Nama Lokasi
-                                                </Label>
-                                                <Input
-                                                    id="new-location-name"
-                                                    value={newLocationName}
-                                                    onChange={(e) =>
-                                                        setNewLocationName(
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    placeholder="Masukkan nama lokasi"
-                                                    onKeyDown={(e) =>
-                                                        e.key === 'Enter' &&
-                                                        handleAddLocation()
-                                                    }
-                                                />
+                                        <DialogDescription asChild>
+                                            <div className="space-y-4 pt-4">
+                                                <div>
+                                                    <Label htmlFor="new-location-name">
+                                                        Nama Lokasi
+                                                    </Label>
+                                                    <Input
+                                                        id="new-location-name"
+                                                        value={
+                                                            formAddLocation.data
+                                                                .name
+                                                        }
+                                                        onChange={(e) =>
+                                                            formAddLocation.setData(
+                                                                'name',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        placeholder="Masukkan nama lokasi"
+                                                        onKeyDown={(e) =>
+                                                            e.key === 'Enter' &&
+                                                            handleSubmit()
+                                                        }
+                                                        onBlur={() => {
+                                                            formAddLocation.validate(
+                                                                'name',
+                                                            );
+                                                        }}
+                                                    />
+                                                    {formAddLocation.invalid(
+                                                        'name',
+                                                    ) && (
+                                                        <p className="text-sm text-red-600">
+                                                            {
+                                                                formAddLocation
+                                                                    .errors.name
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setIsAddModalOpen(
+                                                                false,
+                                                            );
+                                                            setNewLocationName(
+                                                                '',
+                                                            );
+                                                        }}
+                                                    >
+                                                        Batal
+                                                    </Button>
+                                                    <Button
+                                                        disabled={
+                                                            formAddLocation.processing
+                                                        }
+                                                        onClick={handleSubmit}
+                                                    >
+                                                        {formAddLocation.processing
+                                                            ? 'Menyimpan...'
+                                                            : 'Simpan'}
+                                                    </Button>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-end gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setIsAddModalOpen(
-                                                            false,
-                                                        );
-                                                        setNewLocationName('');
-                                                    }}
-                                                >
-                                                    Batal
-                                                </Button>
-                                                <Button
-                                                    onClick={handleAddLocation}
-                                                >
-                                                    Simpan
-                                                </Button>
-                                            </div>
-                                        </div>
+                                        </DialogDescription>
                                     </DialogContent>
                                 </Dialog>
                             </div>
