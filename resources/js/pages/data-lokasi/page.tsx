@@ -238,9 +238,6 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                                             setIsAddModalOpen(
                                                                 false,
                                                             );
-                                                            setNewLocationName(
-                                                                '',
-                                                            );
                                                         }}
                                                     >
                                                         Batal

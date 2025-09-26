@@ -56,10 +56,11 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
             onSuccess: () => {
                 setIsModalOpen(false);
                 formAddBidang.reset();
+                setTimeout(() => {
+                    toast.success('Bidang berhasil ditambahkan');
+                }, 1000);
+
                 router.visit('/master/org-units', {
-                    onSuccess: () => {
-                        toast.success('Bidang berhasil ditambahkan');
-                    },
                     preserveScroll: true,
                 });
             },
@@ -88,10 +89,10 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                 onFinish: () => setLoading(false),
                 onSuccess: () => {
                     setIsEditModalOpen(false);
+                    setTimeout(() => {
+                        toast.success('Bidang berhasil diupdate');
+                    }, 1000);
                     router.visit('/master/org-units', {
-                        onSuccess: () => {
-                            toast.success('Bidang berhasil diupdate');
-                        },
                         preserveScroll: true,
                     });
                 },
