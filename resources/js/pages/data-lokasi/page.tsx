@@ -35,7 +35,7 @@ import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { PageProps } from './_types';
+import { Location, PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,12 +43,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/master/locations',
     },
 ];
-
-interface Location {
-    id: number;
-    namaLokasi: string;
-}
-
 
 export default function Page({ locations, pagination, page }: PageProps) {
     console.log({ locations, pagination, page });
@@ -58,6 +52,12 @@ export default function Page({ locations, pagination, page }: PageProps) {
         name: '',
     });
 
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingLocation, setEditingLocation] = useState<Location | null>(
+        null,
+    );
+
     const handleSubmit = () => {
         const uuid = crypto.randomUUID();
         formAddLocation.setData('code', uuid);
@@ -66,53 +66,47 @@ export default function Page({ locations, pagination, page }: PageProps) {
                 setIsAddModalOpen(false);
                 console.log('Lokasi berhasil ditambahkan');
                 formAddLocation.reset();
-                router.visit('/master/locations', {
-                    onSuccess: () => {
-                        toast.success('Lokasi berhasil ditambahkan');
-                    },
-                });
+                toast.success('Lokasi berhasil ditambahkan');
             },
             onValidationError: (error) => {
                 console.log('Terjadi kesalahan validasi:', error);
+            },
+            onFinish: () => {
+                setTimeout(() => {
+                    router.visit('/master/locations', {
+                        preserveState: true,
+                    });
+                }, 1000);
             },
         });
     };
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingLocation, setEditingLocation] = useState<Location | null>(
-        null,
-    );
-    const [editLocationName, setEditLocationName] = useState('');
-
     // Edit location
     const handleEditLocation = (location: Location) => {
-        setEditingLocation(location);
-        setEditLocationName(location.namaLokasi);
+        setEditingLocation(() => location);
         setIsEditModalOpen(true);
     };
 
-    const handleSaveEdit = () => {
-        if (!editLocationName.trim()) {
-            console.log('Nama lokasi tidak boleh kosong');
-            return;
-        }
-
-        if (!editingLocation) return;
-
-        setLocations(
-            locations.map((location) =>
-                location.id === editingLocation.id
-                    ? { ...location, namaLokasi: editLocationName.trim() }
-                    : location,
-            ),
+    const handleSaveEdit = async () => {
+        router.patch(
+            `/master/locations/${editingLocation?.id}`,
+            {
+                name: editingLocation?.name,
+            },
+            {
+                onBefore: () => setLoading(true),
+                onSuccess: () => {
+                    setIsEditModalOpen(false);
+                    setEditingLocation(null);
+                    toast.success('Lokasi berhasil diperbarui');
+                    setLoading(false);
+                },
+                onError: (error) => {
+                    console.log('Terjadi kesalahan:', error);
+                },
+            },
         );
-
-        setIsEditModalOpen(false);
-        setEditingLocation(null);
-        setEditLocationName('');
-        console.log('Perubahan lokasi berhasil disimpan');
     };
 
     // Delete location
@@ -120,12 +114,8 @@ export default function Page({ locations, pagination, page }: PageProps) {
         router.delete(`/master/locations/${id}`, {
             onBefore: () => setLoading(true),
             onSuccess: () => {
-                router.visit('/master/locations',{
-                    onSuccess: () => {
-                        toast.success('Lokasi berhasil dihapus');
-                    },
-                    onFinish: () => setLoading(false),
-                });
+                toast.success('Lokasi berhasil dihapus');
+                setLoading(false);
             },
         });
     };
@@ -357,7 +347,9 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                                                             Cancel
                                                                         </AlertDialogCancel>
                                                                         <Button
-                                                                            disabled={loading}
+                                                                            disabled={
+                                                                                loading
+                                                                            }
                                                                             variant="destructive"
                                                                             size="sm"
                                                                             onClick={() =>
@@ -365,7 +357,7 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                                                                     location.id,
                                                                                 )
                                                                             }
-                                                                            className='cursor-pointer'
+                                                                            className="cursor-pointer"
                                                                         >
                                                                             <Trash2 className="h-4 w-4" />
                                                                             {loading
@@ -448,10 +440,20 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                             </Label>
                                             <Input
                                                 id="edit-location-name"
-                                                value={editLocationName}
+                                                value={
+                                                    editingLocation?.name || ''
+                                                }
                                                 onChange={(e) =>
-                                                    setEditLocationName(
-                                                        e.target.value,
+                                                    setEditingLocation(
+                                                        (prev) =>
+                                                            prev
+                                                                ? {
+                                                                      ...prev,
+                                                                      name: e
+                                                                          .target
+                                                                          .value,
+                                                                  }
+                                                                : null,
                                                     )
                                                 }
                                                 placeholder="Masukkan nama lokasi"
@@ -464,16 +466,18 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                         <div className="flex justify-end gap-2">
                                             <Button
                                                 variant="outline"
+                                                disabled={loading}
                                                 onClick={() => {
                                                     setIsEditModalOpen(false);
                                                     setEditingLocation(null);
-                                                    setEditLocationName('');
                                                 }}
                                             >
                                                 Batal
                                             </Button>
                                             <Button onClick={handleSaveEdit}>
-                                                Simpan
+                                                {loading
+                                                    ? 'Menyimpan...'
+                                                    : 'Simpan'}
                                             </Button>
                                         </div>
                                     </div>

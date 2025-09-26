@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddDataLocationRequest;
+use App\Http\Requests\Admin\EditDataLocationRequest;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -57,4 +58,14 @@ class DataLocationController extends Controller
 
         return redirect()->back()->with('success', 'Data lokasi berhasil dihapus.');
     }
+
+    public function update(EditDataLocationRequest $request, Location $location)
+    {
+        $validatedData = $request->validated();
+
+        $location->update($validatedData);
+
+        return redirect()->back()->with('success', 'Data lokasi berhasil diperbarui.');
+    }
+
 }

@@ -36,6 +36,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             HandlePrecognitiveRequests::class
         ]);
         Route::delete('/locations/{location}', [DataLocationController::class, 'destroy'])->name('locations.destroy');
+        Route::patch('/locations/{location}', [DataLocationController::class, 'update'])->name('locations.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
 
         Route::get('/models', [DataModelController::class, 'index'])->name('data-model.index');
         Route::get('/models/create', [DataModelController::class, 'create'])->name('data-model.create');
