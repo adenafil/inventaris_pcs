@@ -24,7 +24,6 @@ import { Head, router, WhenVisible } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Edit, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useEffectOnce } from 'react-use';
 import { toast } from 'sonner';
 import AddDialogDataBidang from './_components/add-dialog-data-bidang';
 import EditDialogDataBidang from './_components/edit-dialog-data-bidang';
@@ -123,16 +122,6 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
     useEffect(() => {
         console.log(formAddBidang.data);
     }, [formAddBidang.data]);
-
-    useEffectOnce(() => {
-        console.log('page reload or visit');
-
-        if (page && page !== 1) {
-            router.visit('/master/org-units', {
-                preserveScroll: true,
-            });
-        }
-    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
