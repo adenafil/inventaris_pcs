@@ -19,11 +19,13 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router, WhenVisible } from '@inertiajs/react';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { PageProps } from './_types';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,7 +50,9 @@ const initialLocations: Location[] = [
     { id: 8, namaLokasi: 'Denpasar Selatan' },
 ];
 
-export default function Page() {
+export default function Page({ locations, pagination, page }: PageProps) {
+    console.log({ locations, pagination, page });
+
     const formAddLocation = useForm('post', '/master/locations', {
         code: '',
         name: '',
@@ -62,6 +66,11 @@ export default function Page() {
                 setIsAddModalOpen(false);
                 console.log('Lokasi berhasil ditambahkan');
                 formAddLocation.reset();
+                router.reload({
+                    onSuccess: () => {
+                        toast.success('Lokasi berhasil ditambahkan');
+                    }
+                })
             },
             onValidationError: (error) => {
                 console.log('Terjadi kesalahan validasi:', error);
@@ -69,20 +78,13 @@ export default function Page() {
         });
     };
 
-    const [locations, setLocations] = useState<Location[]>(initialLocations);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingLocation, setEditingLocation] = useState<Location | null>(
         null,
     );
-    const [newLocationName, setNewLocationName] = useState('');
     const [editLocationName, setEditLocationName] = useState('');
-
-    // Filter locations based on search term
-    const filteredLocations = locations.filter((location) =>
-        location.namaLokasi.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
 
     // Edit location
     const handleEditLocation = (location: Location) => {
@@ -260,7 +262,7 @@ export default function Page() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredLocations.length === 0 ? (
+                                        {locations.length === 0 ? (
                                             <TableRow>
                                                 <TableCell
                                                     colSpan={3}
@@ -272,48 +274,92 @@ export default function Page() {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            filteredLocations.map(
-                                                (location) => (
-                                                    <TableRow key={location.id}>
-                                                        <TableCell className="font-medium">
-                                                            {location.id}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {
-                                                                location.namaLokasi
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="flex justify-center gap-2">
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleEditLocation(
-                                                                            location,
-                                                                        )
-                                                                    }
-                                                                    className="h-8 w-8 p-0"
-                                                                >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleDeleteLocation(
-                                                                            location.id,
-                                                                        )
-                                                                    }
-                                                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
+                                            locations.map((location) => (
+                                                <TableRow key={location.id}>
+                                                    <TableCell className="font-medium">
+                                                        {location.id}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {location.name}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex justify-center gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleEditLocation(
+                                                                        location,
+                                                                    )
+                                                                }
+                                                                className="h-8 w-8 p-0"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleDeleteLocation(
+                                                                        location.id,
+                                                                    )
+                                                                }
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+
+                                        {pagination.current_page <
+                                            pagination.last_page && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={2}
+                                                    className="text-center"
+                                                >
+                                                    <WhenVisible
+                                                        always={
+                                                            pagination.current_page <
+                                                            pagination.last_page
+                                                        }
+                                                        params={{
+                                                            data: {
+                                                                page:
+                                                                    pagination.current_page <
+                                                                    pagination.last_page
+                                                                        ? pagination.current_page +
+                                                                          1
+                                                                        : pagination.current_page,
+                                                            },
+                                                            only: [
+                                                                'locations',
+                                                                'pagination',
+                                                            ],
+                                                        }}
+                                                        buffer={0.1}
+                                                        fallback={
+                                                            <p>
+                                                                data not found.
+                                                            </p>
+                                                        }
+                                                        as="div"
+                                                    >
+                                                        {pagination.current_page >=
+                                                        pagination.last_page ? (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                        ) : (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground">
+                                                                Loading more
+                                                                data...
                                                             </div>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ),
-                                            )
+                                                        )}
+                                                    </WhenVisible>
+                                                </TableCell>
+                                            </TableRow>
                                         )}
                                     </TableBody>
                                 </Table>

@@ -12,7 +12,34 @@ class DataLocationController extends Controller
 {
     public function index()
     {
-        return Inertia::render('data-lokasi/page');
+        $locations = Location::paginate(20);
+        $page = request()->get('page', 1);
+        if (!request()->header('X-inertia')) {
+            $allResults = collect();
+
+            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
+                $pageResults = Location::paginate(20, ['*'], 'page', $initialPage);
+                $allResults = $allResults->concat($pageResults->items());
+            }
+
+            return Inertia::render('data-lokasi/page', [
+                'locations' => $allResults,
+                'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
+                    $allResults,
+                    $locations->total(),
+                    $locations->perPage(),
+                    $page,
+                    ['path' => request()->url(), 'query' => request()->query()]
+                ),
+                'page' => $page,
+            ]);
+        }
+
+        return Inertia::render('data-lokasi/page', [
+            'locations' => Inertia::merge(fn () => $locations->items()),
+            'pagination' => $locations,
+            'page' => $page,
+        ]);
     }
 
     public function store(AddDataLocationRequest $request)
