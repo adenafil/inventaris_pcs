@@ -33,7 +33,8 @@ import { Head, router, WhenVisible } from '@inertiajs/react';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useDebounce } from 'react-use';
 import { toast } from 'sonner';
 import { Location, PageProps } from './_types';
 
@@ -57,6 +58,7 @@ export default function Page({ locations, pagination, page }: PageProps) {
     const [editingLocation, setEditingLocation] = useState<Location | null>(
         null,
     );
+    const isFirstRender = useRef(true);
 
     const handleSubmit = () => {
         const uuid = crypto.randomUUID();
@@ -82,7 +84,7 @@ export default function Page({ locations, pagination, page }: PageProps) {
     };
 
     const [searchTerm, setSearchTerm] = useState('');
-    // Edit location
+
     const handleEditLocation = (location: Location) => {
         setEditingLocation(() => location);
         setIsEditModalOpen(true);
@@ -109,7 +111,6 @@ export default function Page({ locations, pagination, page }: PageProps) {
         );
     };
 
-    // Delete location
     const handleDeleteLocation = (id: number) => {
         router.delete(`/master/locations/${id}`, {
             onBefore: () => setLoading(true),
@@ -119,6 +120,21 @@ export default function Page({ locations, pagination, page }: PageProps) {
             },
         });
     };
+
+    useDebounce(
+        () => {
+            if (!isFirstRender.current) {
+                router.get(
+                    '/master/locations',
+                    { search: searchTerm },
+                    { preserveState: true, replace: true },
+                );
+            }
+            isFirstRender.current = false;
+        },
+        500,
+        [searchTerm],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

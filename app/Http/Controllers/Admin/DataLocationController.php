@@ -11,15 +11,18 @@ use Inertia\Inertia;
 
 class DataLocationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $locations = Location::paginate(20);
+        $search = $request->get('search', '');
+        $locations = $search ? Location::where('name', 'like', '%' . $search . '%')->paginate(20)->withQueryString()
+            : Location::paginate(20);
         $page = request()->get('page', 1);
         if (!request()->header('X-inertia')) {
             $allResults = collect();
 
             for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
-                $pageResults = Location::paginate(20, ['*'], 'page', $initialPage);
+                $pageResults = $search ? Location::where('name', 'like', '%' . $search . '%')->paginate(20, ['*'], 'page', $initialPage)
+                    : Location::paginate(20, ['*'], 'page', $initialPage);
                 $allResults = $allResults->concat($pageResults->items());
             }
 
@@ -37,7 +40,7 @@ class DataLocationController extends Controller
         }
 
         return Inertia::render('data-lokasi/page', [
-            'locations' => Inertia::merge(fn () => $locations->items()),
+            'locations' => Inertia::merge(fn() => $locations->items()),
             'pagination' => $locations,
             'page' => $page,
         ]);
@@ -67,5 +70,4 @@ class DataLocationController extends Controller
 
         return redirect()->back()->with('success', 'Data lokasi berhasil diperbarui.');
     }
-
 }
