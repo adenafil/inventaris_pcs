@@ -1,7 +1,14 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -123,91 +130,86 @@ export default function Page() {
 
                 <div className="max-w-8xl mx-auto w-full space-y-4 px-4 sm:px-6 lg:px-8">
                     {/* Search and Add Section */}
+                    {/* Data Table */}
                     <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-xl">
                                 Manajemen Data Tipe
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-                                <div className="relative max-w-md flex-1">
+
+                        <CardContent className="p-4">
+                            <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+                                <div className="relative flex-1">
                                     <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                                     <Input
-                                        placeholder="Cari data tipe..."
+                                        placeholder="Cari lokasi..."
                                         value={searchTerm}
                                         onChange={(e) =>
                                             setSearchTerm(e.target.value)
                                         }
-                                        className="border-border bg-background pl-10"
+                                        className="pl-10"
                                     />
                                 </div>
 
-                                <Dialog
-                                    open={isAddModalOpen}
-                                    onOpenChange={setIsAddModalOpen}
-                                >
-                                    <DialogTrigger asChild>
-                                        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Tambah Data Tipe
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="border-border bg-card">
-                                        <DialogHeader>
-                                            <DialogTitle className="text-card-foreground">
-                                                Tambah Data Tipe Baru
-                                            </DialogTitle>
-                                        </DialogHeader>
-                                        <div className="space-y-4 py-4">
-                                            <div className="space-y-2">
-                                                <Label
-                                                    htmlFor="namaTipe"
-                                                    className="text-card-foreground"
-                                                >
-                                                    Nama Tipe
-                                                </Label>
-                                                <Input
-                                                    id="namaTipe"
-                                                    placeholder="Masukkan nama tipe..."
-                                                    value={formData.namaTipe}
-                                                    onChange={(e) =>
-                                                        setFormData({
-                                                            namaTipe:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                    className="border-border bg-background"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => {
-                                                    setIsAddModalOpen(false);
-                                                    resetForm();
-                                                }}
-                                                className="border-border hover:bg-accent"
-                                            >
-                                                Batal
+                                {/* Add Data Modal */}
+                                <div>
+                                    <Dialog
+                                        open={isAddModalOpen}
+                                        onOpenChange={setIsAddModalOpen}
+                                    >
+                                        <DialogTrigger asChild>
+                                            <Button className="flex items-center gap-2 w-full">
+                                                <Plus className="h-4 w-4" />
+                                                Tambah
                                             </Button>
-                                            <Button
-                                                onClick={handleAdd}
-                                                className="bg-primary hover:bg-primary/90"
-                                            >
-                                                Simpan
-                                            </Button>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>
+                                                    Tambah Data Tipe Baru
+                                                </DialogTitle>
+                                            </DialogHeader>
+                                            <DialogDescription asChild>
+                                                <div className="space-y-4 pt-4">
+                                                    <div>
+                                                        <Label htmlFor="new-location-name">
+                                                            Nama
+                                                        </Label>
+                                                        <Input
+                                                            id="new-location-name"
+                                                            value={''}
+                                                            placeholder="Masukkan nama lokasi"
+                                                            onKeyDown={(e) =>
+                                                                e.key ===
+                                                                    'Enter' &&
+                                                                ''
+                                                            }
+                                                            onBlur={() => {
+                                                                '';
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setIsAddModalOpen(
+                                                                    false,
+                                                                );
+                                                            }}
+                                                        >
+                                                            Batal
+                                                        </Button>
+                                                        <Button>Simpan</Button>
+                                                    </div>
+                                                </div>
+                                            </DialogDescription>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
                             </div>
-                        </CardContent>
-                    </Card>
 
-                    {/* Data Table */}
-                    <Card className="border-border/50">
-                        <CardContent className="p-0">
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
