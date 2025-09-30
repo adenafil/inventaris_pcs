@@ -21,11 +21,12 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router, WhenVisible } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -50,24 +51,24 @@ const initialData: DataType[] = [
     { id: 8, namaTipe: 'Array' },
 ];
 
-export default function Page() {
-    const [dataTypes, setDataTypes] = useState<DataType[]>(initialData);
+export default function Page({ dataTypes, pagination, page }: PageProps) {
+    console.log({ dataTypes, pagination, page });
+
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<DataType | null>(null);
     const [formData, setFormData] = useState({ namaTipe: '' });
 
-    const filteredData = dataTypes.filter((item) =>
-        item.namaTipe.toLowerCase().includes(searchTerm.toLowerCase()),
+    const formAddTipe = useForm(
+        'post',
+        '/master/types',
+        {
+            code: '',
+            name: '',
+        },
+        {},
     );
-
-    const formAddTipe = useForm('post', '/master/types', {
-        code: '',
-        name: '',
-    }, {
-
-    })
 
     const handleSubmit = () => {
         const uuid = crypto.randomUUID();
@@ -76,14 +77,25 @@ export default function Page() {
             onSuccess: () => {
                 setIsAddModalOpen(false);
                 formAddTipe.reset();
-                toast.success('Data tipe berhasil ditambahkan');
+
+                router.get(
+                    '/master/types',
+                    {},
+                    {
+                        preserveState: true,
+                    },
+                );
+
+                setTimeout(() => {
+                    toast.success('Data tipe berhasil ditambahkan');
+                }, 1000);
             },
             onValidationError: (error) => {
                 console.log(error);
 
                 toast.error(error.data.message || 'Terjadi kesalahan validasi');
-             }
-        })
+            },
+        });
     };
 
     const handleEdit = () => {
@@ -151,7 +163,7 @@ export default function Page() {
                                 <div className="relative flex-1">
                                     <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                                     <Input
-                                        placeholder="Cari lokasi..."
+                                        placeholder="Cari type..."
                                         value={searchTerm}
                                         onChange={(e) =>
                                             setSearchTerm(e.target.value)
@@ -167,7 +179,7 @@ export default function Page() {
                                         onOpenChange={setIsAddModalOpen}
                                     >
                                         <DialogTrigger asChild>
-                                            <Button className="flex items-center gap-2 w-full">
+                                            <Button className="flex w-full items-center gap-2">
                                                 <Plus className="h-4 w-4" />
                                                 Tambah
                                             </Button>
@@ -186,11 +198,15 @@ export default function Page() {
                                                         </Label>
                                                         <Input
                                                             id="new-location-name"
-                                                            value={formAddTipe.data.name}
+                                                            value={
+                                                                formAddTipe.data
+                                                                    .name
+                                                            }
                                                             onChange={(e) =>
                                                                 formAddTipe.setData(
                                                                     'name',
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                                 )
                                                             }
                                                             className="mt-1 border-border bg-background"
@@ -201,13 +217,19 @@ export default function Page() {
                                                                 handleSubmit()
                                                             }
                                                             onBlur={() => {
-                                                                formAddTipe.validate('name');
+                                                                formAddTipe.validate(
+                                                                    'name',
+                                                                );
                                                             }}
                                                         />
-                                                        {formAddTipe.invalid('name') && (
+                                                        {formAddTipe.invalid(
+                                                            'name',
+                                                        ) && (
                                                             <p className="mt-1 text-sm text-destructive">
                                                                 {
-                                                                    formAddTipe.errors.name
+                                                                    formAddTipe
+                                                                        .errors
+                                                                        .name
                                                                 }
                                                             </p>
                                                         )}
@@ -223,8 +245,17 @@ export default function Page() {
                                                         >
                                                             Batal
                                                         </Button>
-                                                        <Button disabled={formAddTipe.processing} onClick={() => handleSubmit()}>
-                                                            {formAddTipe.processing ? 'Menyimpan...' : 'Simpan'}
+                                                        <Button
+                                                            disabled={
+                                                                formAddTipe.processing
+                                                            }
+                                                            onClick={() =>
+                                                                handleSubmit()
+                                                            }
+                                                        >
+                                                            {formAddTipe.processing
+                                                                ? 'Menyimpan...'
+                                                                : 'Simpan'}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -250,7 +281,7 @@ export default function Page() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredData.length === 0 ? (
+                                        {dataTypes.length === 0 ? (
                                             <TableRow>
                                                 <TableCell
                                                     colSpan={3}
@@ -262,7 +293,7 @@ export default function Page() {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            filteredData.map((item) => (
+                                            dataTypes.map((item) => (
                                                 <TableRow
                                                     key={item.id}
                                                     className="border-border/50 hover:bg-muted/30"
@@ -276,7 +307,7 @@ export default function Page() {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="font-medium text-card-foreground">
-                                                        {item.namaTipe}
+                                                        {item.name}
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
@@ -308,6 +339,54 @@ export default function Page() {
                                                     </TableCell>
                                                 </TableRow>
                                             ))
+                                        )}
+
+                                        {pagination.current_page <
+                                            pagination.last_page && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={2}
+                                                    className="text-center"
+                                                >
+                                                    <WhenVisible
+                                                        always={
+                                                            pagination.current_page <
+                                                            pagination.last_page
+                                                        }
+                                                        params={{
+                                                            data: {
+                                                                page:
+                                                                    pagination.current_page <
+                                                                    pagination.last_page
+                                                                        ? pagination.current_page +
+                                                                          1
+                                                                        : pagination.current_page,
+                                                            },
+                                                            only: [
+                                                                'dataTypes',
+                                                                'pagination',
+                                                            ],
+                                                        }}
+                                                        buffer={0.1}
+                                                        fallback={
+                                                            <p>
+                                                                data not found.
+                                                            </p>
+                                                        }
+                                                        as="div"
+                                                    >
+                                                        {pagination.current_page >=
+                                                        pagination.last_page ? (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                        ) : (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground">
+                                                                Loading more
+                                                                data...
+                                                            </div>
+                                                        )}
+                                                    </WhenVisible>
+                                                </TableCell>
+                                            </TableRow>
                                         )}
                                     </TableBody>
                                 </Table>
