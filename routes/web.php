@@ -44,6 +44,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/models/create', [DataModelController::class, 'create'])->name('data-model.create');
 
         Route::get('/types', [DataTipeController::class, 'index'])->name('data-tipe.index');
+        Route::post('/types', [DataTipeController::class, 'store'])->name('data-tipe.store')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
     });
 
 

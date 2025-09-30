@@ -22,8 +22,10 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -60,22 +62,28 @@ export default function Page() {
         item.namaTipe.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
-    const handleAdd = () => {
-        if (!formData.namaTipe.trim()) {
-            console.log('Nama tipe tidak boleh kosong');
-            return;
-        }
+    const formAddTipe = useForm('post', '/master/types', {
+        code: '',
+        name: '',
+    }, {
 
-        const newId = Math.max(...dataTypes.map((item) => item.id)) + 1;
-        const newDataType: DataType = {
-            id: newId,
-            namaTipe: formData.namaTipe.trim(),
-        };
+    })
 
-        setDataTypes([...dataTypes, newDataType]);
-        setFormData({ namaTipe: '' });
-        setIsAddModalOpen(false);
-        console.log('Data tipe berhasil ditambahkan');
+    const handleSubmit = () => {
+        const uuid = crypto.randomUUID();
+        formAddTipe.setData('code', uuid);
+        formAddTipe.submit({
+            onSuccess: () => {
+                setIsAddModalOpen(false);
+                formAddTipe.reset();
+                toast.success('Data tipe berhasil ditambahkan');
+            },
+            onValidationError: (error) => {
+                console.log(error);
+
+                toast.error(error.data.message || 'Terjadi kesalahan validasi');
+             }
+        })
     };
 
     const handleEdit = () => {
@@ -178,17 +186,31 @@ export default function Page() {
                                                         </Label>
                                                         <Input
                                                             id="new-location-name"
-                                                            value={''}
+                                                            value={formAddTipe.data.name}
+                                                            onChange={(e) =>
+                                                                formAddTipe.setData(
+                                                                    'name',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                            className="mt-1 border-border bg-background"
                                                             placeholder="Masukkan nama lokasi"
                                                             onKeyDown={(e) =>
                                                                 e.key ===
                                                                     'Enter' &&
-                                                                ''
+                                                                handleSubmit()
                                                             }
                                                             onBlur={() => {
-                                                                '';
+                                                                formAddTipe.validate('name');
                                                             }}
                                                         />
+                                                        {formAddTipe.invalid('name') && (
+                                                            <p className="mt-1 text-sm text-destructive">
+                                                                {
+                                                                    formAddTipe.errors.name
+                                                                }
+                                                            </p>
+                                                        )}
                                                     </div>
                                                     <div className="flex justify-end gap-2">
                                                         <Button
@@ -201,7 +223,9 @@ export default function Page() {
                                                         >
                                                             Batal
                                                         </Button>
-                                                        <Button>Simpan</Button>
+                                                        <Button disabled={formAddTipe.processing} onClick={() => handleSubmit()}>
+                                                            {formAddTipe.processing ? 'Menyimpan...' : 'Simpan'}
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </DialogDescription>
