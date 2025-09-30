@@ -164,6 +164,17 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+                                    {orgunits.length === 0 && (
+                                        <TableRow className="">
+                                            <TableCell
+                                                colSpan={2}
+                                                className="text-center"
+                                            >
+                                                <div className='mt-6'>Data tidak ditemukan.</div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+
                                     {orgunits.map((bidang) => (
                                         <TableRow key={`bidang-${bidang.id}`}>
                                             <TableCell className="font-medium">

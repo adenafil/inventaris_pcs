@@ -17,5 +17,8 @@ class OrgUnit extends Model
         'code', 'name'
     ];
 
-
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'org_unit_id');
+    }
 }

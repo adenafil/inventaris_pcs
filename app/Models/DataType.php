@@ -15,4 +15,6 @@ class DataType extends Model
     protected $fillable = [
         'code',
         'name'
-    ];}
+    ];
+
+}
