@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, WhenVisible } from '@inertiajs/react';
+import { Head, Link, router, WhenVisible } from '@inertiajs/react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useDebounce } from 'react-use';
 import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -23,9 +25,25 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-
 export default function Page({ employees, pagination, page }: PageProps) {
     console.log({ employees, pagination, page });
+    const [searchTerm, setSearchTerm] = useState('');
+    const isFirstRender = useRef(true);
+
+    useDebounce(
+        () => {
+            if (!isFirstRender.current) {
+                router.get(
+                    '/master/employees',
+                    { search: searchTerm },
+                    { preserveState: true, replace: true },
+                );
+            }
+            isFirstRender.current = false;
+        },
+        500,
+        [searchTerm],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -56,8 +74,9 @@ export default function Page({ employees, pagination, page }: PageProps) {
                                 <div className="relative flex-1">
                                     <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                                     <Input
-                                        placeholder="Cari pegawai..."
-                                        value={'something'}
+                                        placeholder="Cari NIP, nama, email, atau bidang..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
                                         className="pl-10"
                                     />
                                 </div>
@@ -186,7 +205,7 @@ export default function Page({ employees, pagination, page }: PageProps) {
                                                         pagination.last_page ? (
                                                             <div className="p-2 text-center text-sm text-muted-foreground"></div>
                                                         ) : (
-                                                            <div className="p-2 w-full text-center text-sm text-muted-foreground">
+                                                            <div className="w-full p-2 text-center text-sm text-muted-foreground">
                                                                 Loading more
                                                                 data...
                                                             </div>
