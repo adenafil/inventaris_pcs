@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddDataTipeRequest;
+use App\Http\Requests\Admin\EditDataTipeRequest;
 use App\Models\DataType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -61,6 +62,15 @@ class DataTipeController extends Controller
         $dataType->delete();
 
         return redirect()->back()->with('success', 'Data tipe berhasil dihapus.');
+    }
+
+    public function update(EditDataTipeRequest $request, DataType $dataType)
+    {
+        $validatedData = $request->validated();
+
+        $dataType->update($validatedData);
+
+        return redirect()->back()->with('success', 'Data tipe berhasil diperbarui.');
     }
 
 }

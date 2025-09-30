@@ -26,29 +26,13 @@ import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { PageProps } from './_types';
+import { DataType, PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Data Tipe',
         href: '/master/types',
     },
-];
-
-interface DataType {
-    id: number;
-    namaTipe: string;
-}
-
-const initialData: DataType[] = [
-    { id: 1, namaTipe: 'String' },
-    { id: 2, namaTipe: 'Integer' },
-    { id: 3, namaTipe: 'Boolean' },
-    { id: 4, namaTipe: 'Date' },
-    { id: 5, namaTipe: 'Float' },
-    { id: 6, namaTipe: 'Text' },
-    { id: 7, namaTipe: 'JSON' },
-    { id: 8, namaTipe: 'Array' },
 ];
 
 export default function Page({ dataTypes, pagination, page }: PageProps) {
@@ -99,21 +83,26 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
     };
 
     const handleEdit = () => {
-        if (!formData.namaTipe.trim() || !editingItem) {
-            console.log('Nama tipe tidak boleh kosong');
-            return;
-        }
-
-        setDataTypes(
-            dataTypes.map((item) =>
-                item.id === editingItem.id
-                    ? { ...item, namaTipe: formData.namaTipe.trim() }
-                    : item,
-            ),
-        );
-        setFormData({ namaTipe: '' });
-        setEditingItem(null);
         setIsEditModalOpen(false);
+        router.patch(
+            `/master/types/${editingItem?.id}`,
+            {
+                name: editingItem?.name,
+            },
+            {
+                onSuccess: () => {
+                    setEditingItem(null);
+                    toast.success('Data tipe berhasil diperbarui');
+                },
+                onError: (error) => {
+                    console.log(error);
+                    toast.error(
+                        error.name ||
+                            'Terjadi kesalahan saat memperbarui data tipe',
+                    );
+                },
+            },
+        );
         console.log('Data tipe berhasil diperbarui');
     };
 
@@ -133,8 +122,10 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
 
     const openEditModal = (item: DataType) => {
         setEditingItem(item);
-        setFormData({ namaTipe: item.namaTipe });
         setIsEditModalOpen(true);
+        setEditingItem({
+            ...item,
+        });
     };
 
     const resetForm = () => {
@@ -414,45 +405,50 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
                                     Edit Data Tipe
                                 </DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="editNamaTipe"
-                                        className="text-card-foreground"
-                                    >
-                                        Nama Tipe
-                                    </Label>
-                                    <Input
-                                        id="editNamaTipe"
-                                        placeholder="Masukkan nama tipe..."
-                                        value={formData.namaTipe}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                namaTipe: e.target.value,
-                                            })
-                                        }
-                                        className="border-border bg-background"
-                                    />
+                            <DialogDescription asChild>
+                                <div>
+                                    <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label
+                                                htmlFor="editNamaTipe"
+                                                className="text-card-foreground"
+                                            >
+                                                Nama Tipe
+                                            </Label>
+                                            <Input
+                                                id="editNamaTipe"
+                                                placeholder="Masukkan nama tipe..."
+                                                value={editingItem?.name}
+                                                onChange={(e) =>
+                                                    setEditingItem({
+                                                        ...editingItem!,
+                                                        name: e.target.value,
+                                                    })
+                                                }
+                                                className="border-border bg-background mt-1"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => {
+                                                setIsEditModalOpen(false);
+                                                resetForm();
+                                            }}
+                                            className="border-border hover:bg-accent"
+                                        >
+                                            Batal
+                                        </Button>
+                                        <Button
+                                            onClick={handleEdit}
+                                            className="bg-primary hover:bg-primary/90"
+                                        >
+                                            Simpan
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setIsEditModalOpen(false);
-                                        resetForm();
-                                    }}
-                                    className="border-border hover:bg-accent"
-                                >
-                                    Batal
-                                </Button>
-                                <Button
-                                    onClick={handleEdit}
-                                    className="bg-primary hover:bg-primary/90"
-                                >
-                                    Simpan
-                                </Button>
-                            </div>
+                            </DialogDescription>
                         </DialogContent>
                     </Dialog>
                 </div>

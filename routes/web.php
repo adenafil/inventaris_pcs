@@ -48,6 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             HandlePrecognitiveRequests::class
         ]);
         Route::delete('/types/{dataType}', [DataTipeController::class, 'destroy'])->name('data-tipe.destroy');
+        Route::patch('/types/{dataType}', [DataTipeController::class, 'update'])->name('data-tipe.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
     });
 
 
