@@ -24,7 +24,8 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router, WhenVisible } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useDebounce } from 'react-use';
 import { toast } from 'sonner';
 import { DataType, PageProps } from './_types';
 
@@ -42,7 +43,9 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<DataType | null>(null);
-    const [formData, setFormData] = useState({ namaTipe: '' });
+
+    const [loading, setLoading] = useState(false);
+    const isFirstRender = useRef(true);
 
     const formAddTipe = useForm(
         'post',
@@ -90,9 +93,11 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
                 name: editingItem?.name,
             },
             {
+                onBefore: () => setLoading(true),
                 onSuccess: () => {
                     setEditingItem(null);
                     toast.success('Data tipe berhasil diperbarui');
+                    setLoading(false);
                 },
                 onError: (error) => {
                     console.log(error);
@@ -113,6 +118,10 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
                 router.visit('/master/types', {
                     onSuccess: () => {
                         toast.success('Data tipe berhasil dihapus');
+
+                        setTimeout(() => {
+                            toast.success('Data tipe berhasil dihapus');
+                        }, 1000);
                     },
                     preserveScroll: true,
                 });
@@ -129,9 +138,24 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
     };
 
     const resetForm = () => {
-        setFormData({ namaTipe: '' });
         setEditingItem(null);
     };
+
+    useDebounce(
+        () => {
+            if (!isFirstRender.current) {
+                router.get(
+                    '/master/types',
+                    { search: searchTerm },
+                    { preserveState: true, replace: true },
+                );
+            }
+            isFirstRender.current = false;
+        },
+        500,
+        [searchTerm],
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data Tipe" />
@@ -276,7 +300,7 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
                                                 Nama Tipe
                                             </TableHead>
                                             <TableHead className="text-right font-semibold text-muted-foreground">
-                                                Aksi
+                                                Actions
                                             </TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -425,7 +449,7 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
                                                         name: e.target.value,
                                                     })
                                                 }
-                                                className="border-border bg-background mt-1"
+                                                className="mt-1 border-border bg-background"
                                             />
                                         </div>
                                     </div>
@@ -441,10 +465,13 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
                                             Batal
                                         </Button>
                                         <Button
+                                            disabled={loading}
                                             onClick={handleEdit}
                                             className="bg-primary hover:bg-primary/90"
                                         >
-                                            Simpan
+                                            {loading
+                                                ? 'Menyimpan...'
+                                                : 'Simpan'}
                                         </Button>
                                     </div>
                                 </div>
