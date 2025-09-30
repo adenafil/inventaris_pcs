@@ -118,8 +118,17 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
     };
 
     const handleDelete = (id: number) => {
-        setDataTypes(dataTypes.filter((item) => item.id !== id));
-        console.log('Data tipe berhasil dihapus');
+        router.delete(`/master/types/${id}`, {
+            onSuccess: () => {
+                console.log('berhasil dihapus');
+                router.visit('/master/types', {
+                    onSuccess: () => {
+                        toast.success('Data tipe berhasil dihapus');
+                    },
+                    preserveScroll: true,
+                });
+            },
+        });
     };
 
     const openEditModal = (item: DataType) => {

@@ -56,4 +56,11 @@ class DataTipeController extends Controller
         return redirect()->back()->with('success', 'Data tipe berhasil ditambahkan.');
     }
 
+    public function destroy(DataType $dataType)
+    {
+        $dataType->delete();
+
+        return redirect()->back()->with('success', 'Data tipe berhasil dihapus.');
+    }
+
 }

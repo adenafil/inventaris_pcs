@@ -47,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/types', [DataTipeController::class, 'store'])->name('data-tipe.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::delete('/types/{dataType}', [DataTipeController::class, 'destroy'])->name('data-tipe.destroy');
     });
 
 
