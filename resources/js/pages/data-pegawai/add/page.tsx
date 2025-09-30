@@ -234,9 +234,9 @@ export default function Page({ orgUnits }: { orgUnits: OrgUnit[] }) {
                                                 Back
                                             </Link>
                                         </Button>
-                                        <Button className="flex items-center gap-2">
-                                            <Send className="h-4 w-4" />
-                                            Add Pegawai
+                                        <Button disabled={formAddEmployee.processing} className="flex items-center gap-2">
+                                            <Save className="h-4 w-4" />
+                                            {formAddEmployee.processing ? 'Menyimpan...' : 'Simpan'}
                                         </Button>
                                     </div>
                                 </div>

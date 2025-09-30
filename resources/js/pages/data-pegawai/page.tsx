@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, WhenVisible } from '@inertiajs/react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,42 +23,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const employees = [
-    {
-        id: 1,
-        nip: 'EMP001',
-        nama: 'Ahmad Wijaya',
-        email: 'ahmad.wijaya@company.com',
-        bidang: 'IT',
-        aktif: true,
-    },
-    {
-        id: 2,
-        nip: 'EMP002',
-        nama: 'Siti Nurhaliza',
-        email: 'siti.nurhaliza@company.com',
-        bidang: 'HR',
-        aktif: true,
-    },
-    {
-        id: 3,
-        nip: 'EMP003',
-        nama: 'Budi Santoso',
-        email: 'budi.santoso@company.com',
-        bidang: 'Finance',
-        aktif: false,
-    },
-    {
-        id: 4,
-        nip: 'EMP004',
-        nama: 'Maya Sari',
-        email: 'maya.sari@company.com',
-        bidang: 'Marketing',
-        aktif: true,
-    },
-];
 
-export default function Page() {
+export default function Page({ employees, pagination, page }: PageProps) {
+    console.log({ employees, pagination, page });
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Master Pegawai" />
@@ -133,23 +102,23 @@ export default function Page() {
                                                         {employee.nip}
                                                     </TableCell>
                                                     <TableCell>
-                                                        {employee.nama}
+                                                        {employee.name}
                                                     </TableCell>
                                                     <TableCell>
                                                         {employee.email}
                                                     </TableCell>
                                                     <TableCell>
-                                                        {employee.bidang}
+                                                        {employee.org_unit.name}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge
                                                             variant={
-                                                                employee.aktif
+                                                                employee.is_active
                                                                     ? 'default'
                                                                     : 'secondary'
                                                             }
                                                         >
-                                                            {employee.aktif
+                                                            {employee.is_active
                                                                 ? 'Aktif'
                                                                 : 'Tidak Aktif'}
                                                         </Badge>
@@ -177,6 +146,54 @@ export default function Page() {
                                                     </TableCell>
                                                 </TableRow>
                                             ))
+                                        )}
+
+                                        {pagination.current_page <
+                                            pagination.last_page && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={6}
+                                                    className="text-center"
+                                                >
+                                                    <WhenVisible
+                                                        always={
+                                                            pagination.current_page <
+                                                            pagination.last_page
+                                                        }
+                                                        params={{
+                                                            data: {
+                                                                page:
+                                                                    pagination.current_page <
+                                                                    pagination.last_page
+                                                                        ? pagination.current_page +
+                                                                          1
+                                                                        : pagination.current_page,
+                                                            },
+                                                            only: [
+                                                                'employees',
+                                                                'pagination',
+                                                            ],
+                                                        }}
+                                                        buffer={0.1}
+                                                        fallback={
+                                                            <p>
+                                                                data not found.
+                                                            </p>
+                                                        }
+                                                        as="div"
+                                                    >
+                                                        {pagination.current_page >=
+                                                        pagination.last_page ? (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                        ) : (
+                                                            <div className="p-2 w-full text-center text-sm text-muted-foreground">
+                                                                Loading more
+                                                                data...
+                                                            </div>
+                                                        )}
+                                                    </WhenVisible>
+                                                </TableCell>
+                                            </TableRow>
                                         )}
                                     </TableBody>
                                 </Table>

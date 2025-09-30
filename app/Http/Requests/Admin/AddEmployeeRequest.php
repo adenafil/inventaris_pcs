@@ -25,7 +25,7 @@ class AddEmployeeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nip' => 'required|string|max:20|unique:employees,nip',
+            'nip' => 'required|string|max:50|unique:employees,nip',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:employees,email',
             'org_unit_id' => 'required|exists:org_units,id',
