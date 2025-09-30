@@ -30,6 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/employees', [DataPegawaiController::class, 'index'])->name('employees.index');
         Route::get('/employees/create', [DataPegawaiController::class, 'create'])->name('employees.create');
+        Route::get('/employees/{employee}/edit', [DataPegawaiController::class, 'edit'])->name('employees.edit');
+        Route::patch('/employees/{employee}', [DataPegawaiController::class, 'update'])->name('employees.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
         Route::post('/employees', [DataPegawaiController::class, 'store'])->name('employees.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);

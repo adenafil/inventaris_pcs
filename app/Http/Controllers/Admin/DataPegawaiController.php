@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddEmployeeRequest;
+use App\Http\Requests\Admin\EditEmployeeRequest;
 use App\Models\Employee;
 use App\Models\OrgUnit;
 use Illuminate\Http\Request;
@@ -99,4 +100,30 @@ class DataPegawaiController extends Controller
 
         return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil ditambahkan.');
     }
+
+    public function edit(Employee $employee)
+    {
+        $orgUnits = OrgUnit::all();
+        return Inertia::render('data-pegawai/edit/page', [
+            'employee' => $employee->load('orgUnit'),
+            'orgUnits' => $orgUnits
+        ]);
+    }
+
+    public function update(EditEmployeeRequest $request, Employee $employee)
+    {
+        $validated = $request->validated();
+
+        $employee->update([
+            'id' => $employee->id,
+            'nip' => $validated['nip'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'org_unit_id' => $validated['org_unit_id'],
+            'is_active' => $validated['status'],
+        ]);
+
+        return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil diperbarui.');
+    }
+
 }

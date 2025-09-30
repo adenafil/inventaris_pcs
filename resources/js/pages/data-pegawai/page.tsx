@@ -145,7 +145,8 @@ export default function Page({ employees, pagination, page }: PageProps) {
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
                                                             <Link
-                                                                href={`/edit-pegawai/${employee.id}`}
+                                                                preserveScroll
+                                                                href={`/master/employees/${employee.id}/edit`}
                                                             >
                                                                 <Button
                                                                     variant="outline"
