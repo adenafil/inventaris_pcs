@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class AddDataLocationRequest extends FormRequest
+class EditDataTipeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,6 @@ class AddDataLocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|string|unique:data_locations,code',
             'name' => 'required|string|max:255',
         ];
     }

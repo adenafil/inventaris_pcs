@@ -1,7 +1,14 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -14,9 +21,13 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router, WhenVisible } from '@inertiajs/react';
+import { useForm } from 'laravel-precognition-react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useDebounce } from 'react-use';
+import { toast } from 'sonner';
+import { DataType, PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,86 +36,126 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface DataType {
-    id: number;
-    namaTipe: string;
-}
+export default function Page({ dataTypes, pagination, page }: PageProps) {
+    console.log({ dataTypes, pagination, page });
 
-const initialData: DataType[] = [
-    { id: 1, namaTipe: 'String' },
-    { id: 2, namaTipe: 'Integer' },
-    { id: 3, namaTipe: 'Boolean' },
-    { id: 4, namaTipe: 'Date' },
-    { id: 5, namaTipe: 'Float' },
-    { id: 6, namaTipe: 'Text' },
-    { id: 7, namaTipe: 'JSON' },
-    { id: 8, namaTipe: 'Array' },
-];
-
-export default function Page() {
-    const [dataTypes, setDataTypes] = useState<DataType[]>(initialData);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<DataType | null>(null);
-    const [formData, setFormData] = useState({ namaTipe: '' });
 
-    const filteredData = dataTypes.filter((item) =>
-        item.namaTipe.toLowerCase().includes(searchTerm.toLowerCase()),
+    const [loading, setLoading] = useState(false);
+    const isFirstRender = useRef(true);
+
+    const formAddTipe = useForm(
+        'post',
+        '/master/types',
+        {
+            code: '',
+            name: '',
+        },
+        {},
     );
 
-    const handleAdd = () => {
-        if (!formData.namaTipe.trim()) {
-            console.log('Nama tipe tidak boleh kosong');
-            return;
-        }
+    const handleSubmit = () => {
+        const uuid = crypto.randomUUID();
+        formAddTipe.setData('code', uuid);
+        formAddTipe.submit({
+            onSuccess: () => {
+                setIsAddModalOpen(false);
+                formAddTipe.reset();
 
-        const newId = Math.max(...dataTypes.map((item) => item.id)) + 1;
-        const newDataType: DataType = {
-            id: newId,
-            namaTipe: formData.namaTipe.trim(),
-        };
+                router.get(
+                    '/master/types',
+                    {},
+                    {
+                        preserveState: true,
+                    },
+                );
 
-        setDataTypes([...dataTypes, newDataType]);
-        setFormData({ namaTipe: '' });
-        setIsAddModalOpen(false);
-        console.log('Data tipe berhasil ditambahkan');
+                setTimeout(() => {
+                    toast.success('Data tipe berhasil ditambahkan');
+                }, 1000);
+            },
+            onValidationError: (error) => {
+                console.log(error);
+
+                toast.error(error.data.message || 'Terjadi kesalahan validasi');
+            },
+        });
     };
 
     const handleEdit = () => {
-        if (!formData.namaTipe.trim() || !editingItem) {
-            console.log('Nama tipe tidak boleh kosong');
-            return;
-        }
-
-        setDataTypes(
-            dataTypes.map((item) =>
-                item.id === editingItem.id
-                    ? { ...item, namaTipe: formData.namaTipe.trim() }
-                    : item,
-            ),
-        );
-        setFormData({ namaTipe: '' });
-        setEditingItem(null);
         setIsEditModalOpen(false);
+        router.patch(
+            `/master/types/${editingItem?.id}`,
+            {
+                name: editingItem?.name,
+            },
+            {
+                onBefore: () => setLoading(true),
+                onSuccess: () => {
+                    setEditingItem(null);
+                    toast.success('Data tipe berhasil diperbarui');
+                    setLoading(false);
+                },
+                onError: (error) => {
+                    console.log(error);
+                    toast.error(
+                        error.name ||
+                            'Terjadi kesalahan saat memperbarui data tipe',
+                    );
+                },
+            },
+        );
         console.log('Data tipe berhasil diperbarui');
     };
 
     const handleDelete = (id: number) => {
-        setDataTypes(dataTypes.filter((item) => item.id !== id));
-        console.log('Data tipe berhasil dihapus');
+        router.delete(`/master/types/${id}`, {
+            onSuccess: () => {
+                console.log('berhasil dihapus');
+                router.visit('/master/types', {
+                    onSuccess: () => {
+                        toast.success('Data tipe berhasil dihapus');
+
+                        setTimeout(() => {
+                            toast.success('Data tipe berhasil dihapus');
+                        }, 1000);
+                    },
+                    preserveScroll: true,
+                });
+            },
+        });
     };
 
     const openEditModal = (item: DataType) => {
         setEditingItem(item);
-        setFormData({ namaTipe: item.namaTipe });
         setIsEditModalOpen(true);
+        setEditingItem({
+            ...item,
+        });
     };
 
     const resetForm = () => {
-        setFormData({ namaTipe: '' });
         setEditingItem(null);
     };
+
+    useDebounce(
+        () => {
+            if (!isFirstRender.current) {
+                router.get(
+                    '/master/types',
+                    { search: searchTerm },
+                    { preserveState: true, replace: true },
+                );
+            }
+            isFirstRender.current = false;
+        },
+        500,
+        [searchTerm],
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data Tipe" />
@@ -123,91 +174,121 @@ export default function Page() {
 
                 <div className="max-w-8xl mx-auto w-full space-y-4 px-4 sm:px-6 lg:px-8">
                     {/* Search and Add Section */}
+                    {/* Data Table */}
                     <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-xl">
                                 Manajemen Data Tipe
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-                                <div className="relative max-w-md flex-1">
+
+                        <CardContent className="p-4">
+                            <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+                                <div className="relative flex-1">
                                     <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                                     <Input
-                                        placeholder="Cari data tipe..."
+                                        placeholder="Cari type..."
                                         value={searchTerm}
                                         onChange={(e) =>
                                             setSearchTerm(e.target.value)
                                         }
-                                        className="border-border bg-background pl-10"
+                                        className="pl-10"
                                     />
                                 </div>
 
-                                <Dialog
-                                    open={isAddModalOpen}
-                                    onOpenChange={setIsAddModalOpen}
-                                >
-                                    <DialogTrigger asChild>
-                                        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Tambah Data Tipe
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="border-border bg-card">
-                                        <DialogHeader>
-                                            <DialogTitle className="text-card-foreground">
-                                                Tambah Data Tipe Baru
-                                            </DialogTitle>
-                                        </DialogHeader>
-                                        <div className="space-y-4 py-4">
-                                            <div className="space-y-2">
-                                                <Label
-                                                    htmlFor="namaTipe"
-                                                    className="text-card-foreground"
-                                                >
-                                                    Nama Tipe
-                                                </Label>
-                                                <Input
-                                                    id="namaTipe"
-                                                    placeholder="Masukkan nama tipe..."
-                                                    value={formData.namaTipe}
-                                                    onChange={(e) =>
-                                                        setFormData({
-                                                            namaTipe:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                    className="border-border bg-background"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => {
-                                                    setIsAddModalOpen(false);
-                                                    resetForm();
-                                                }}
-                                                className="border-border hover:bg-accent"
-                                            >
-                                                Batal
+                                {/* Add Data Modal */}
+                                <div>
+                                    <Dialog
+                                        open={isAddModalOpen}
+                                        onOpenChange={setIsAddModalOpen}
+                                    >
+                                        <DialogTrigger asChild>
+                                            <Button className="flex w-full items-center gap-2">
+                                                <Plus className="h-4 w-4" />
+                                                Tambah
                                             </Button>
-                                            <Button
-                                                onClick={handleAdd}
-                                                className="bg-primary hover:bg-primary/90"
-                                            >
-                                                Simpan
-                                            </Button>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>
+                                                    Tambah Data Tipe Baru
+                                                </DialogTitle>
+                                            </DialogHeader>
+                                            <DialogDescription asChild>
+                                                <div className="space-y-4 pt-4">
+                                                    <div>
+                                                        <Label htmlFor="new-location-name">
+                                                            Nama
+                                                        </Label>
+                                                        <Input
+                                                            id="new-location-name"
+                                                            value={
+                                                                formAddTipe.data
+                                                                    .name
+                                                            }
+                                                            onChange={(e) =>
+                                                                formAddTipe.setData(
+                                                                    'name',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            className="mt-1 border-border bg-background"
+                                                            placeholder="Masukkan nama lokasi"
+                                                            onKeyDown={(e) =>
+                                                                e.key ===
+                                                                    'Enter' &&
+                                                                handleSubmit()
+                                                            }
+                                                            onBlur={() => {
+                                                                formAddTipe.validate(
+                                                                    'name',
+                                                                );
+                                                            }}
+                                                        />
+                                                        {formAddTipe.invalid(
+                                                            'name',
+                                                        ) && (
+                                                            <p className="mt-1 text-sm text-destructive">
+                                                                {
+                                                                    formAddTipe
+                                                                        .errors
+                                                                        .name
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setIsAddModalOpen(
+                                                                    false,
+                                                                );
+                                                            }}
+                                                        >
+                                                            Batal
+                                                        </Button>
+                                                        <Button
+                                                            disabled={
+                                                                formAddTipe.processing
+                                                            }
+                                                            onClick={() =>
+                                                                handleSubmit()
+                                                            }
+                                                        >
+                                                            {formAddTipe.processing
+                                                                ? 'Menyimpan...'
+                                                                : 'Simpan'}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </DialogDescription>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
                             </div>
-                        </CardContent>
-                    </Card>
 
-                    {/* Data Table */}
-                    <Card className="border-border/50">
-                        <CardContent className="p-0">
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
@@ -219,12 +300,12 @@ export default function Page() {
                                                 Nama Tipe
                                             </TableHead>
                                             <TableHead className="text-right font-semibold text-muted-foreground">
-                                                Aksi
+                                                Actions
                                             </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredData.length === 0 ? (
+                                        {dataTypes.length === 0 ? (
                                             <TableRow>
                                                 <TableCell
                                                     colSpan={3}
@@ -236,7 +317,7 @@ export default function Page() {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            filteredData.map((item) => (
+                                            dataTypes.map((item) => (
                                                 <TableRow
                                                     key={item.id}
                                                     className="border-border/50 hover:bg-muted/30"
@@ -250,7 +331,7 @@ export default function Page() {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="font-medium text-card-foreground">
-                                                        {item.namaTipe}
+                                                        {item.name}
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
@@ -283,6 +364,54 @@ export default function Page() {
                                                 </TableRow>
                                             ))
                                         )}
+
+                                        {pagination.current_page <
+                                            pagination.last_page && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={2}
+                                                    className="text-center"
+                                                >
+                                                    <WhenVisible
+                                                        always={
+                                                            pagination.current_page <
+                                                            pagination.last_page
+                                                        }
+                                                        params={{
+                                                            data: {
+                                                                page:
+                                                                    pagination.current_page <
+                                                                    pagination.last_page
+                                                                        ? pagination.current_page +
+                                                                          1
+                                                                        : pagination.current_page,
+                                                            },
+                                                            only: [
+                                                                'dataTypes',
+                                                                'pagination',
+                                                            ],
+                                                        }}
+                                                        buffer={0.1}
+                                                        fallback={
+                                                            <p>
+                                                                data not found.
+                                                            </p>
+                                                        }
+                                                        as="div"
+                                                    >
+                                                        {pagination.current_page >=
+                                                        pagination.last_page ? (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                        ) : (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground">
+                                                                Loading more
+                                                                data...
+                                                            </div>
+                                                        )}
+                                                    </WhenVisible>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -300,45 +429,53 @@ export default function Page() {
                                     Edit Data Tipe
                                 </DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="editNamaTipe"
-                                        className="text-card-foreground"
-                                    >
-                                        Nama Tipe
-                                    </Label>
-                                    <Input
-                                        id="editNamaTipe"
-                                        placeholder="Masukkan nama tipe..."
-                                        value={formData.namaTipe}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                namaTipe: e.target.value,
-                                            })
-                                        }
-                                        className="border-border bg-background"
-                                    />
+                            <DialogDescription asChild>
+                                <div>
+                                    <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label
+                                                htmlFor="editNamaTipe"
+                                                className="text-card-foreground"
+                                            >
+                                                Nama Tipe
+                                            </Label>
+                                            <Input
+                                                id="editNamaTipe"
+                                                placeholder="Masukkan nama tipe..."
+                                                value={editingItem?.name}
+                                                onChange={(e) =>
+                                                    setEditingItem({
+                                                        ...editingItem!,
+                                                        name: e.target.value,
+                                                    })
+                                                }
+                                                className="mt-1 border-border bg-background"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => {
+                                                setIsEditModalOpen(false);
+                                                resetForm();
+                                            }}
+                                            className="border-border hover:bg-accent"
+                                        >
+                                            Batal
+                                        </Button>
+                                        <Button
+                                            disabled={loading}
+                                            onClick={handleEdit}
+                                            className="bg-primary hover:bg-primary/90"
+                                        >
+                                            {loading
+                                                ? 'Menyimpan...'
+                                                : 'Simpan'}
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setIsEditModalOpen(false);
-                                        resetForm();
-                                    }}
-                                    className="border-border hover:bg-accent"
-                                >
-                                    Batal
-                                </Button>
-                                <Button
-                                    onClick={handleEdit}
-                                    className="bg-primary hover:bg-primary/90"
-                                >
-                                    Simpan
-                                </Button>
-                            </div>
+                            </DialogDescription>
                         </DialogContent>
                     </Dialog>
                 </div>

@@ -48,6 +48,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Page({ locations, pagination, page }: PageProps) {
     console.log({ locations, pagination, page });
     const [loading, setLoading] = useState(false);
+    const isFirstRender = useRef(true);
+
     const formAddLocation = useForm('post', '/master/locations', {
         code: '',
         name: '',
@@ -58,7 +60,6 @@ export default function Page({ locations, pagination, page }: PageProps) {
     const [editingLocation, setEditingLocation] = useState<Location | null>(
         null,
     );
-    const isFirstRender = useRef(true);
 
     const handleSubmit = () => {
         const uuid = crypto.randomUUID();
