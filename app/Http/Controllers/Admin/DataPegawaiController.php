@@ -126,4 +126,11 @@ class DataPegawaiController extends Controller
         return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil diperbarui.');
     }
 
+    public function destroy(Employee $employee)
+    {
+        $employee->delete();
+
+        return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil dihapus.');
+    }
+
 }

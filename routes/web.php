@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/employees', [DataPegawaiController::class, 'store'])->name('employees.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::delete('/employees/{employee}', [DataPegawaiController::class, 'destroy'])->name('employees.destroy');
 
         Route::get('/locations', [DataLocationController::class, 'index'])->name('locations.index');
         Route::post('/locations', [DataLocationController::class, 'store'])->name('locations.store')->middleware([
