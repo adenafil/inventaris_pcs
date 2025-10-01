@@ -2,12 +2,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useForm } from 'laravel-precognition-react';
 import { Save } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { DataType } from '../_types';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -17,38 +26,39 @@ const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Add New Model',
         href: '/master/models/create',
-    }
+    },
 ];
 
-export default function Page() {
-    const [formData, setFormData] = useState({
-        tipe: '',
+export default function Page({ types }: {
+    types: DataType[];
+}) {
+    console.log({types});
+
+    const formAddModel = useForm('post', '/master/models', {
+        type_id: '',
         brand: '',
         model: '',
+        details: '',
     });
-    const [isLoading, setIsLoading] = useState(false);
 
-    const handleInputChange = (field: string, value: string) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-    };
+    const handleSubmit = () => {
+        formAddModel.submit({
+            onSuccess: () => {
+                router.visit('/master/models', {
+                    method: 'get',
+                    preserveState: true,
+                    preserveScroll: true,
+                });
 
-    const handleSave = async () => {
-        // Validate form
-        if (!formData.tipe || !formData.brand || !formData.model) {
-            alert('Please fill in all fields');
-            return;
-        }
-
-        setIsLoading(true);
-
-        // Simulate API call
-        setTimeout(() => {
-            console.log('Saving model:', formData);
-            setIsLoading(false);
-        }, 1000);
+                setTimeout(() => {
+                    formAddModel.reset();
+                    toast.success('Model added successfully!');
+                }, 1000);
+            },
+            onValidationError: (errors) => {
+                console.error('Validation errors:', errors);
+            }
+        });
     };
 
     return (
@@ -83,35 +93,30 @@ export default function Page() {
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Select
-                                    value={formData.tipe}
+                                    value={formAddModel.data.type_id}
                                     onValueChange={(value) =>
-                                        handleInputChange('tipe', value)
+                                        formAddModel.setData('type_id', value)
                                     }
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select device type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Smartphone">
-                                            Smartphone
-                                        </SelectItem>
-                                        <SelectItem value="Laptop">
-                                            Laptop
-                                        </SelectItem>
-                                        <SelectItem value="Tablet">
-                                            Tablet
-                                        </SelectItem>
-                                        <SelectItem value="Desktop">
-                                            Desktop
-                                        </SelectItem>
-                                        <SelectItem value="Smartwatch">
-                                            Smartwatch
-                                        </SelectItem>
-                                        <SelectItem value="Headphones">
-                                            Headphones
-                                        </SelectItem>
+                                        {types.map((type) => (
+                                            <SelectItem
+                                                key={type.id}
+                                                value={type.id.toString()}
+                                            >
+                                                {type.name}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
+                                {formAddModel.invalid('type_id') && (
+                                    <p className="text-sm text-destructive">
+                                        {formAddModel.errors.type_id}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -125,15 +130,23 @@ export default function Page() {
                                 <Input
                                     id="brand"
                                     placeholder="e.g., Samsung, Apple, Dell"
-                                    value={formData.brand}
+                                    value={formAddModel.data.brand}
                                     onChange={(e) =>
-                                        handleInputChange(
+                                        formAddModel.setData(
                                             'brand',
                                             e.target.value,
                                         )
                                     }
+                                    onBlur={() =>
+                                        formAddModel.validate('brand')
+                                    }
                                     className="w-full"
                                 />
+                                {formAddModel.invalid('brand') && (
+                                    <p className="text-sm text-destructive">
+                                        {formAddModel.errors.brand}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -147,30 +160,38 @@ export default function Page() {
                                 <Input
                                     id="model"
                                     placeholder="e.g., Galaxy S24, iPhone 15 Pro, XPS 13"
-                                    value={formData.model}
+                                    value={formAddModel.data.model}
                                     onChange={(e) =>
-                                        handleInputChange(
+                                        formAddModel.setData(
                                             'model',
                                             e.target.value,
                                         )
                                     }
+                                    onBlur={() =>
+                                        formAddModel.validate('model')
+                                    }
                                     className="w-full"
                                 />
+                                {formAddModel.invalid('model') && (
+                                    <p className="text-sm text-destructive">
+                                        {formAddModel.errors.model}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-4 pt-4">
                                 <Button
-                                    onClick={handleSave}
-                                    disabled={isLoading}
+                                    onClick={handleSubmit}
+                                    disabled={formAddModel.processing}
                                     className="flex items-center gap-2"
                                 >
                                     <Save className="h-4 w-4" />
-                                    {isLoading ? 'Saving...' : 'Save'}
+                                    {formAddModel.processing
+                                        ? 'Saving...'
+                                        : 'Save'}
                                 </Button>
-                                <Link href="/">
-                                    <Button variant="outline">
-                                        Back to List
-                                    </Button>
+                                <Link href="/master/models">
+                                    <Button variant="outline">Back</Button>
                                 </Link>
                             </div>
                         </CardContent>
