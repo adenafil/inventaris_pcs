@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DataAssetController;
 use App\Http\Controllers\Admin\DataBidangController;
 use App\Http\Controllers\Admin\DataLocationController;
 use App\Http\Controllers\Admin\DataModelController;
@@ -67,10 +68,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/types/{dataType}', [DataTipeController::class, 'update'])->name('data-tipe.update')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+
+        Route::get('/assets', [DataAssetController::class, 'index'])->name('assets.index');
+        Route::get('/assets/create', [DataAssetController::class, 'create'])->name('assets.create');
+        Route::get('/assets/view', [DataAssetController::class, 'view'])->name('assets.view');
     });
-
-
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
