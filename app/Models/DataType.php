@@ -17,4 +17,9 @@ class DataType extends Model
         'name'
     ];
 
+    public function assetModels()
+    {
+        return $this->hasMany(AssetModel::class, 'type_id');
+    }
+
 }

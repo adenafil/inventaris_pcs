@@ -15,6 +15,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -35,18 +36,11 @@ const dummyModels = [
     { id: 8, tipe: 'Tablet', brand: 'Samsung', model: 'Galaxy Tab S9' },
 ];
 
-export default function Page() {
+export default function Page({ assetModels, pagination, page }: PageProps) {
+    console.log({ assetModels, pagination, page });
+
     const [models, setModels] = useState(dummyModels);
     const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredModels = models.filter((model) => {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-            model.model.toLowerCase().includes(searchLower) ||
-            model.brand.toLowerCase().includes(searchLower) ||
-            model.tipe.toLowerCase().includes(searchLower)
-        );
-    });
 
     const handleDelete = (id: number) => {
         setModels(models.filter((model) => model.id !== id));
@@ -73,7 +67,7 @@ export default function Page() {
                     <Card>
                         <CardHeader>
                             <CardTitle>
-                                Model List ({filteredModels.length} items)
+                                Model List ({assetModels.length} items)
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -92,7 +86,14 @@ export default function Page() {
 
                                 {/* Add Data Modal */}
                                 <div className="flex items-center space-x-2">
-                                    <Button onClick={() => router.visit('/master/models/create')} className="flex items-center gap-2 w-full md:w-auto">
+                                    <Button
+                                        onClick={() =>
+                                            router.visit(
+                                                '/master/models/create',
+                                            )
+                                        }
+                                        className="flex w-full items-center gap-2 md:w-auto"
+                                    >
                                         <Plus className="h-4 w-4" />
                                         Tambah
                                     </Button>
@@ -115,7 +116,7 @@ export default function Page() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredModels.length === 0 ? (
+                                        {assetModels.length === 0 ? (
                                             <TableRow>
                                                 <TableCell
                                                     colSpan={5}
@@ -126,14 +127,14 @@ export default function Page() {
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            filteredModels.map((model) => (
+                                            assetModels.map((model) => (
                                                 <TableRow key={model.id}>
                                                     <TableCell className="font-medium">
                                                         {model.id}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge variant="secondary">
-                                                            {model.tipe}
+                                                            {model.type.name}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="font-medium">

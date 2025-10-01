@@ -18,4 +18,9 @@ class AssetModel extends Model
         'model',
         'details'
     ];
+
+    public function type()
+    {
+        return $this->belongsTo(DataType::class, 'type_id');
+    }
 }

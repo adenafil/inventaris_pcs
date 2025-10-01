@@ -14,7 +14,6 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { DataType } from '../_types';
 import { toast } from 'sonner';
 
