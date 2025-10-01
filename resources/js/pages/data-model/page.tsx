@@ -12,10 +12,11 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, WhenVisible } from '@inertiajs/react';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { PageProps } from './_types';
+import { useDebounce } from 'react-use';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,27 +25,31 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Dummy data
-const dummyModels = [
-    { id: 1, tipe: 'Smartphone', brand: 'Samsung', model: 'Galaxy S24' },
-    { id: 2, tipe: 'Smartphone', brand: 'Apple', model: 'iPhone 15 Pro' },
-    { id: 3, tipe: 'Laptop', brand: 'Dell', model: 'XPS 13' },
-    { id: 4, tipe: 'Laptop', brand: 'MacBook', model: 'Air M2' },
-    { id: 5, tipe: 'Tablet', brand: 'iPad', model: 'Pro 12.9' },
-    { id: 6, tipe: 'Smartphone', brand: 'Google', model: 'Pixel 8' },
-    { id: 7, tipe: 'Laptop', brand: 'Lenovo', model: 'ThinkPad X1' },
-    { id: 8, tipe: 'Tablet', brand: 'Samsung', model: 'Galaxy Tab S9' },
-];
 
 export default function Page({ assetModels, pagination, page }: PageProps) {
     console.log({ assetModels, pagination, page });
 
-    const [models, setModels] = useState(dummyModels);
     const [searchTerm, setSearchTerm] = useState('');
-
+    const isFirstRender = useRef(true);
     const handleDelete = (id: number) => {
-        setModels(models.filter((model) => model.id !== id));
     };
+
+    useDebounce(
+        () => {
+            if (!isFirstRender.current) {
+                router.get(
+                    '/master/models',
+                    { search: searchTerm },
+                    { preserveState: true, replace: true },
+                );
+            }
+            isFirstRender.current = false;
+        },
+        500,
+        [searchTerm],
+    );
+
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -172,6 +177,54 @@ export default function Page({ assetModels, pagination, page }: PageProps) {
                                                     </TableCell>
                                                 </TableRow>
                                             ))
+                                        )}
+
+                                        {pagination.current_page <
+                                            pagination.last_page && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={6}
+                                                    className="text-center"
+                                                >
+                                                    <WhenVisible
+                                                        always={
+                                                            pagination.current_page <
+                                                            pagination.last_page
+                                                        }
+                                                        params={{
+                                                            data: {
+                                                                page:
+                                                                    pagination.current_page <
+                                                                    pagination.last_page
+                                                                        ? pagination.current_page +
+                                                                          1
+                                                                        : pagination.current_page,
+                                                            },
+                                                            only: [
+                                                                'assetModels',
+                                                                'pagination',
+                                                            ],
+                                                        }}
+                                                        buffer={0.1}
+                                                        fallback={
+                                                            <p>
+                                                                data not found.
+                                                            </p>
+                                                        }
+                                                        as="div"
+                                                    >
+                                                        {pagination.current_page >=
+                                                        pagination.last_page ? (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                        ) : (
+                                                            <div className="w-full p-2 text-center text-sm text-muted-foreground">
+                                                                Loading more
+                                                                data...
+                                                            </div>
+                                                        )}
+                                                    </WhenVisible>
+                                                </TableCell>
+                                            </TableRow>
                                         )}
                                     </TableBody>
                                 </Table>
