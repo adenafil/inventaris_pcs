@@ -25,7 +25,7 @@ class AddDataLocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|string|unique:data_locations,code',
+            'code' => 'required|string|unique:locations,code',
             'name' => 'required|string|max:255',
         ];
     }

@@ -81,7 +81,7 @@ export default function Page({ employees, pagination, page }: PageProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-2xl font-bold">
-                                Daftar Pegawai
+                                Daftar Pegawai ({employees.length})
                             </CardTitle>
                         </CardHeader>
                         <CardContent>

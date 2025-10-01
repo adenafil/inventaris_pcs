@@ -157,7 +157,7 @@ export default function Page({ locations, pagination, page }: PageProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-2xl font-bold">
-                                Daftar Lokasi
+                                Daftar Lokasi ({locations.length})
                             </CardTitle>
                         </CardHeader>
                         <CardContent>

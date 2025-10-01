@@ -144,7 +144,7 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-2xl font-bold">
-                                Master Bidang
+                                Master Bidang ({orgunits.length})
                             </CardTitle>
                             <AddDialogDataBidang
                                 isModalOpen={isModalOpen}
@@ -224,9 +224,7 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                                                     will
                                                                     permanently
                                                                     delete your
-                                                                    account and
-                                                                    remove your
-                                                                    data from
+                                                                    bidang from
                                                                     our servers.
                                                                 </AlertDialogDescription>
                                                             </AlertDialogHeader>

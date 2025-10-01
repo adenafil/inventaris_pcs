@@ -11,63 +11,65 @@ use Inertia\Inertia;
 
 class DataLocationController extends Controller
 {
-    public function index(Request $request)
-    {
-        $search = $request->get('search', '');
-        $locations = $search ? Location::where('name', 'like', '%' . $search . '%')->paginate(20)->withQueryString()
-            : Location::paginate(20);
-        $page = request()->get('page', 1);
-        if (!request()->header('X-inertia')) {
-            $allResults = collect();
+public function index(Request $request)
+{
+    $search = $request->get('search', '');
+    $locations = $search ? Location::where('name', 'like', '%' . $search . '%')->paginate(20)->withQueryString()
+        : Location::paginate(20);
+    $page = request()->get('page', 1);
+    if (!request()->header('X-inertia')) {
+        $allResults = collect();
 
-            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
-                $pageResults = $search ? Location::where('name', 'like', '%' . $search . '%')->paginate(20, ['*'], 'page', $initialPage)
-                    : Location::paginate(20, ['*'], 'page', $initialPage);
-                $allResults = $allResults->concat($pageResults->items());
-            }
-
-            return Inertia::render('data-lokasi/page', [
-                'locations' => $allResults,
-                'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
-                    $allResults,
-                    $locations->total(),
-                    $locations->perPage(),
-                    $page,
-                    ['path' => request()->url(), 'query' => request()->query()]
-                ),
-                'page' => $page,
-            ]);
+        for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
+            $pageResults = $search ? Location::where('name', 'like', '%' . $search . '%')->paginate(20, ['*'], 'page', $initialPage)
+                : Location::paginate(20, ['*'], 'page', $initialPage);
+            $allResults = $allResults->concat($pageResults->items());
         }
 
         return Inertia::render('data-lokasi/page', [
-            'locations' => Inertia::merge(fn() => $locations->items()),
-            'pagination' => $locations,
+            'locations' => $allResults,
+            'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
+                $allResults,
+                $locations->total(),
+                $locations->perPage(),
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            ),
             'page' => $page,
         ]);
     }
 
-    public function store(AddDataLocationRequest $request)
-    {
-        $validatedData = $request->validated();
+    return Inertia::render('data-lokasi/page', [
+        'locations' => Inertia::merge(fn() => $locations->items()),
+        'pagination' => $locations,
+        'page' => $page,
+    ]);
+}
 
-        Location::create($validatedData);
+public function store(AddDataLocationRequest $request)
+{
+    $validatedData = $request->validated();
 
-        return redirect()->back()->with('success', 'Data lokasi berhasil ditambahkan.');
-    }
+    Location::create($validatedData);
 
-    public function destroy(Location $location)
-    {
-        $location->delete();
+    return redirect()->back()->with('success', 'Data lokasi berhasil ditambahkan.');
+}
 
-        return redirect()->back()->with('success', 'Data lokasi berhasil dihapus.');
-    }
+public function destroy(Location $location)
+{
+    $location->delete();
 
-    public function update(EditDataLocationRequest $request, Location $location)
-    {
-        $validatedData = $request->validated();
+    return redirect()->back()->with('success', 'Data lokasi berhasil dihapus.');
+}
 
-        $location->update($validatedData);
+public function update(EditDataLocationRequest $request, Location $location)
+{
+    dd($request->all());
 
-        return redirect()->back()->with('success', 'Data lokasi berhasil diperbarui.');
-    }
+    $validatedData = $request->validated();
+
+    $location->update($validatedData);
+
+    return redirect()->back()->with('success', 'Data lokasi berhasil diperbarui.');
+}
 }

@@ -178,7 +178,8 @@ export default function Page({ dataTypes, pagination, page }: PageProps) {
                     <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-xl">
-                                Manajemen Data Tipe
+                                Manajemen Data Tipe (
+                                {dataTypes.length} item)
                             </CardTitle>
                         </CardHeader>
 
