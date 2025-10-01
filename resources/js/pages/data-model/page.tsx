@@ -146,7 +146,7 @@ export default function Page({ assetModels, pagination, page }: PageProps) {
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <Link
-                                                                href={`/edit-model/${model.id}`}
+                                                                href={`/master/models/${model.id}/edit`}
                                                             >
                                                                 <Button
                                                                     variant="outline"

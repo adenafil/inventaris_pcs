@@ -53,6 +53,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/models', [DataModelController::class, 'store'])->name('data-model.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::get('/models/{assetModel}/edit', [DataModelController::class, 'edit'])->name('data-model.edit');
+        Route::patch('/models/{assetModel}', [DataModelController::class, 'update'])->name('data-model.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
 
         Route::get('/types', [DataTipeController::class, 'index'])->name('data-tipe.index');
         Route::post('/types', [DataTipeController::class, 'store'])->name('data-tipe.store')->middleware([

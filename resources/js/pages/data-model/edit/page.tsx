@@ -14,7 +14,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Save } from 'lucide-react';
-import { DataType } from '../_types';
+import { AssetModel, DataType } from '../_types';
 import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -23,20 +23,18 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/master/models',
     },
     {
-        title: 'Add New Model',
+        title: 'Edit Model',
         href: '/master/models/create',
     },
 ];
 
-export default function Page({ types }: {
-    types: DataType[];
-}) {
-    console.log({types});
+export default function Page({ types, assetModel }: { types: DataType[], assetModel: AssetModel }) {
+    console.log({ types, assetModel });
 
-    const formAddModel = useForm('post', '/master/models', {
-        type_id: '',
-        brand: '',
-        model: '',
+    const formAddModel = useForm('post', `/master/models/${assetModel.id}?_method=PATCH`, {
+        type_id: assetModel.type_id,
+        brand: assetModel.brand,
+        model: assetModel.model,
         details: '',
     });
 
@@ -51,12 +49,12 @@ export default function Page({ types }: {
 
                 setTimeout(() => {
                     formAddModel.reset();
-                    toast.success('Model added successfully!');
+                    toast.success('Model updated successfully!');
                 }, 1000);
             },
             onValidationError: (errors) => {
                 console.error('Validation errors:', errors);
-            }
+            },
         });
     };
 
@@ -68,11 +66,10 @@ export default function Page({ types }: {
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
                     <div className="">
                         <h1 className="mb-2 text-3xl font-bold text-gray-900">
-                            Add Data Model
+                            Edit Data Model
                         </h1>
                         <p className="text-gray-600">
-                            Use this form to add a new model. Ensure all fields
-                            are filled out correctly.
+                            Use this form to edit the details of an existing model. Ensure all fields are filled out correctly.
                         </p>
                     </div>
                 </main>
@@ -92,7 +89,7 @@ export default function Page({ types }: {
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Select
-                                    value={formAddModel.data.type_id}
+                                    value={formAddModel.data.type_id.toString()}
                                     onValueChange={(value) =>
                                         formAddModel.setData('type_id', value)
                                     }

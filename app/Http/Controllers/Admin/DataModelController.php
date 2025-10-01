@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddAssetModelRequest;
+use App\Http\Requests\Admin\EditAssetModelRequest;
 use App\Models\AssetModel;
 use App\Models\DataType;
 use Illuminate\Http\Request;
@@ -98,4 +99,26 @@ class DataModelController extends Controller
         return redirect()->route('data-model.index')->with('success', 'Asset model created successfully.');
 
     }
+
+    public function edit(AssetModel $assetModel)
+    {
+        $types = DataType::all();
+        return Inertia::render('data-model/edit/page', [
+            'assetModel' => $assetModel,
+            'types' => $types
+        ]);
+    }
+
+    public function update(EditAssetModelRequest $request, AssetModel $assetModel)
+    {
+        $validatedData = $request->validated();
+        $assetModel->type_id = $validatedData['type_id'];
+        $assetModel->brand = $validatedData['brand'];
+        $assetModel->model = $validatedData['model'];
+        $assetModel->details = $validatedData['details'] ?? null;
+        $assetModel->save();
+
+        return redirect()->route('data-model.index')->with('success', 'Asset model updated successfully.');
+    }
+
 }
