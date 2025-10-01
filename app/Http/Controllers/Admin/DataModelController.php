@@ -121,4 +121,10 @@ class DataModelController extends Controller
         return redirect()->route('data-model.index')->with('success', 'Asset model updated successfully.');
     }
 
+    public function destroy(AssetModel $assetModel)
+    {
+        $assetModel->delete();
+        return redirect()->route('data-model.index')->with('success', 'Asset model deleted successfully.');
+    }
+
 }

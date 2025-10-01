@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/models/{assetModel}', [DataModelController::class, 'update'])->name('data-model.update')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::delete('/models/{assetModel}', [DataModelController::class, 'destroy'])->name('data-model.destroy');
 
         Route::get('/types', [DataTipeController::class, 'index'])->name('data-tipe.index');
         Route::post('/types', [DataTipeController::class, 'store'])->name('data-tipe.store')->middleware([

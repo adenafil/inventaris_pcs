@@ -17,6 +17,8 @@ import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { PageProps } from './_types';
 import { useDebounce } from 'react-use';
+import { toast } from 'sonner';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,7 +33,31 @@ export default function Page({ assetModels, pagination, page }: PageProps) {
 
     const [searchTerm, setSearchTerm] = useState('');
     const isFirstRender = useRef(true);
+    const [loading, setLoading] = useState(false);
+
     const handleDelete = (id: number) => {
+        console.log('Deleting model with ID:', id);
+
+        router.delete(`/master/models/${id}`, {
+            onBefore: () => {
+                setLoading(true);
+            },
+            onSuccess: () => {
+                router.visit('/master/models', {
+                    method: 'get',
+                    preserveState: true,
+                    preserveScroll: true,
+                });
+
+                setTimeout(() => {
+                    toast.success('Model deleted successfully!');
+                    setLoading(false);
+                }, 1000);
+            },
+            onError: (error) => {
+                console.error('Delete error:', error);
+            },
+        });
     };
 
     useDebounce(
@@ -161,18 +187,74 @@ export default function Page({ assetModels, pagination, page }: PageProps) {
                                                                     <Edit className="h-4 w-4" />
                                                                 </Button>
                                                             </Link>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="h-8 w-8 bg-transparent p-0 text-destructive hover:text-destructive"
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        model.id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger
+                                                                    asChild
+                                                                >
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-8 w-8 bg-transparent p-0 text-destructive hover:text-destructive"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>
+                                                                            Are
+                                                                            you
+                                                                            sure
+                                                                            you
+                                                                            want
+                                                                            to
+                                                                            delete
+                                                                            this
+                                                                            model?
+                                                                        </AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            This
+                                                                            action
+                                                                            cannot
+                                                                            be
+                                                                            undone.
+                                                                            This
+                                                                            will
+                                                                            permanently
+                                                                            delete
+                                                                            your
+                                                                            model
+                                                                            data
+                                                                            from
+                                                                            our
+                                                                            servers.
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>
+                                                                            Cancel
+                                                                        </AlertDialogCancel>
+                                                                        <Button
+                                                                            variant="destructive"
+                                                                            size="sm"
+                                                                            disabled={
+                                                                                loading
+                                                                            }
+                                                                            className="flex items-center gap-1"
+                                                                            onClick={() =>
+                                                                                handleDelete(
+                                                                                    model.id,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <Trash2 className="h-3 w-3" />
+                                                                            {loading
+                                                                                ? 'Loading...'
+                                                                                : 'Delete'}
+                                                                        </Button>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
