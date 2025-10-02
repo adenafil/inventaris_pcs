@@ -23,4 +23,9 @@ class AssetModel extends Model
     {
         return $this->belongsTo(DataType::class, 'type_id');
     }
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class, 'model_id');
+    }
 }

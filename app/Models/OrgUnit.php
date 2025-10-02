@@ -21,4 +21,14 @@ class OrgUnit extends Model
     {
         return $this->hasMany(Employee::class, 'org_unit_id');
     }
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class, 'org_unit_id');
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'org_unit_id');
+    }
 }

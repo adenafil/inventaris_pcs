@@ -17,4 +17,9 @@ class Location extends Model
         'code',
         'name'
     ];
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class, 'location_id');
+    }
 }

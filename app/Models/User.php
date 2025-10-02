@@ -51,4 +51,27 @@ class User extends Authenticatable
             'is_active' => 'boolean',
         ];
     }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'uploaded_by');
+    }
+
+    public function orgUnit()
+    {
+        return $this->belongsTo(OrgUnit::class, 'org_unit_id');
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'created_by');
+    }
+
+    public function assignedAssets()
+    {
+        return $this->belongsToMany(Asset::class, 'assignments', 'employee_id', 'asset_id')
+            ->withPivot(['assigned_at', 'returned_at', 'created_by'])
+            ->withTimestamps();
+    }
+
 }

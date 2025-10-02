@@ -29,4 +29,13 @@ class Employee extends Model
         return $this->belongsTo(OrgUnit::class, 'org_unit_id');
     }
 
+    public function assets()
+    {
+        return $this->hasMany(Asset::class, 'owner_employee_id');
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'employee_id');
+    }
 }
