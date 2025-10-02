@@ -6,6 +6,7 @@ import { AssetDetail } from '../_components/asset-detail';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -117,6 +118,20 @@ export default function Page() {
                                         k="Akhir Garansi"
                                         v={String('2025-01-01')}
                                     />
+                                </div>
+                                <div className="flex gap-2 justify-end mt-4 md:col-span-2">
+                                    <Button variant="outline" size="sm">
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        Back
+                                    </Button>
+                                    <Button variant="outline" size="sm">
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </Button>
+                                    <Button variant="destructive" size="sm">
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
