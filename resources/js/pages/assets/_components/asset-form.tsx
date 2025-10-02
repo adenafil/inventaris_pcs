@@ -31,31 +31,52 @@ type Props = {
     assetId?: string;
 };
 
+const departments = [
+    'IT & Teknologi',
+    'Keuangan',
+    'SDM',
+    'Operasional',
+    'Marketing',
+    'Produksi',
+];
+
+
 export function AssetForm({ defaultValue, mode, assetId }: Props) {
-    const [form, setForm] = React.useState({
-        nomorInventaris: defaultValue?.nomorInvent ?? '',
-        itemName: defaultValue?.item ?? '',
-        tipe: defaultValue?.tipe ?? '',
-        model: defaultValue?.brand ?? '',
-        serialNumber: defaultValue?.serial ?? '',
-        tanggalPembelian: defaultValue?.tanggalPembelian ?? '',
-        akhirGaransi: defaultValue?.akhirGaransi ?? '',
-        lokasi: defaultValue?.lokasi ?? '',
-        pengguna: defaultValue?.pemakai ?? '',
-        tanggalSerahTerima: defaultValue?.tanggalSerahTerima ?? '',
-        keterangan: '',
-    });
+  const [form, setForm] = React.useState({
+      nomorInventaris: defaultValue?.nomorInvent ?? '',
+      itemName: defaultValue?.item ?? '',
+      tipe: defaultValue?.tipe ?? '',
+      model: defaultValue?.brand ?? '',
+      serialNumber: defaultValue?.serial ?? '',
+      tanggalPembelian: defaultValue?.tanggalPembelian ?? '',
+      akhirGaransi: defaultValue?.akhirGaransi ?? '',
+      lokasi: defaultValue?.lokasi ?? '',
+      pengguna: defaultValue?.pemakai ?? '',
+      tanggalSerahTerima: defaultValue?.tanggalSerahTerima ?? '',
+      keterangan: '',
+  });
   const [files, setFiles] = React.useState<UploadItem[]>([]);
   const [openTipe, setOpenTipe] = React.useState(false);
   const [openModel, setOpenModel] = React.useState(false);
   const [openLokasi, setOpenLokasi] = React.useState(false);
-  const [openPengguna, setOpenPengguna] = React.useState(false);
+  const [assignmentType, setAssignmentType] = React.useState<
+      'pegawai' | 'bidang' | 'tidak-diassign' | ''
+  >('');
+  const [assignmentDetail, setAssignmentDetail] = React.useState('');
+  const [openPegawai, setOpenPegawai] = React.useState(false);
 
   const change = (k: keyof typeof form, v: string) =>
       setForm((s) => ({ ...s, [k]: v }));
 
   const onSave = () => {
-      console.log('[v0] save asset', { mode, assetId, form, files });
+      console.log('[v0] save asset', {
+          mode,
+          assetId,
+          form,
+          files,
+          assignmentType,
+          assignmentDetail,
+      });
   };
   const onBack = () => {
       console.log('[v0] back from form');
@@ -257,55 +278,105 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                         </PopoverContent>
                     </Popover>
                 </div>
-                <div className="grid gap-2">
+                <div className={`grid gap-2 w-full ${assignmentType && assignmentType !== "tidak-diassign" ? '' : 'sm:col-span-2'}`}>
                     <Label>Pengguna</Label>
-                    <Popover open={openPengguna} onOpenChange={setOpenPengguna}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={openPengguna}
-                                className="w-full justify-between bg-transparent font-normal"
-                            >
-                                {form.pengguna || 'Pilih pengguna'}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0" align="start">
-                            <Command>
-                                <CommandInput placeholder="Cari pengguna..." />
-                                <CommandList>
-                                    <CommandEmpty>
-                                        Tidak ditemukan.
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                        {users.map((u) => (
-                                            <CommandItem
-                                                key={u}
-                                                value={u}
-                                                onSelect={() => {
-                                                    change('pengguna', u);
-                                                    setOpenPengguna(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        'mr-2 h-4 w-4',
-                                                        form.pengguna === u
-                                                            ? 'opacity-100'
-                                                            : 'opacity-0',
-                                                    )}
-                                                />
-                                                {u}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
+                    <Select
+                        value={assignmentType}
+                        onValueChange={(value) => {
+                            setAssignmentType(value as typeof assignmentType);
+                            setAssignmentDetail('');
+                        }}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Pilih tipe pengguna" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="pegawai">Pegawai</SelectItem>
+                            <SelectItem value="bidang">Bidang</SelectItem>
+                            <SelectItem value="tidak-diassign">
+                                Tidak Diassign
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
-                <div className="grid gap-2">
+                {assignmentType === 'pegawai' && (
+                    <div className="grid gap-2">
+                        <Label>Pilih Pegawai</Label>
+                        <Popover
+                            open={openPegawai}
+                            onOpenChange={setOpenPegawai}
+                        >
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openPegawai}
+                                    className="w-full justify-between bg-transparent font-normal"
+                                >
+                                    {assignmentDetail || 'Cari pegawai'}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                                className="w-full p-0"
+                                align="start"
+                            >
+                                <Command>
+                                    <CommandInput placeholder="Cari pegawai..." />
+                                    <CommandList>
+                                        <CommandEmpty>
+                                            Tidak ditemukan.
+                                        </CommandEmpty>
+                                        <CommandGroup>
+                                            {users.map((u) => (
+                                                <CommandItem
+                                                    key={u}
+                                                    value={u}
+                                                    onSelect={() => {
+                                                        setAssignmentDetail(u);
+                                                        setOpenPegawai(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            'mr-2 h-4 w-4',
+                                                            assignmentDetail ===
+                                                                u
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                    {u}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                )}
+                {assignmentType === 'bidang' && (
+                    <div className="grid gap-2">
+                        <Label>Pilih Bidang</Label>
+                        <Select
+                            value={assignmentDetail}
+                            onValueChange={setAssignmentDetail}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih bidang" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {departments.map((dept) => (
+                                    <SelectItem key={dept} value={dept}>
+                                        {dept}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Tanggal Serah Terima (Date & Time)</Label>
                     <Input
                         type="datetime-local"
