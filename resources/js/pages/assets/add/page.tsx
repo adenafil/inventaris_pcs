@@ -3,6 +3,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { AssetForm } from '../_components/asset-form';
 import { Card } from '@/components/ui/card';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,7 +16,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Page() {
+export default function Page({ types, models, locations, employees, orgUnits }: PageProps) {
+    console.log({ types, models, locations, employees, orgUnits });
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Add New Data Asset" />
@@ -36,7 +39,7 @@ export default function Page() {
 
                 <div className="max-w-8xl mx-auto w-full space-y-4 px-4 sm:px-6 lg:px-8">
                     <Card className="p-4">
-                        <AssetForm mode="create" />
+                        <AssetForm mode="create" url='/assets' typesPagination={types} modelsPagination={models} locationsPagination={locations} employeesPagination={employees} orgUnitsPagination={orgUnits} />
                     </Card>
                 </div>
             </div>

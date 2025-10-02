@@ -1,8 +1,21 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -11,24 +24,32 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    assetTypes,
-    locations,
-    models,
-    users,
-    type Asset,
-} from './lib/assets-data';
-import * as React from 'react';
-import { FileUpload, type UploadItem } from './file-upload';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { InfiniteScroll } from '@inertiajs/react';
+import { useForm } from 'laravel-precognition-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+    Employee,
+    Location,
+    Model,
+    OrgUnit,
+    Pagination,
+    Type,
+} from '../add/_types';
+import { FileUpload, type UploadItem } from './file-upload';
+import { models, type Asset } from './lib/assets-data';
 
 type Props = {
     defaultValue?: Partial<Asset>;
     mode: 'create' | 'edit';
     assetId?: string;
+    url: string;
+    typesPagination?: Pagination<Type>;
+    modelsPagination?: Pagination<Model>;
+    locationsPagination?: Pagination<Location>;
+    employeesPagination?: Pagination<Employee>;
+    orgUnitsPagination?: Pagination<OrgUnit>;
 };
 
 const departments = [
@@ -40,47 +61,94 @@ const departments = [
     'Produksi',
 ];
 
+// 'nomor_inventaris' => 'required|string|max:255',
+// 'item_name' => 'required|string|max:255',
+// 'tipe' => 'required|string|max:255',
+// 'model' => 'required|string|max:255',
+// 'serial_number' => 'required|string|max:255',
+// 'tanggal_pembelian' => 'required|date',
+// 'akhir_garansi' => 'required|date',
+// 'lokasi' => 'required|string|max:255',
+// 'pengguna' => 'required|string|max:255',
+// 'pegawai' => 'nullable|string|max:255',
+// 'bidang' => 'nullable|string|max:255',
+// 'tanggal_serah_terima' => 'nullable|date',
+// 'keterangan' => 'nullable|string',
+// 'documents' => 'nullable|array',
+// 'documents.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
 
-export function AssetForm({ defaultValue, mode, assetId }: Props) {
-  const [form, setForm] = React.useState({
-      nomorInventaris: defaultValue?.nomorInvent ?? '',
-      itemName: defaultValue?.item ?? '',
-      tipe: defaultValue?.tipe ?? '',
-      model: defaultValue?.brand ?? '',
-      serialNumber: defaultValue?.serial ?? '',
-      tanggalPembelian: defaultValue?.tanggalPembelian ?? '',
-      akhirGaransi: defaultValue?.akhirGaransi ?? '',
-      lokasi: defaultValue?.lokasi ?? '',
-      pengguna: defaultValue?.pemakai ?? '',
-      tanggalSerahTerima: defaultValue?.tanggalSerahTerima ?? '',
-      keterangan: '',
-  });
-  const [files, setFiles] = React.useState<UploadItem[]>([]);
-  const [openTipe, setOpenTipe] = React.useState(false);
-  const [openModel, setOpenModel] = React.useState(false);
-  const [openLokasi, setOpenLokasi] = React.useState(false);
-  const [assignmentType, setAssignmentType] = React.useState<
-      'pegawai' | 'bidang' | 'tidak-diassign' | ''
-  >('');
-  const [assignmentDetail, setAssignmentDetail] = React.useState('');
-  const [openPegawai, setOpenPegawai] = React.useState(false);
+export function AssetForm({
+    defaultValue,
+    mode,
+    assetId,
+    url,
+    typesPagination,
+    modelsPagination,
+    locationsPagination,
+    employeesPagination,
+    orgUnitsPagination,
+}: Props) {
+    const formAsset = useForm('post', url, {
+        nomor_inventaris: '',
+        item_name: '',
+        tipe: '',
+        model: '',
+        serial_number: '',
+        tanggal_pembelian: '',
+        akhir_garansi: '',
+        lokasi: '',
+        pengguna: '',
+        pegawai: '',
+        bidang: '',
+        tanggal_serah_terima: '',
+        keterangan: '',
+        documents: [],
+    });
 
-  const change = (k: keyof typeof form, v: string) =>
-      setForm((s) => ({ ...s, [k]: v }));
+    const [form, setForm] = useState({
+        nomorInventaris: defaultValue?.nomorInvent ?? '',
+        itemName: defaultValue?.item ?? '',
+        tipe: defaultValue?.tipe ?? '',
+        model: defaultValue?.brand ?? '',
+        serialNumber: defaultValue?.serial ?? '',
+        tanggalPembelian: defaultValue?.tanggalPembelian ?? '',
+        akhirGaransi: defaultValue?.akhirGaransi ?? '',
+        lokasi: defaultValue?.lokasi ?? '',
+        pengguna: defaultValue?.pemakai ?? '',
+        tanggalSerahTerima: defaultValue?.tanggalSerahTerima ?? '',
+        keterangan: '',
+    });
+    const [files, setFiles] = useState<UploadItem[]>([]);
+    const [openTipe, setOpenTipe] = useState(false);
+    const [openModel, setOpenModel] = useState(false);
+    const [openLokasi, setOpenLokasi] = useState(false);
+    const [assignmentType, setAssignmentType] = useState<
+        'pegawai' | 'bidang' | 'tidak-diassign' | ''
+    >('');
+    const [assignmentDetail, setAssignmentDetail] = useState('');
+    const [openPegawai, setOpenPegawai] = useState(false);
 
-  const onSave = () => {
-      console.log('[v0] save asset', {
-          mode,
-          assetId,
-          form,
-          files,
-          assignmentType,
-          assignmentDetail,
-      });
-  };
-  const onBack = () => {
-      console.log('[v0] back from form');
-  };
+    const change = (k: keyof typeof form, v: string) =>
+        setForm((s) => ({ ...s, [k]: v }));
+
+    const onSave = () => {
+        console.log('[v0] save asset', {
+            mode,
+            assetId,
+            form,
+            files,
+            assignmentType,
+            assignmentDetail,
+        });
+    };
+    const onBack = () => {
+        console.log('[v0] back from form');
+    };
+
+    useEffect(() => {
+        console.log(formAsset.data);
+    }, [formAsset]);
+
     return (
         <form
             className="grid gap-6"
@@ -94,19 +162,36 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                     <Label>Nomor Inventaris</Label>
                     <Input
                         placeholder="INV-2025-0001"
-                        value={form.nomorInventaris}
+                        value={formAsset.data.nomor_inventaris}
                         onChange={(e) =>
-                            change('nomorInventaris', e.target.value)
+                            formAsset.setData(
+                                'nomor_inventaris',
+                                e.target.value,
+                            )
                         }
+                        onBlur={() => formAsset.validate('nomor_inventaris')}
                     />
+                    {formAsset.invalid('nomor_inventaris') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.nomor_inventaris}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2">
                     <Label>Item Name</Label>
                     <Input
                         placeholder="Laptop / Printer / Router"
-                        value={form.itemName}
-                        onChange={(e) => change('itemName', e.target.value)}
+                        value={formAsset.data.item_name}
+                        onChange={(e) =>
+                            formAsset.setData('item_name', e.target.value)
+                        }
+                        onBlur={() => formAsset.validate('item_name')}
                     />
+                    {formAsset.invalid('item_name') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.item_name}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2">
                     <Label>Tipe</Label>
@@ -118,7 +203,13 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                 aria-expanded={openTipe}
                                 className="w-full justify-between bg-transparent font-normal"
                             >
-                                {form.tipe || 'Pilih tipe'}
+                                {formAsset.data.tipe
+                                    ? typesPagination?.data.find(
+                                          (t) =>
+                                              t.id.toString() ===
+                                              formAsset.data.tipe,
+                                      )?.name
+                                    : 'Pilih tipe'}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </PopoverTrigger>
@@ -130,26 +221,33 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                         Tidak ditemukan.
                                     </CommandEmpty>
                                     <CommandGroup>
-                                        {assetTypes.map((t) => (
-                                            <CommandItem
-                                                key={t}
-                                                value={t}
-                                                onSelect={() => {
-                                                    change('tipe', t);
-                                                    setOpenTipe(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        'mr-2 h-4 w-4',
-                                                        form.tipe === t
-                                                            ? 'opacity-100'
-                                                            : 'opacity-0',
-                                                    )}
-                                                />
-                                                {t}
-                                            </CommandItem>
-                                        ))}
+                                        <InfiniteScroll data="types">
+                                            {typesPagination!.data.map((t) => (
+                                                <CommandItem
+                                                    key={t.id}
+                                                    value={t.name.toString()}
+                                                    onSelect={() => {
+                                                        formAsset.setData(
+                                                            'tipe',
+                                                            t.id.toString(),
+                                                        );
+                                                        setOpenTipe(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            'mr-2 h-4 w-4',
+                                                            formAsset.data
+                                                                .tipe ===
+                                                                t.id.toString()
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                    {t.name}
+                                                </CommandItem>
+                                            ))}
+                                        </InfiniteScroll>
                                     </CommandGroup>
                                 </CommandList>
                             </Command>
@@ -166,7 +264,13 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                 aria-expanded={openModel}
                                 className="w-full justify-between bg-transparent font-normal"
                             >
-                                {form.model || 'Pilih model'}
+                                {formAsset.data.model
+                                    ? modelsPagination?.data.find(
+                                          (m) =>
+                                              m.id.toString() ===
+                                              formAsset.data.model,
+                                      )?.brand
+                                    : 'Pilih model'}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </PopoverTrigger>
@@ -178,26 +282,31 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                         Tidak ditemukan.
                                     </CommandEmpty>
                                     <CommandGroup>
-                                        {models.map((m) => (
-                                            <CommandItem
-                                                key={m}
-                                                value={m}
-                                                onSelect={() => {
-                                                    change('model', m);
-                                                    setOpenModel(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        'mr-2 h-4 w-4',
-                                                        form.model === m
-                                                            ? 'opacity-100'
-                                                            : 'opacity-0',
-                                                    )}
-                                                />
-                                                {m}
-                                            </CommandItem>
-                                        ))}
+                                        <InfiniteScroll data="models">
+                                            {modelsPagination!.data.map((m) => (
+                                                <CommandItem
+                                                    key={m.id}
+                                                    value={m.brand.toString()}
+                                                    onSelect={() => {
+                                                        formAsset.setData(
+                                                            'model',
+                                                            m.id.toString(),
+                                                        );
+                                                        setOpenModel(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            'mr-2 h-4 w-4',
+                                                            formAsset.data.model === m.id.toString()
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                    {m.brand}
+                                                </CommandItem>
+                                            ))}
+                                        </InfiniteScroll>
                                     </CommandGroup>
                                 </CommandList>
                             </Command>
@@ -240,7 +349,13 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                 aria-expanded={openLokasi}
                                 className="w-full justify-between bg-transparent font-normal"
                             >
-                                {form.lokasi || 'Pilih lokasi'}
+                                {formAsset.data.lokasi
+                                    ? locationsPagination?.data.find(
+                                          (l) =>
+                                              l.id.toString() ===
+                                              formAsset.data.lokasi,
+                                      )?.name
+                                    : 'Pilih lokasi'}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </PopoverTrigger>
@@ -252,33 +367,46 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                         Tidak ditemukan.
                                     </CommandEmpty>
                                     <CommandGroup>
-                                        {locations.map((l) => (
-                                            <CommandItem
-                                                key={l}
-                                                value={l}
-                                                onSelect={() => {
-                                                    change('lokasi', l);
-                                                    setOpenLokasi(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        'mr-2 h-4 w-4',
-                                                        form.lokasi === l
-                                                            ? 'opacity-100'
-                                                            : 'opacity-0',
-                                                    )}
-                                                />
-                                                {l}
-                                            </CommandItem>
-                                        ))}
+                                        <InfiniteScroll data="locations">
+                                            {locationsPagination!.data.map(
+                                                (l) => (
+                                                    <CommandItem
+                                                        key={l.id}
+                                                        value={l.name.toString()}
+                                                        onSelect={() => {
+                                                            formAsset.setData(
+                                                                'lokasi',
+                                                                l.id.toString(),
+                                                            );
+                                                            setOpenLokasi(
+                                                                false,
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={cn(
+                                                                'mr-2 h-4 w-4',
+                                                                formAsset.data
+                                                                    .lokasi ===
+                                                                    l.id.toString()
+                                                                    ? 'opacity-100'
+                                                                    : 'opacity-0',
+                                                            )}
+                                                        />
+                                                        {l.name}
+                                                    </CommandItem>
+                                                ),
+                                            )}
+                                        </InfiniteScroll>
                                     </CommandGroup>
                                 </CommandList>
                             </Command>
                         </PopoverContent>
                     </Popover>
                 </div>
-                <div className={`grid gap-2 w-full ${assignmentType && assignmentType !== "tidak-diassign" ? '' : 'sm:col-span-2'}`}>
+                <div
+                    className={`grid w-full gap-2 ${assignmentType && assignmentType !== 'tidak-diassign' ? '' : 'sm:col-span-2'}`}
+                >
                     <Label>Pengguna</Label>
                     <Select
                         value={assignmentType}
@@ -313,7 +441,13 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                     aria-expanded={openPegawai}
                                     className="w-full justify-between bg-transparent font-normal"
                                 >
-                                    {assignmentDetail || 'Cari pegawai'}
+                                    {formAsset.data.pegawai
+                                        ? employeesPagination?.data.find(
+                                              (u) =>
+                                                  u.id.toString() ===
+                                                  formAsset.data.pegawai,
+                                          )?.name
+                                        : 'Pilih pegawai'}
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                             </PopoverTrigger>
@@ -328,27 +462,41 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                             Tidak ditemukan.
                                         </CommandEmpty>
                                         <CommandGroup>
-                                            {users.map((u) => (
-                                                <CommandItem
-                                                    key={u}
-                                                    value={u}
-                                                    onSelect={() => {
-                                                        setAssignmentDetail(u);
-                                                        setOpenPegawai(false);
-                                                    }}
-                                                >
-                                                    <Check
-                                                        className={cn(
-                                                            'mr-2 h-4 w-4',
-                                                            assignmentDetail ===
-                                                                u
-                                                                ? 'opacity-100'
-                                                                : 'opacity-0',
-                                                        )}
-                                                    />
-                                                    {u}
-                                                </CommandItem>
-                                            ))}
+                                            <InfiniteScroll
+                                                data="employees"
+                                                buffer={1}
+                                            >
+                                                {employeesPagination!.data.map(
+                                                    (u) => (
+                                                        <CommandItem
+                                                            key={u.id}
+                                                            value={u.name.toString()}
+                                                            onSelect={() => {
+                                                                formAsset.setData(
+                                                                    'pegawai',
+                                                                    u.id.toString(),
+                                                                );
+                                                                setOpenPegawai(
+                                                                    false,
+                                                                );
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    'mr-2 h-4 w-4',
+                                                                    formAsset
+                                                                        .data
+                                                                        .pegawai ===
+                                                                        u.id.toString()
+                                                                        ? 'opacity-100'
+                                                                        : 'opacity-0',
+                                                                )}
+                                                            />
+                                                            {u.name}
+                                                        </CommandItem>
+                                                    ),
+                                                )}
+                                            </InfiniteScroll>
                                         </CommandGroup>
                                     </CommandList>
                                 </Command>
@@ -367,11 +515,16 @@ export function AssetForm({ defaultValue, mode, assetId }: Props) {
                                 <SelectValue placeholder="Pilih bidang" />
                             </SelectTrigger>
                             <SelectContent>
-                                {departments.map((dept) => (
-                                    <SelectItem key={dept} value={dept}>
-                                        {dept}
-                                    </SelectItem>
-                                ))}
+                                <InfiniteScroll data="employees" buffer={1}>
+                                    {orgUnitsPagination?.data.map((dept) => (
+                                        <SelectItem
+                                            key={dept.id}
+                                            value={dept.id.toString()}
+                                        >
+                                            {dept.name}
+                                        </SelectItem>
+                                    ))}
+                                </InfiniteScroll>
                             </SelectContent>
                         </Select>
                     </div>
