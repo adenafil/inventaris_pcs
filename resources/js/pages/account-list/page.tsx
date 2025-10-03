@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, WhenVisible } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -254,8 +254,13 @@ function isUserOnline(lastActiveAt: string | null): boolean {
     return diff < 1 * 60 * 1000;
 }
 
-export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
-    console.log({ orgUnits, paginationUser });
+export default function AccountsPage({
+    orgUnits,
+    paginationUser,
+    users,
+    page,
+}: PageProps) {
+    console.log({ orgUnits, paginationUser, users, page });
 
     const addAccountForm = useForm('post', '/master/accounts', {
         name: '',
@@ -392,7 +397,7 @@ export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
         setOpenLog(true);
     }
 
-    function onClickDisable(acc: Account, e) {
+    function onClickDisable(acc: Account) {
         router.post(
             `/master/accounts/${acc.id}/toggle?_method=PATCH`,
             {},
@@ -504,8 +509,9 @@ export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
+
                             <TableBody>
-                                {paginationUser.data.map((acc) => (
+                                {users.map((acc) => (
                                     <TableRow
                                         key={acc.id}
                                         className={
@@ -597,7 +603,45 @@ export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                                {filtered.length === 0 && (
+
+                                <TableRow>
+                                    <TableCell colSpan={9} className="p-0">
+                                        <WhenVisible
+                                            always={
+                                                paginationUser.current_page <
+                                                paginationUser.last_page
+                                            }
+                                            params={{
+                                                data: {
+                                                    page:
+                                                        paginationUser.current_page <
+                                                        paginationUser.last_page
+                                                            ? paginationUser.current_page +
+                                                              1
+                                                            : paginationUser.current_page,
+                                                },
+                                                only: [
+                                                    'users',
+                                                    'paginationUser',
+                                                ],
+                                            }}
+                                            buffer={0.1}
+                                            fallback={<p>data not found.</p>}
+                                            as="div"
+                                        >
+                                            {paginationUser.current_page >=
+                                            paginationUser.last_page ? (
+                                                <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                            ) : (
+                                                <div className="w-full p-2 text-center text-sm text-muted-foreground">
+                                                    Loading more data...
+                                                </div>
+                                            )}
+                                        </WhenVisible>
+                                    </TableCell>
+                                </TableRow>
+
+                                {paginationUser.data.length === 0 && (
                                     <TableRow>
                                         <TableCell
                                             colSpan={9}

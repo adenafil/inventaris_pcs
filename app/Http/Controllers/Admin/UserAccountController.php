@@ -12,13 +12,81 @@ use Inertia\Inertia;
 
 class UserAccountController extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     $orgUnits = OrgUnit::all();
+    //     return Inertia::render('account-list/page', [
+    //         'orgUnits' => $orgUnits,
+    //         'paginationUser' => Inertia::scroll(fn() => User::with('orgUnit')->withTrashed()->paginate()),
+    //     ]);
+    // }
+
     public function index(Request $request)
     {
+        $search = $request->get('search', '');
         $orgUnits = OrgUnit::all();
-        $paginationUser = User::with('orgUnit')->withTrashed()->paginate(10);
+
+        // Buat query dengan relasi
+        $query = User::with('orgUnit');
+
+        // Tambahkan kondisi search untuk multiple fields
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('role', 'like', '%' . $search . '%')
+                    ->orWhereHas('orgUnit', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $page = request()->get('page', 1);
+        $users = $query->paginate(20)->withQueryString();
+
+
+        if (!request()->header('X-inertia')) {
+            $allResults = collect();
+
+            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
+                // Buat query baru dengan relasi untuk setiap halaman
+                $pageQuery = User::with('orgUnit');
+
+                // Tambahkan kondisi search yang sama
+                if ($search) {
+                    $pageQuery->where(function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%')
+                            ->orWhere('role', 'like', '%' . $search . '%')
+                            ->orWhereHas('orgUnit', function ($q) use ($search) {
+                                $q->where('name', 'like', '%' . $search . '%');
+                            });
+                    });
+                }
+
+                $pageResults = $pageQuery->paginate(20, ['*'], 'page', $initialPage);
+                $allResults = $allResults->concat($pageResults->items());
+            }
+
+            return Inertia::render('account-list/page', [
+                'users' => $allResults,
+                'paginationUser' => new \Illuminate\Pagination\LengthAwarePaginator(
+                    $allResults,
+                    $users->total(),
+                    $users->perPage(),
+                    $page,
+                    ['path' => request()->url(), 'query' => request()->query()]
+                ),
+                'page' => $page,
+                'orgUnits' => $orgUnits,
+            ]);
+        }
+
         return Inertia::render('account-list/page', [
+            'users' => Inertia::merge(fn() => $users->items()),
+            'paginationUser' => $users,
+            'page' => $page,
             'orgUnits' => $orgUnits,
-            'paginationUser' => Inertia::scroll(fn() => $paginationUser),
         ]);
     }
 
@@ -77,5 +145,4 @@ class UserAccountController extends Controller
 
         return redirect()->route('accounts.index')->with('success', $message);
     }
-
 }

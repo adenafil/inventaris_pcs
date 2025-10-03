@@ -50,4 +50,6 @@ interface PaginationUser {
 interface PageProps {
     orgUnits: OrgUnit[];
     paginationUser: PaginationUser;
+    users: User[];
+    page: number;
 }
