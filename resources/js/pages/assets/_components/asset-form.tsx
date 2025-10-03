@@ -39,6 +39,7 @@ import {
 } from '../add/_types';
 import { FileUpload, type UploadItem } from './file-upload';
 import { models, type Asset } from './lib/assets-data';
+import { toast } from 'sonner';
 
 type Props = {
     defaultValue?: Partial<Asset>;
@@ -128,18 +129,15 @@ export function AssetForm({
     const [assignmentDetail, setAssignmentDetail] = useState('');
     const [openPegawai, setOpenPegawai] = useState(false);
 
-    const change = (k: keyof typeof form, v: string) =>
-        setForm((s) => ({ ...s, [k]: v }));
-
-    const onSave = () => {
-        console.log('[v0] save asset', {
-            mode,
-            assetId,
-            form,
-            files,
-            assignmentType,
-            assignmentDetail,
-        });
+    const handleSave = () => {
+        formAsset.submit({
+            onSuccess: () => {
+                toast.success('Asset saved successfully!');
+            },
+            onValidationError: (error) => {
+                toast.error(error.data.message)
+            }
+        })
     };
     const onBack = () => {
         console.log('[v0] back from form');
@@ -149,12 +147,16 @@ export function AssetForm({
         console.log(formAsset.data);
     }, [formAsset]);
 
+    useEffect(() => {
+        formAsset.setData('documents', files.map((f) => f.file));
+    }, [files]);
+
     return (
         <form
             className="grid gap-6"
             onSubmit={(e) => {
                 e.preventDefault();
-                onSave();
+                handleSave();
             }}
         >
             <div className="grid gap-4 sm:grid-cols-2">
@@ -298,7 +300,9 @@ export function AssetForm({
                                                     <Check
                                                         className={cn(
                                                             'mr-2 h-4 w-4',
-                                                            formAsset.data.model === m.id.toString()
+                                                            formAsset.data
+                                                                .model ===
+                                                                m.id.toString()
                                                                 ? 'opacity-100'
                                                                 : 'opacity-0',
                                                         )}
@@ -317,17 +321,22 @@ export function AssetForm({
                     <Label>Serial Number</Label>
                     <Input
                         placeholder="SN-XXXXX"
-                        value={form.serialNumber}
-                        onChange={(e) => change('serialNumber', e.target.value)}
+                        value={formAsset.data.serial_number}
+                        onChange={(e) =>
+                            formAsset.setData('serial_number', e.target.value)
+                        }
                     />
                 </div>
                 <div className="grid gap-2">
                     <Label>Tanggal Pembelian</Label>
                     <Input
                         type="date"
-                        value={form.tanggalPembelian}
+                        value={formAsset.data.tanggal_pembelian}
                         onChange={(e) =>
-                            change('tanggalPembelian', e.target.value)
+                            formAsset.setData(
+                                'tanggal_pembelian',
+                                e.target.value,
+                            )
                         }
                     />
                 </div>
@@ -335,8 +344,10 @@ export function AssetForm({
                     <Label>Akhir Garansi</Label>
                     <Input
                         type="date"
-                        value={form.akhirGaransi}
-                        onChange={(e) => change('akhirGaransi', e.target.value)}
+                        value={formAsset.data.akhir_garansi}
+                        onChange={(e) =>
+                            formAsset.setData('akhir_garansi', e.target.value)
+                        }
                     />
                 </div>
                 <div className="grid gap-2">
@@ -405,14 +416,15 @@ export function AssetForm({
                     </Popover>
                 </div>
                 <div
-                    className={`grid w-full gap-2 ${assignmentType && assignmentType !== 'tidak-diassign' ? '' : 'sm:col-span-2'}`}
+                    className={`grid w-full gap-2 ${formAsset.data.pengguna && formAsset.data.pengguna !== 'tidak-diassign' ? '' : 'sm:col-span-2'}`}
                 >
                     <Label>Pengguna</Label>
                     <Select
-                        value={assignmentType}
+                        value={formAsset.data.pengguna}
                         onValueChange={(value) => {
-                            setAssignmentType(value as typeof assignmentType);
-                            setAssignmentDetail('');
+                            formAsset.setData('pengguna', value);
+                            formAsset.setData('pegawai', '');
+                            formAsset.setData('bidang', '');
                         }}
                     >
                         <SelectTrigger>
@@ -427,7 +439,7 @@ export function AssetForm({
                         </SelectContent>
                     </Select>
                 </div>
-                {assignmentType === 'pegawai' && (
+                {formAsset.data.pengguna === 'pegawai' && (
                     <div className="grid gap-2">
                         <Label>Pilih Pegawai</Label>
                         <Popover
@@ -504,7 +516,7 @@ export function AssetForm({
                         </Popover>
                     </div>
                 )}
-                {assignmentType === 'bidang' && (
+                {formAsset.data.pengguna === 'bidang' && (
                     <div className="grid gap-2">
                         <Label>Pilih Bidang</Label>
                         <Select
@@ -533,9 +545,12 @@ export function AssetForm({
                     <Label>Tanggal Serah Terima (Date & Time)</Label>
                     <Input
                         type="datetime-local"
-                        value={form.tanggalSerahTerima}
+                        value={formAsset.data.tanggal_serah_terima}
                         onChange={(e) =>
-                            change('tanggalSerahTerima', e.target.value)
+                            formAsset.setData(
+                                'tanggal_serah_terima',
+                                e.target.value,
+                            )
                         }
                     />
                 </div>
@@ -543,13 +558,20 @@ export function AssetForm({
                     <Label>Keterangan (opsional)</Label>
                     <Textarea
                         placeholder="Catatan tambahan…"
-                        value={form.keterangan}
-                        onChange={(e) => change('keterangan', e.target.value)}
+                        value={formAsset.data.keterangan}
+                        onChange={(e) =>
+                            formAsset.setData('keterangan', e.target.value)
+                        }
                     />
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Dokumen & Foto (multiple)</Label>
                     <FileUpload value={files} onChange={setFiles} />
+                    {formAsset.invalid('documents') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.documents}
+                        </p>
+                    )}
                 </div>
             </div>
 

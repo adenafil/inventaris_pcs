@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('serial_number')->nullable();
             $table->string('item_name')->nullable();
             $table->date('purchase_date')->nullable();
-            $table->year('purchase_year')->nullable(); 
+            $table->year('purchase_year')->nullable();
+            $table->date('warranty_expiration')->nullable();
             $table->string('status')->default('active');
             $table->unsignedBigInteger('location_id')->nullable();
             $table->string('owner_type')->default('org');

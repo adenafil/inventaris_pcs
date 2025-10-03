@@ -13,6 +13,7 @@ use App\Models\Location;
 use App\Models\OrgUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class DataAssetController extends Controller
@@ -35,10 +36,16 @@ class DataAssetController extends Controller
 
     public function store(AddDataModelRequest $request)
     {
-        $validatedData = $request->validated();
-
         try {
             DB::beginTransaction();
+
+
+            Log::info('Asset creation started', [
+                'user_id' => auth()->id(),
+                'data' => $request->all()
+            ]);
+
+            $validatedData = $request->validated();
 
             // save asset
             $asset = new Asset();
@@ -57,7 +64,7 @@ class DataAssetController extends Controller
             $asset->owner_org_unit_id = $validatedData['bidang'] ?? null;
             $asset->save();
 
-            // do the assignment 
+            // do the assignment
             $assignment = new Assignment();
             $assignment->asset_id = $asset->id;
             $assignment->employee_id = $validatedData['pegawai'] ?? null;
@@ -75,8 +82,17 @@ class DataAssetController extends Controller
                 }
             }
             DB::commit();
+            Log::info('Asset created successfully', [
+                'user_id' => auth()->id(),
+                'asset_id' => $asset->id
+            ]);
             return redirect()->route('assets.index')->with('success', 'Asset added successfully.');
         } catch (\Exception $e) {
+            Log::error('Error adding asset', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'data' => $request->all()
+            ]);
             DB::rollBack();
             return back()->withErrors(['error' => 'An error occurred while adding the asset: ' . $e->getMessage()])->withInput();
         }
