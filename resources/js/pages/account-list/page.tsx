@@ -48,7 +48,9 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import React from 'react';
+import { useForm } from 'laravel-precognition-react';
+import { FormEvent, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 type AccountRole = 'admin' | 'manager' | 'staff';
 type AccountLog = {
@@ -233,7 +235,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-
 function formatDate(value: string) {
     try {
         return new Date(value).toLocaleString();
@@ -242,34 +243,51 @@ function formatDate(value: string) {
     }
 }
 
-export default function AccountsPage() {
-    const [query, setQuery] = React.useState('');
-    const [accounts, setAccounts] = React.useState<Account[]>(initialAccounts);
+interface OrgUnit {
+    code: string;
+    created_at: string;
+    id: number;
+    name: string;
+    updated_at: string;
+}
+
+export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
+    console.log({ orgUnits });
+
+    const addAccountForm = useForm('post', '/master/accounts', {
+        name: '',
+        email: '',
+        password: '',
+        role: '',
+        org_unit_id: '',
+        is_active: true,
+    });
+
+    const [query, setQuery] = useState('');
+    const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
 
     // Add Dialog state
-    const [openAdd, setOpenAdd] = React.useState(false);
+    const [openAdd, setOpenAdd] = useState(false);
 
     // Edit Dialog state
-    const [openEdit, setOpenEdit] = React.useState(false);
-    const [editing, setEditing] = React.useState<Account | null>(null);
+    const [openEdit, setOpenEdit] = useState(false);
+    const [editing, setEditing] = useState<Account | null>(null);
 
     // View Log Sheet state
-    const [openLog, setOpenLog] = React.useState(false);
-    const [logAccount, setLogAccount] = React.useState<Account | null>(null);
+    const [openLog, setOpenLog] = useState(false);
+    const [logAccount, setLogAccount] = useState<Account | null>(null);
 
     // Disable AlertDialog state
-    const [openDisable, setOpenDisable] = React.useState(false);
-    const [disableTarget, setDisableTarget] = React.useState<Account | null>(
-        null,
-    );
+    const [openDisable, setOpenDisable] = useState(false);
+    const [disableTarget, setDisableTarget] = useState<Account | null>(null);
 
     // Form states (single page, reuse for add/edit)
-    const [fName, setFName] = React.useState('');
-    const [fEmail, setFEmail] = React.useState('');
-    const [fRole, setFRole] = React.useState<AccountRole>('staff');
-    const [fBidang, setFBidang] = React.useState('');
-    const [fActive, setFActive] = React.useState(true);
-    const [fOnline, setFOnline] = React.useState(false);
+    const [fName, setFName] = useState('');
+    const [fEmail, setFEmail] = useState('');
+    const [fRole, setFRole] = useState<AccountRole>('staff');
+    const [fBidang, setFBidang] = useState('');
+    const [fActive, setFActive] = useState(true);
+    const [fOnline, setFOnline] = useState(false);
 
     function resetForm() {
         setFName('');
@@ -289,7 +307,7 @@ export default function AccountsPage() {
         setFOnline(acc.online);
     }
 
-    const filtered = React.useMemo(() => {
+    const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return accounts;
         return accounts.filter((a) => {
@@ -307,30 +325,18 @@ export default function AccountsPage() {
         setOpenAdd(true);
     }
 
-    function onSubmitAdd(e: React.FormEvent) {
+    function onSubmitAdd(e: FormEvent) {
         e.preventDefault();
-        const now = isoNow();
-        const newAcc: Account = {
-            id: `u-${Date.now()}`,
-            name: fName,
-            email: fEmail,
-            role: fRole,
-            bidang: fBidang,
-            active: fActive,
-            online: fOnline,
-            createdAt: now,
-            updatedAt: now,
-            logs: [
-                {
-                    id: `l-${Date.now()}`,
-                    timestamp: now,
-                    action: 'Account Created',
-                    detail: 'Dibuat melalui form Add',
-                },
-            ],
-        };
-        setAccounts((prev) => [newAcc, ...prev]);
-        setOpenAdd(false);
+        addAccountForm.submit({
+            onSuccess: () => {
+                toast.success('Akun berhasil ditambahkan');
+                setOpenAdd(false);
+                addAccountForm.reset();
+            },
+            onValidationError: (error) => {
+                toast.error(error.data.message);
+            },
+        });
     }
 
     function onClickEdit(acc: Account) {
@@ -339,7 +345,7 @@ export default function AccountsPage() {
         setOpenEdit(true);
     }
 
-    function onSubmitEdit(e: React.FormEvent) {
+    function onSubmitEdit(e: FormEvent) {
         e.preventDefault();
         if (!editing) return;
         const now = isoNow();
@@ -613,61 +619,134 @@ export default function AccountsPage() {
                                     <Label htmlFor="name">Name</Label>
                                     <Input
                                         id="name"
-                                        value={fName}
+                                        placeholder="Nama lengkap"
+                                        value={addAccountForm.data.name}
                                         onChange={(e) =>
-                                            setFName(e.target.value)
+                                            addAccountForm.setData(
+                                                'name',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            addAccountForm.validate('name')
                                         }
                                         required
                                     />
+                                    {addAccountForm.invalid('name') && (
+                                        <div className="text-sm text-red-600">
+                                            {addAccountForm.errors.name}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="email">Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
-                                        value={fEmail}
+                                        placeholder="your@email.com"
+                                        value={addAccountForm.data.email}
                                         onChange={(e) =>
-                                            setFEmail(e.target.value)
+                                            addAccountForm.setData(
+                                                'email',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            addAccountForm.validate('email')
                                         }
                                         required
                                     />
+                                    {addAccountForm.invalid('email') && (
+                                        <div className="text-sm text-red-600">
+                                            {addAccountForm.errors.email}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="********"
+                                        value={addAccountForm.data.password}
+                                        onChange={(e) =>
+                                            addAccountForm.setData(
+                                                'password',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            addAccountForm.validate('password')
+                                        }
+                                        required
+                                    />
+                                    {addAccountForm.invalid('password') && (
+                                        <div className="text-sm text-red-600">
+                                            {addAccountForm.errors.password}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label>Role</Label>
                                     <Select
-                                        value={fRole}
+                                        value={addAccountForm.data.role}
                                         onValueChange={(v) =>
-                                            setFRole(v as AccountRole)
+                                            addAccountForm.setData(
+                                                'role',
+                                                v as AccountRole,
+                                            )
                                         }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Pilih role" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="admin">
-                                                admin
+                                            <SelectItem value="admin_it">
+                                                admin it
                                             </SelectItem>
-                                            <SelectItem value="manager">
-                                                manager
-                                            </SelectItem>
-                                            <SelectItem value="staff">
-                                                staff
+                                            <SelectItem value="admin_kantor">
+                                                admin kantor
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    {addAccountForm.invalid('role') && (
+                                        <div className="text-sm text-red-600">
+                                            {addAccountForm.errors.role}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="bidang">Bidang</Label>
-                                    <Input
-                                        id="bidang"
-                                        value={fBidang}
-                                        onChange={(e) =>
-                                            setFBidang(e.target.value)
+                                    <Select
+                                        value={addAccountForm.data.org_unit_id}
+                                        onValueChange={(v) =>
+                                            addAccountForm.setData(
+                                                'org_unit_id',
+                                                v as string,
+                                            )
                                         }
-                                        required
-                                    />
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih bidang" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {orgUnits.map((ou) => (
+                                                <SelectItem
+                                                    key={ou.id}
+                                                    value={ou.id.toString()}
+                                                >
+                                                    {ou.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {addAccountForm.invalid('org_unit_id') && (
+                                        <div className="text-sm text-red-600">
+                                            {addAccountForm.errors.org_unit_id}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-4">
                                     <div className="flex items-center justify-between rounded-md border p-3">
                                         <div>
                                             <p className="text-sm font-medium">
@@ -680,20 +759,6 @@ export default function AccountsPage() {
                                         <Switch
                                             checked={fActive}
                                             onCheckedChange={setFActive}
-                                        />
-                                    </div>
-                                    <div className="flex items-center justify-between rounded-md border p-3">
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                Online
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                Status koneksi saat ini
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={fOnline}
-                                            onCheckedChange={setFOnline}
                                         />
                                     </div>
                                 </div>
