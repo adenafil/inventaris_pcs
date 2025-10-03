@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { PageProps } from './_types';
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -23,7 +24,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Page() {
+export default function Page({ dataAssets }: PageProps) {
+    console.log({ dataAssets });
+
     const [tab, setTab] = useState<'it' | 'kantor'>('it');
     const [search, setSearch] = useState('');
     const [tipe, setTipe] = useState<string>('all'); // Updated default value
@@ -110,14 +113,14 @@ export default function Page() {
                         </TabsList>
                         <TabsContent value="it" className="mt-4">
                             <AssetTable
-                                data={filtered}
+                                pagination={dataAssets}
                                 onViewQr={onViewQr}
                                 onDelete={onDelete}
                             />
                         </TabsContent>
                         <TabsContent value="kantor" className="mt-4">
                             <AssetTable
-                                data={filtered}
+                                pagination={dataAssets}
                                 onViewQr={onViewQr}
                                 onDelete={onDelete}
                             />

@@ -9,16 +9,16 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Eye, Pencil, QrCode, Trash2 } from 'lucide-react';
-import { Asset } from './lib/assets-data';
 import { Link } from '@inertiajs/react';
+import { DataAssets } from '../_types';
 
 type Props = {
-    data: Asset[];
+    pagination: DataAssets;
     onViewQr: (asset: Asset) => void;
     onDelete: (asset: Asset) => void;
 };
 
-export function AssetTable({ data, onViewQr, onDelete }: Props) {
+export function AssetTable({ pagination, onViewQr, onDelete }: Props) {
     return (
         <div className="rounded-md border">
             <Table>
@@ -31,25 +31,25 @@ export function AssetTable({ data, onViewQr, onDelete }: Props) {
                         <TableHead>Pemakai</TableHead>
                         <TableHead>Bidang</TableHead>
                         <TableHead>Lokasi</TableHead>
-                        <TableHead>Tahun</TableHead>
+                        <TableHead>Tahun Pembelian</TableHead>
                         <TableHead>Create By</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {data.map((a) => (
+                    {pagination.data.map((a) => (
                         <TableRow key={a.id}>
                             <TableCell className="whitespace-nowrap">
-                                {a.nomorInvent}
+                                {a.inventory_number}
                             </TableCell>
-                            <TableCell>{a.item}</TableCell>
-                            <TableCell>{a.tipe}</TableCell>
-                            <TableCell>{a.brand}</TableCell>
-                            <TableCell>{a.pemakai}</TableCell>
-                            <TableCell>{a.bidang}</TableCell>
-                            <TableCell>{a.lokasi}</TableCell>
-                            <TableCell>{a.tahun}</TableCell>
-                            <TableCell>{a.pemakai}</TableCell>
+                            <TableCell>{a.item_name}</TableCell>
+                            <TableCell>{a.type.name}</TableCell>
+                            <TableCell>{a.model.brand}</TableCell>
+                            <TableCell>{(a.owner_type === "bidang" ? a.owner_org_unit?.name : a.owner_employee?.name)}</TableCell>
+                            <TableCell>{a.owner_type}</TableCell>
+                            <TableCell>{a.location.name}</TableCell>
+                            <TableCell>{a.purchase_year}</TableCell>
+                            <TableCell>{""}</TableCell>
                             <TableCell className="space-x-1 text-right">
                                 <Link href={`/assets/${a.id}`}>
                                     <Button
@@ -92,7 +92,7 @@ export function AssetTable({ data, onViewQr, onDelete }: Props) {
                             </TableCell>
                         </TableRow>
                     ))}
-                    {data.length === 0 && (
+                    {pagination.data.length === 0 && (
                         <TableRow>
                             <TableCell
                                 colSpan={10}

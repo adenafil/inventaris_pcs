@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DataLocationController;
 use App\Http\Controllers\Admin\DataModelController;
 use App\Http\Controllers\Admin\DataPegawaiController;
 use App\Http\Controllers\Admin\DataTipeController;
+use App\Http\Controllers\Admin\UserAccountController;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -75,6 +76,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             HandlePrecognitiveRequests::class
         ]);
         Route::get('/assets/view', [DataAssetController::class, 'view'])->name('assets.view');
+
+        Route::get('accounts', [UserAccountController::class, 'index'])->name('accounts.index');
     });
 });
 

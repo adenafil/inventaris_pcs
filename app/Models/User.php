@@ -74,4 +74,9 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function logs()
+    {
+        return $this->hasMany(UserLog::class, 'user_id');
+    }
+
 }

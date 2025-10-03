@@ -22,7 +22,8 @@ import {
     MapPin,
     Building2,
     Users,
-    Folder
+    Folder,
+    UserCog
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -62,6 +63,11 @@ const mainNavItems: NavItem[] = [
         href: '/master/employees',
         icon: Users,
     },
+    {
+        title: 'Manajemen Akun',
+        href: '/master/accounts',
+        icon: UserCog,
+    }
 ];
 
 // const footerNavItems: NavItem[] = [

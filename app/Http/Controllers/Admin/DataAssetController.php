@@ -20,7 +20,10 @@ class DataAssetController extends Controller
 {
     public function index(Request $request)
     {
-        return Inertia::render('assets/page');
+
+        return Inertia::render('assets/page', [
+            'dataAssets' => Inertia::scroll(fn() => Asset::with(['type', 'model', 'location', 'ownerEmployee', 'ownerOrgUnit'])->paginate(pageName: 'data_asset_page')),
+        ]);
     }
 
     public function create()
