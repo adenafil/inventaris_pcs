@@ -37,6 +37,11 @@ export interface User {
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
+    role: string;
+    org_unit_id: number | null;
+    is_active: boolean;
+    last_active_at: string | null;
+    deleted_at: string | null;
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...

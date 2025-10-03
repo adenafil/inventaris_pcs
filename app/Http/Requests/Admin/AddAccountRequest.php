@@ -14,7 +14,7 @@ class AddAccountRequest extends FormRequest
     {
         $role = Auth::user()->role;
 
-        return $role === 'superadmin';
+        return $role === 'admin_it' || $role === 'superadmin';
     }
 
     /**

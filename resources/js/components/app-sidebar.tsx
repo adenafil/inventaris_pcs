@@ -11,8 +11,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Auth, SharedData, User, type NavItem } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     LayoutGrid,
@@ -26,49 +26,50 @@ import {
     UserCog
 } from 'lucide-react';
 import AppLogo from './app-logo';
+import { mainNavItemsSoSoAdmin, mainNavItemsSuperAdmin } from '@/constants/sidebar';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Data Assets',
-        href: '/master/assets',
-        icon: HardDrive,
-    },
-    {
-        title: 'Data Tipe',
-        href: '/master/types',
-        icon: Tag,
-    },
-    {
-        title: 'Data Model',
-        href: '/master/models',
-        icon: Monitor,
-    },
-    {
-        title: 'Data Lokasi',
-        href: '/master/locations',
-        icon: MapPin,
-    },
-    {
-        title: 'Data Bidang',
-        href: '/master/org-units',
-        icon: Building2,
-    },
-    {
-        title: 'Data Pegawai',
-        href: '/master/employees',
-        icon: Users,
-    },
-    {
-        title: 'Manajemen Akun',
-        href: '/master/accounts',
-        icon: UserCog,
-    }
-];
+// const mainNavItemsSuperAdmin: NavItem[] = [
+//     {
+//         title: 'Dashboard',
+//         href: dashboard(),
+//         icon: LayoutGrid,
+//     },
+//     {
+//         title: 'Data Assets',
+//         href: '/master/assets',
+//         icon: HardDrive,
+//     },
+//     {
+//         title: 'Data Tipe',
+//         href: '/master/types',
+//         icon: Tag,
+//     },
+//     {
+//         title: 'Data Model',
+//         href: '/master/models',
+//         icon: Monitor,
+//     },
+//     {
+//         title: 'Data Lokasi',
+//         href: '/master/locations',
+//         icon: MapPin,
+//     },
+//     {
+//         title: 'Data Bidang',
+//         href: '/master/org-units',
+//         icon: Building2,
+//     },
+//     {
+//         title: 'Data Pegawai',
+//         href: '/master/employees',
+//         icon: Users,
+//     },
+//     {
+//         title: 'Manajemen Akun',
+//         href: '/master/accounts',
+//         icon: UserCog,
+//     }
+// ];
 
 // const footerNavItems: NavItem[] = [
 //     {
@@ -84,6 +85,13 @@ const mainNavItems: NavItem[] = [
 // ];
 
 export function AppSidebar() {
+    const auth = (usePage().props as unknown as SharedData).auth;
+
+    if (auth.user.role === 'superadmin') {
+        var mainNavItems = mainNavItemsSuperAdmin;
+    } else {
+        var mainNavItems = mainNavItemsSoSoAdmin;
+    }
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>

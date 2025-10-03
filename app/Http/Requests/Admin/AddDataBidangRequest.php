@@ -14,7 +14,7 @@ class AddDataBidangRequest extends FormRequest
     {
         $role = Auth::user()->role;
 
-        return $role === 'admin_it';
+        return $role === 'admin_it' || $role === 'superadmin';
     }
 
     /**
