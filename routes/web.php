@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DataPegawaiController;
 use App\Http\Controllers\Admin\DataTipeController;
 use App\Http\Controllers\Admin\UserAccountController;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -81,7 +82,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('accounts', [UserAccountController::class, 'store'])->name('accounts.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::patch('accounts', [UserAccountController::class, 'update'])->name('accounts.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
     });
+});
+
+// a special goddamn route for updating activity user so we know that user is online
+Route::get('/geez', function (Request $request) {
+    $user = $request->user();
+    $user->last_active_at = now();
+    $user->save();
+
+    return response()->json(['message' => 'Genesis 1:1']);
 });
 
 require __DIR__ . '/settings.php';

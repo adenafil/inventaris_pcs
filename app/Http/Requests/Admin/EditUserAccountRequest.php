@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class AddAccountRequest extends FormRequest
+class EditUserAccountRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +24,11 @@ class AddAccountRequest extends FormRequest
      */
     public function rules(): array
     {
+
         return [
+            'id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'email' => 'required|string|email|max:255',
             'password' => 'nullable|string|min:8',
             'role' => 'required|in:superadmin,admin_it,admin_kantor',
             'org_unit_id' => 'nullable|exists:org_units,id',

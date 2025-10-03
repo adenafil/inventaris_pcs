@@ -36,7 +36,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
-import { Switch } from '@/components/ui/switch';
 import {
     Table,
     TableBody,
@@ -55,7 +54,7 @@ import { toast } from 'sonner';
 type AccountRole = 'admin' | 'manager' | 'staff';
 type AccountLog = {
     id: string;
-    timestamp: string; // ISO
+    timestamp: string;
     action: string;
     detail?: string;
 };
@@ -64,11 +63,12 @@ type Account = {
     name: string;
     email: string;
     role: AccountRole;
-    bidang: string;
+    org_unit_id?: string;
     active: boolean;
-    online: boolean;
-    createdAt: string; // ISO
-    updatedAt: string; // ISO
+    password?: string | null;
+    last_active_at: string | null;
+    createdAt: string;
+    updatedAt: string;
     logs: AccountLog[];
 };
 
@@ -243,16 +243,19 @@ function formatDate(value: string) {
     }
 }
 
-interface OrgUnit {
-    code: string;
-    created_at: string;
-    id: number;
-    name: string;
-    updated_at: string;
+function isUserOnline(lastActiveAt: string | null): boolean {
+    if (!lastActiveAt) return false;
+    const lastActive = new Date(lastActiveAt);
+    const now = new Date();
+    const diff = now.getTime() - lastActive.getTime();
+    console.log({ lastActiveAt, diff });
+    console.log(diff < 1 * 60 * 1000);
+
+    return diff < 1 * 60 * 1000;
 }
 
-export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
-    console.log({ orgUnits });
+export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
+    console.log({ orgUnits, paginationUser });
 
     const addAccountForm = useForm('post', '/master/accounts', {
         name: '',
@@ -262,6 +265,20 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
         org_unit_id: '',
         is_active: true,
     });
+
+    const updateAccountForm = useForm(
+        'post',
+        '/master/accounts?_method=PATCH',
+        {
+            id: '',
+            name: '',
+            email: '',
+            password: null,
+            role: '',
+            org_unit_id: '',
+            is_active: true,
+        },
+    );
 
     const [query, setQuery] = useState('');
     const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
@@ -341,6 +358,16 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
 
     function onClickEdit(acc: Account) {
         setEditing(acc);
+        updateAccountForm.reset();
+        updateAccountForm.setData('id', acc.id);
+        updateAccountForm.setData('name', acc.name);
+        updateAccountForm.setData('email', acc.email);
+        updateAccountForm.setData('password', acc.password ?? null);
+        updateAccountForm.setData('org_unit_id', acc.org_unit_id ?? '');
+        updateAccountForm.setData('role', acc.role);
+        updateAccountForm.setData('is_active', acc.active);
+        console.log('acc', acc);
+
         fillFormFromAccount(acc);
         setOpenEdit(true);
     }
@@ -348,53 +375,16 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
     function onSubmitEdit(e: FormEvent) {
         e.preventDefault();
         if (!editing) return;
-        const now = isoNow();
-
-        const changes: string[] = [];
-        if (editing.name !== fName)
-            changes.push(`name: "${editing.name}" -> "${fName}"`);
-        if (editing.email !== fEmail)
-            changes.push(`email: "${editing.email}" -> "${fEmail}"`);
-        if (editing.role !== fRole)
-            changes.push(`role: "${editing.role}" -> "${fRole}"`);
-        if (editing.bidang !== fBidang)
-            changes.push(`bidang: "${editing.bidang}" -> "${fBidang}"`);
-        if (editing.active !== fActive)
-            changes.push(`active: ${editing.active} -> ${fActive}`);
-        if (editing.online !== fOnline)
-            changes.push(`online: ${editing.online} -> ${fOnline}`);
-
-        const detail = changes.length
-            ? changes.join('; ')
-            : 'Tanpa perubahan signifikan';
-
-        setAccounts((prev) =>
-            prev.map((a) =>
-                a.id === editing.id
-                    ? {
-                          ...a,
-                          name: fName,
-                          email: fEmail,
-                          role: fRole,
-                          bidang: fBidang,
-                          active: fActive,
-                          online: fOnline,
-                          updatedAt: now,
-                          logs: [
-                              ...a.logs,
-                              {
-                                  id: `l-${Date.now()}`,
-                                  timestamp: now,
-                                  action: 'Profile Edited',
-                                  detail,
-                              },
-                          ],
-                      }
-                    : a,
-            ),
-        );
-        setOpenEdit(false);
-        setEditing(null);
+        updateAccountForm.submit({
+            onSuccess: () => {
+                toast.success('Akun berhasil diperbarui');
+                updateAccountForm.reset();
+                setOpenEdit(false);
+            },
+            onValidationError: (error) => {
+                toast.error(error.data.message);
+            }
+        });
     }
 
     function onClickViewLog(acc: Account) {
@@ -436,14 +426,14 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
     }
 
     function roleBadgeVariant(
-        role: AccountRole,
+        role: string,
     ): 'default' | 'secondary' | 'outline' | 'destructive' {
         switch (role) {
-            case 'admin':
+            case 'superadmin':
                 return 'default';
-            case 'manager':
+            case 'admin_it':
                 return 'secondary';
-            case 'staff':
+            case 'admin_kantor':
             default:
                 return 'outline';
         }
@@ -505,11 +495,11 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filtered.map((acc) => (
+                                {paginationUser.data.map((acc) => (
                                     <TableRow
                                         key={acc.id}
                                         className={
-                                            !acc.active ? 'opacity-75' : ''
+                                            !acc.is_active ? 'opacity-75' : ''
                                         }
                                     >
                                         <TableCell className="font-medium">
@@ -528,9 +518,11 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
                                                 {acc.role}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{acc.bidang}</TableCell>
                                         <TableCell>
-                                            {acc.active ? (
+                                            {acc.org_unit?.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            {acc.is_active ? (
                                                 <Badge variant="outline">
                                                     Active
                                                 </Badge>
@@ -541,7 +533,9 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            {acc.online ? (
+                                            {isUserOnline(
+                                                acc.last_active_at,
+                                            ) ? (
                                                 <Badge variant="secondary">
                                                     Online
                                                 </Badge>
@@ -746,22 +740,6 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
                                         </div>
                                     )}
                                 </div>
-                                <div className="grid gap-4">
-                                    <div className="flex items-center justify-between rounded-md border p-3">
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                Active
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                Status aktivasi akun
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={fActive}
-                                            onCheckedChange={setFActive}
-                                        />
-                                    </div>
-                                </div>
                                 <DialogFooter className="gap-2">
                                     <Button
                                         type="button"
@@ -799,89 +777,130 @@ export default function AccountsPage({ orgUnits }: { orgUnits: OrgUnit[] }) {
                                     <Label htmlFor="ename">Name</Label>
                                     <Input
                                         id="ename"
-                                        value={fName}
+                                        value={updateAccountForm.data.name}
                                         onChange={(e) =>
-                                            setFName(e.target.value)
+                                            updateAccountForm.setData(
+                                                'name',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            updateAccountForm.validate('name')
                                         }
                                         required
                                     />
+                                    {updateAccountForm.invalid('name') && (
+                                        <div className="text-sm text-red-600">
+                                            {updateAccountForm.errors.name}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="eemail">Email</Label>
                                     <Input
                                         id="eemail"
                                         type="email"
-                                        value={fEmail}
+                                        value={updateAccountForm.data.email}
                                         onChange={(e) =>
-                                            setFEmail(e.target.value)
+                                            updateAccountForm.setData(
+                                                'email',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            updateAccountForm.validate('email')
                                         }
                                         required
                                     />
+                                    {updateAccountForm.invalid('email') && (
+                                        <div className="text-sm text-red-600">
+                                            {updateAccountForm.errors.email}
+                                        </div>
+                                    )}
                                 </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="********"
+                                        value={updateAccountForm.data.password}
+                                        onChange={(e) =>
+                                            updateAccountForm.setData(
+                                                'password',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            addAccountForm.validate('password')
+                                        }
+                                    />
+                                    {addAccountForm.invalid('password') && (
+                                        <div className="text-sm text-red-600">
+                                            {addAccountForm.errors.password}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="grid gap-2">
                                     <Label>Role</Label>
                                     <Select
                                         value={fRole}
                                         onValueChange={(v) =>
-                                            setFRole(v as AccountRole)
+                                            updateAccountForm.setData('role', v)
                                         }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Pilih role" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="admin">
-                                                admin
+                                            <SelectItem value="admin_it">
+                                                admin it
                                             </SelectItem>
-                                            <SelectItem value="manager">
-                                                manager
-                                            </SelectItem>
-                                            <SelectItem value="staff">
-                                                staff
+                                            <SelectItem value="admin_kantor">
+                                                admin kantor
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="ebidang">Bidang</Label>
-                                    <Input
-                                        id="ebidang"
-                                        value={fBidang}
-                                        onChange={(e) =>
-                                            setFBidang(e.target.value)
+                                    <Select
+                                        value={
+                                            updateAccountForm.data.org_unit_id
                                         }
-                                        required
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex items-center justify-between rounded-md border p-3">
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                Active
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                Status aktivasi akun
-                                            </p>
+                                        onValueChange={(v) =>
+                                            updateAccountForm.setData(
+                                                'org_unit_id',
+                                                v,
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih bidang" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {orgUnits.map((ou) => (
+                                                <SelectItem
+                                                    key={ou.id}
+                                                    value={ou.name}
+                                                >
+                                                    {ou.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {updateAccountForm.invalid(
+                                        'org_unit_id',
+                                    ) && (
+                                        <div className="text-sm text-red-600">
+                                            {
+                                                updateAccountForm.errors
+                                                    .org_unit_id
+                                            }
                                         </div>
-                                        <Switch
-                                            checked={fActive}
-                                            onCheckedChange={setFActive}
-                                        />
-                                    </div>
-                                    <div className="flex items-center justify-between rounded-md border p-3">
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                Online
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                Status koneksi saat ini
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={fOnline}
-                                            onCheckedChange={setFOnline}
-                                        />
-                                    </div>
+                                    )}
                                 </div>
                                 <DialogFooter className="gap-2">
                                     <Button

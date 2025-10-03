@@ -21,10 +21,17 @@ class UserSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Staff IT',
-            'email' => 'staffit@pcs.com',
+            'name' => 'Admin Kantor',
+            'email' => 'admin.kantor@pcs.com',
             'password' => bcrypt('rahasiadong'),
-            'role' => 'staff_it',
+            'role' => 'admin_kantor',
         ]);
+
+        User::create([
+            'name' => 'superadmin',
+            'email' => 'superadmin@pcs.com',
+            'password' => bcrypt('rahasiadong'),
+            'role' => 'superadmin',
+    ]);
     }
 }

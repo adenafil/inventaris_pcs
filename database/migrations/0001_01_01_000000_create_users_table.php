@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('role')->default('admin_it');
             $table->integer('org_unit_id')->nullable();
-            $table->boolean('is_active')->default(true);
             $table->rememberToken();
+            $table->timestamp('last_active_at')->nullable();
             $table->timestamps();
         });
 
