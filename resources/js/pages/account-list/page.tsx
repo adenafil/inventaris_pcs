@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -383,7 +383,7 @@ export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
             },
             onValidationError: (error) => {
                 toast.error(error.data.message);
-            }
+            },
         });
     }
 
@@ -392,9 +392,19 @@ export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
         setOpenLog(true);
     }
 
-    function onClickDisable(acc: Account) {
-        setDisableTarget(acc);
-        setOpenDisable(true);
+    function onClickDisable(acc: Account, e) {
+        router.post(
+            `/master/accounts/${acc.id}/toggle?_method=PATCH`,
+            {},
+            {
+                onSuccess: () => {
+                    toast.success('Akun berhasil dinonaktifkan');
+                },
+                onError: () => {
+                    toast.error('Gagal menonaktifkan akun');
+                },
+            },
+        );
     }
 
     function confirmDisable() {
@@ -522,7 +532,7 @@ export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
                                             {acc.org_unit?.name}
                                         </TableCell>
                                         <TableCell>
-                                            {acc.is_active ? (
+                                            {acc.deleted_at === null ? (
                                                 <Badge variant="outline">
                                                     Active
                                                 </Badge>
@@ -577,7 +587,9 @@ export default function AccountsPage({ orgUnits, paginationUser }: PageProps) {
                                                     onClick={() =>
                                                         onClickDisable(acc)
                                                     }
-                                                    disabled={!acc.active}
+                                                    disabled={
+                                                        acc.deleted_at !== null
+                                                    }
                                                 >
                                                     Disable
                                                 </Button>

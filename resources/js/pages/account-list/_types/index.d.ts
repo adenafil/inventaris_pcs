@@ -25,6 +25,7 @@ interface User {
     org_unit_id: number | null;
     is_active: boolean;
     last_active_at: string | null;
+    deleted_at: string | null;
     created_at: string;
     updated_at: string;
     org_unit: OrgUnit | null;

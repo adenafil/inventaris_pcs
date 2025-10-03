@@ -15,7 +15,7 @@ class UserAccountController extends Controller
     public function index(Request $request)
     {
         $orgUnits = OrgUnit::all();
-        $paginationUser = User::with('orgUnit')->paginate(10);
+        $paginationUser = User::with('orgUnit')->withTrashed()->paginate(10);
         return Inertia::render('account-list/page', [
             'orgUnits' => $orgUnits,
             'paginationUser' => Inertia::scroll(fn() => $paginationUser),
@@ -61,6 +61,21 @@ class UserAccountController extends Controller
         $user->save();
 
         return redirect()->route('accounts.index')->with('success', 'User account updated successfully.');
+    }
+
+    public function toggleSoftDelete($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+
+        if ($user->trashed()) {
+            $user->restore();
+            $message = 'User account restored successfully.';
+        } else {
+            $user->delete();
+            $message = 'User account deleted successfully.';
+        }
+
+        return redirect()->route('accounts.index')->with('success', $message);
     }
 
 }

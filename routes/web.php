@@ -85,6 +85,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('accounts', [UserAccountController::class, 'update'])->name('accounts.update')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::patch('accounts/{id}/toggle', [UserAccountController::class, 'toggleSoftDelete'])->name('accounts.toggle-soft-delete');
     });
 });
 
