@@ -23,11 +23,13 @@ return new class extends Migration
             $table->date('warranty_expiration')->nullable();
             $table->string('status')->default('active');
             $table->unsignedBigInteger('location_id')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
 
             $table->foreign('type_id')->references('id')->on('data_types')->onDelete('cascade');
             $table->foreign('model_id')->references('id')->on('asset_models')->onDelete('cascade');
             $table->foreign('location_id')->references('id')->on('locations')->onDelete('set null');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 

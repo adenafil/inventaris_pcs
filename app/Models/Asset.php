@@ -23,9 +23,7 @@ class Asset extends Model
         'warranty_expiration',
         'status',
         'location_id',
-        'owner_type',
-        'owner_employee_id',
-        'owner_org_unit_id'
+        'created_by',
     ];
 
     public function type()
@@ -52,6 +50,12 @@ class Asset extends Model
     {
         return $this->belongsTo(OrgUnit::class, 'owner_org_unit_id');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
 
     public function documents()
     {

@@ -24,7 +24,7 @@ class DataAssetController extends Controller
     {
 
         return Inertia::render('assets/page', [
-            'dataAssets' => Inertia::scroll(fn() => Asset::with(['type', 'model', 'location', 'ownerEmployee', 'ownerOrgUnit'])->paginate(pageName: 'data_asset_page')
+            'dataAssets' => Inertia::scroll(fn() => Asset::with(['type', 'model', 'location', 'creator'])->paginate(pageName: 'data_asset_page')
         ),
             'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
             'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
@@ -80,6 +80,7 @@ class DataAssetController extends Controller
         $asset->warranty_expiration = $validated['akhir_garansi'];
         $asset->status = 'active';
         $asset->location_id = $validated['lokasi'];
+        $asset->created_by = auth()->user()->id;
         $asset->save();
 
         // push documents to storage and database

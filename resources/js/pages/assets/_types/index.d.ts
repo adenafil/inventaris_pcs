@@ -1,11 +1,11 @@
-export type Link = {
+interface Link {
     url: string | null;
     label: string;
     page: number | null;
     active: boolean;
-};
+}
 
-export type PaginatedResponse<T> = {
+interface PaginatedResponse<T> {
     current_page: number;
     data: T[];
     first_page_url: string;
@@ -19,17 +19,17 @@ export type PaginatedResponse<T> = {
     prev_page_url: string | null;
     to: number;
     total: number;
-};
+}
 
-export type AssetType = {
+interface AssetType {
     id: number;
     code: string;
     name: string;
     created_at: string;
     updated_at: string;
-};
+}
 
-export type AssetModel = {
+interface AssetModel {
     id: number;
     type_id: number;
     brand: string;
@@ -37,36 +37,33 @@ export type AssetModel = {
     details: string | null;
     created_at: string;
     updated_at: string;
-};
+}
 
-export type Location = {
+interface Location {
     id: number;
     code: string;
     name: string;
     created_at: string;
     updated_at: string;
-};
+}
 
-export type Employee = {
+interface Creator {
     id: number;
-    nip: string;
     name: string;
     email: string;
-    org_unit_id: number;
-    is_active: boolean;
-    created_at: string | null;
-    updated_at: string | null;
-};
-
-export type OrgUnit = {
-    id: number;
-    code: string;
-    name: string;
+    email_verified_at: string | null;
+    two_factor_secret: string | null;
+    two_factor_recovery_codes: string | null;
+    two_factor_confirmed_at: string | null;
+    role: string;
+    org_unit_id: number | null;
+    last_active_at: string;
     created_at: string;
     updated_at: string;
-};
+    deleted_at: string | null;
+}
 
-export type Asset = {
+interface Asset {
     id: number;
     inventory_number: string;
     type_id: number;
@@ -78,20 +75,36 @@ export type Asset = {
     warranty_expiration: string;
     status: string;
     location_id: number;
-    owner_type: string;
-    owner_employee_id: number | null;
-    owner_org_unit_id: number | null;
+    created_by: number;
     created_at: string;
     updated_at: string;
     type: AssetType;
     model: AssetModel;
     location: Location;
-    owner_employee: Employee | null;
-    owner_org_unit: OrgUnit | null;
-};
+    creator: Creator;
+}
 
-export export type PageProps = {
+interface Employee {
+    id: number;
+    nip: string;
+    name: string;
+    email: string;
+    org_unit_id: number;
+    is_active: boolean;
+    created_at: string | null;
+    updated_at: string | null;
+}
+
+interface OrgUnit {
+    id: number;
+    code: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PageProps {
     dataAssets: PaginatedResponse<Asset>;
     employees: PaginatedResponse<Employee>;
     orgUnits: PaginatedResponse<OrgUnit>;
-};
+}

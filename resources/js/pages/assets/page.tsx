@@ -152,8 +152,6 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                             <TableHead>Item</TableHead>
                                             <TableHead>Tipe</TableHead>
                                             <TableHead>Brand</TableHead>
-                                            <TableHead>Pemakai</TableHead>
-                                            <TableHead>Bidang</TableHead>
                                             <TableHead>Lokasi</TableHead>
                                             <TableHead>Created By</TableHead>
                                             <TableHead className="text-center">
@@ -162,326 +160,330 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow>
-                                            <TableCell className="whitespace-nowrap">
-                                                {'geez'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {'a.item_name'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {'a.type.name'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {'a.model.brand'}
-                                            </TableCell>
-                                            <TableCell>Geez</TableCell>
-                                            <TableCell>Pegawai</TableCell>
-                                            <TableCell>Umum Dan IT</TableCell>
-                                            <TableCell>{'Admin IT'}</TableCell>
-                                            <TableCell className="space-x-2 text-center">
-                                                <Link href={`/`}>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="inline-flex gap-1 bg-transparent"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                        View
-                                                    </Button>
-                                                </Link>
-                                                <Link href={`/`}>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="inline-flex gap-1 bg-transparent"
-                                                    >
-                                                        <Pencil className="h-4 w-4" />
-                                                        Edit
-                                                    </Button>
-                                                </Link>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="inline-flex gap-1 bg-transparent"
-                                                >
-                                                    <QrCode className="h-4 w-4" />
-                                                    QR
-                                                </Button>
-                                                <Sheet>
-                                                    <SheetTrigger asChild>
+                                        {dataAssets.data.map((data) => (
+                                            <TableRow>
+                                                <TableCell className="whitespace-nowrap">
+                                                    {data.inventory_number}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.item_name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.type.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.model.brand}
+                                                </TableCell>
+                                                <TableCell>
+                                                    Umum Dan IT
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.creator.name}
+                                                </TableCell>
+                                                <TableCell className="space-x-2 text-center">
+                                                    <Link href={`/`}>
                                                         <Button
                                                             size="sm"
                                                             variant="outline"
                                                             className="inline-flex gap-1 bg-transparent"
                                                         >
-                                                            <UserCheck className="h-4 w-4" />
-                                                            Assign
+                                                            <Eye className="h-4 w-4" />
+                                                            View
                                                         </Button>
-                                                    </SheetTrigger>
-                                                    <SheetContent>
-                                                        <SheetHeader>
-                                                            <SheetTitle>
-                                                                Assignment
-                                                            </SheetTitle>
-                                                            <SheetDescription>
-                                                                Assign this
-                                                                asset to
-                                                                employee or
-                                                                bidang.
-                                                            </SheetDescription>
-                                                        </SheetHeader>
-                                                        <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                                                            <div
-                                                                className={`grid w-full gap-2 sm:col-span-2`}
+                                                    </Link>
+                                                    <Link href={`/`}>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="inline-flex gap-1 bg-transparent"
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                            Edit
+                                                        </Button>
+                                                    </Link>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="inline-flex gap-1 bg-transparent"
+                                                    >
+                                                        <QrCode className="h-4 w-4" />
+                                                        QR
+                                                    </Button>
+                                                    <Sheet>
+                                                        <SheetTrigger asChild>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="inline-flex gap-1 bg-transparent"
                                                             >
-                                                                <Label>
-                                                                    Pengguna
-                                                                </Label>
-                                                                <Select
-                                                                    value={
-                                                                        typePengguna
-                                                                    }
-                                                                    onValueChange={(
-                                                                        value,
-                                                                    ) => {
-                                                                        setTypePengguna(
-                                                                            value as
-                                                                                | 'pegawai'
-                                                                                | 'bidang'
-                                                                                | 'tidak-diassign'
-                                                                                | '',
-                                                                        );
-                                                                        if (
-                                                                            value ===
-                                                                            'pegawai'
-                                                                        ) {
-                                                                            setOpenPegawai(
-                                                                                true,
-                                                                            );
-                                                                            setOpenBidang(
-                                                                                false,
-                                                                            );
-                                                                        } else if (
-                                                                            value ===
-                                                                            'bidang'
-                                                                        ) {
-                                                                            setOpenBidang(
-                                                                                true,
-                                                                            );
-                                                                            setOpenPegawai(
-                                                                                false,
-                                                                            );
-                                                                        } else {
-                                                                            setOpenBidang(
-                                                                                false,
-                                                                            );
-                                                                            setOpenPegawai(
-                                                                                false,
-                                                                            );
-                                                                        }
-                                                                    }}
+                                                                <UserCheck className="h-4 w-4" />
+                                                                Assign
+                                                            </Button>
+                                                        </SheetTrigger>
+                                                        <SheetContent>
+                                                            <SheetHeader>
+                                                                <SheetTitle>
+                                                                    Assignment
+                                                                </SheetTitle>
+                                                                <SheetDescription>
+                                                                    Assign this
+                                                                    asset to
+                                                                    employee or
+                                                                    bidang.
+                                                                </SheetDescription>
+                                                            </SheetHeader>
+                                                            <div className="grid flex-1 auto-rows-min gap-6 px-4">
+                                                                <div
+                                                                    className={`grid w-full gap-2 sm:col-span-2`}
                                                                 >
-                                                                    <SelectTrigger>
-                                                                        <SelectValue placeholder="Pilih tipe pengguna" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="pegawai">
-                                                                            Pegawai
-                                                                        </SelectItem>
-                                                                        <SelectItem value="bidang">
-                                                                            Bidang
-                                                                        </SelectItem>
-                                                                        <SelectItem value="tidak-diassign">
-                                                                            Tidak
-                                                                            Diassign
-                                                                        </SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
-                                                            {typePengguna ===
-                                                                'pegawai' && (
-                                                                <div className="grid w-full gap-2 sm:col-span-2">
                                                                     <Label>
-                                                                        Pilih
-                                                                        Pegawai
-                                                                    </Label>
-                                                                    <Popover
-                                                                        open={
-                                                                            isOpenPegawai
-                                                                        }
-                                                                        onOpenChange={
-                                                                            setOpenPegawai
-                                                                        }
-                                                                    >
-                                                                        <PopoverTrigger
-                                                                            asChild
-                                                                        >
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                role="combobox"
-                                                                                aria-expanded={
-                                                                                    isOpenPegawai
-                                                                                }
-                                                                                className="w-full justify-between bg-transparent font-normal"
-                                                                            >
-                                                                                {`Pilih pegawai...`}
-                                                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                                            </Button>
-                                                                        </PopoverTrigger>
-                                                                        <PopoverContent
-                                                                            className="w-full p-0"
-                                                                            align="start"
-                                                                        >
-                                                                            <Command>
-                                                                                <CommandInput placeholder="Cari pegawai..." />
-                                                                                <CommandList>
-                                                                                    <CommandEmpty>
-                                                                                        Tidak
-                                                                                        ditemukan.
-                                                                                    </CommandEmpty>
-                                                                                    <CommandGroup>
-                                                                                        <InfiniteScroll
-                                                                                            data="employees"
-                                                                                            buffer={
-                                                                                                1
-                                                                                            }
-                                                                                        >
-                                                                                            {employees!.data.map(
-                                                                                                (
-                                                                                                    u,
-                                                                                                ) => (
-                                                                                                    <CommandItem
-                                                                                                        key={
-                                                                                                            u.id
-                                                                                                        }
-                                                                                                        value={u.name.toString()}
-                                                                                                        onSelect={() => {
-                                                                                                            setOpenPegawai(
-                                                                                                                false,
-                                                                                                            );
-                                                                                                        }}
-                                                                                                    >
-                                                                                                        <Check
-                                                                                                            className={cn(
-                                                                                                                'mr-2 h-4 w-4',
-                                                                                                                employees
-                                                                                                                    .data
-                                                                                                                    .length ===
-                                                                                                                    u.id
-                                                                                                                    ? 'opacity-100'
-                                                                                                                    : 'opacity-0',
-                                                                                                            )}
-                                                                                                        />
-                                                                                                        {
-                                                                                                            u.name
-                                                                                                        }
-                                                                                                    </CommandItem>
-                                                                                                ),
-                                                                                            )}
-                                                                                        </InfiniteScroll>
-                                                                                    </CommandGroup>
-                                                                                </CommandList>
-                                                                            </Command>
-                                                                        </PopoverContent>
-                                                                    </Popover>
-                                                                </div>
-                                                            )}
-                                                            {typePengguna ===
-                                                                'bidang' && (
-                                                                <div className="grid w-full gap-2 sm:col-span-2">
-                                                                    <Label>
-                                                                        Pilih
-                                                                        Bidang
+                                                                        Pengguna
                                                                     </Label>
                                                                     <Select
                                                                         value={
-                                                                            ''
+                                                                            typePengguna
                                                                         }
+                                                                        onValueChange={(
+                                                                            value,
+                                                                        ) => {
+                                                                            setTypePengguna(
+                                                                                value as
+                                                                                    | 'pegawai'
+                                                                                    | 'bidang'
+                                                                                    | 'tidak-diassign'
+                                                                                    | '',
+                                                                            );
+                                                                            if (
+                                                                                value ===
+                                                                                'pegawai'
+                                                                            ) {
+                                                                                setOpenPegawai(
+                                                                                    true,
+                                                                                );
+                                                                                setOpenBidang(
+                                                                                    false,
+                                                                                );
+                                                                            } else if (
+                                                                                value ===
+                                                                                'bidang'
+                                                                            ) {
+                                                                                setOpenBidang(
+                                                                                    true,
+                                                                                );
+                                                                                setOpenPegawai(
+                                                                                    false,
+                                                                                );
+                                                                            } else {
+                                                                                setOpenBidang(
+                                                                                    false,
+                                                                                );
+                                                                                setOpenPegawai(
+                                                                                    false,
+                                                                                );
+                                                                            }
+                                                                        }}
                                                                     >
                                                                         <SelectTrigger>
-                                                                            <SelectValue placeholder="Pilih bidang" />
+                                                                            <SelectValue placeholder="Pilih tipe pengguna" />
                                                                         </SelectTrigger>
                                                                         <SelectContent>
-                                                                            <InfiniteScroll
-                                                                                data="employees"
-                                                                                buffer={
-                                                                                    1
-                                                                                }
-                                                                            >
-                                                                                {orgUnits?.data.map(
-                                                                                    (
-                                                                                        dept,
-                                                                                    ) => (
-                                                                                        <SelectItem
-                                                                                            key={
-                                                                                                dept.id
-                                                                                            }
-                                                                                            value={dept.id.toString()}
-                                                                                        >
-                                                                                            {
-                                                                                                dept.name
-                                                                                            }
-                                                                                        </SelectItem>
-                                                                                    ),
-                                                                                )}
-                                                                            </InfiniteScroll>
+                                                                            <SelectItem value="pegawai">
+                                                                                Pegawai
+                                                                            </SelectItem>
+                                                                            <SelectItem value="bidang">
+                                                                                Bidang
+                                                                            </SelectItem>
+                                                                            <SelectItem value="tidak-diassign">
+                                                                                Tidak
+                                                                                Diassign
+                                                                            </SelectItem>
                                                                         </SelectContent>
                                                                     </Select>
                                                                 </div>
-                                                            )}
+                                                                {typePengguna ===
+                                                                    'pegawai' && (
+                                                                    <div className="grid w-full gap-2 sm:col-span-2">
+                                                                        <Label>
+                                                                            Pilih
+                                                                            Pegawai
+                                                                        </Label>
+                                                                        <Popover
+                                                                            open={
+                                                                                isOpenPegawai
+                                                                            }
+                                                                            onOpenChange={
+                                                                                setOpenPegawai
+                                                                            }
+                                                                        >
+                                                                            <PopoverTrigger
+                                                                                asChild
+                                                                            >
+                                                                                <Button
+                                                                                    variant="outline"
+                                                                                    role="combobox"
+                                                                                    aria-expanded={
+                                                                                        isOpenPegawai
+                                                                                    }
+                                                                                    className="w-full justify-between bg-transparent font-normal"
+                                                                                >
+                                                                                    {`Pilih pegawai...`}
+                                                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                                </Button>
+                                                                            </PopoverTrigger>
+                                                                            <PopoverContent
+                                                                                className="w-full p-0"
+                                                                                align="start"
+                                                                            >
+                                                                                <Command>
+                                                                                    <CommandInput placeholder="Cari pegawai..." />
+                                                                                    <CommandList>
+                                                                                        <CommandEmpty>
+                                                                                            Tidak
+                                                                                            ditemukan.
+                                                                                        </CommandEmpty>
+                                                                                        <CommandGroup>
+                                                                                            <InfiniteScroll
+                                                                                                data="employees"
+                                                                                                buffer={
+                                                                                                    1
+                                                                                                }
+                                                                                            >
+                                                                                                {employees!.data.map(
+                                                                                                    (
+                                                                                                        u,
+                                                                                                    ) => (
+                                                                                                        <CommandItem
+                                                                                                            key={
+                                                                                                                u.id
+                                                                                                            }
+                                                                                                            value={u.name.toString()}
+                                                                                                            onSelect={() => {
+                                                                                                                setOpenPegawai(
+                                                                                                                    false,
+                                                                                                                );
+                                                                                                            }}
+                                                                                                        >
+                                                                                                            <Check
+                                                                                                                className={cn(
+                                                                                                                    'mr-2 h-4 w-4',
+                                                                                                                    employees
+                                                                                                                        .data
+                                                                                                                        .length ===
+                                                                                                                        u.id
+                                                                                                                        ? 'opacity-100'
+                                                                                                                        : 'opacity-0',
+                                                                                                                )}
+                                                                                                            />
+                                                                                                            {
+                                                                                                                u.name
+                                                                                                            }
+                                                                                                        </CommandItem>
+                                                                                                    ),
+                                                                                                )}
+                                                                                            </InfiniteScroll>
+                                                                                        </CommandGroup>
+                                                                                    </CommandList>
+                                                                                </Command>
+                                                                            </PopoverContent>
+                                                                        </Popover>
+                                                                    </div>
+                                                                )}
+                                                                {typePengguna ===
+                                                                    'bidang' && (
+                                                                    <div className="grid w-full gap-2 sm:col-span-2">
+                                                                        <Label>
+                                                                            Pilih
+                                                                            Bidang
+                                                                        </Label>
+                                                                        <Select
+                                                                            value={
+                                                                                ''
+                                                                            }
+                                                                        >
+                                                                            <SelectTrigger>
+                                                                                <SelectValue placeholder="Pilih bidang" />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                <InfiniteScroll
+                                                                                    data="employees"
+                                                                                    buffer={
+                                                                                        1
+                                                                                    }
+                                                                                >
+                                                                                    {orgUnits?.data.map(
+                                                                                        (
+                                                                                            dept,
+                                                                                        ) => (
+                                                                                            <SelectItem
+                                                                                                key={
+                                                                                                    dept.id
+                                                                                                }
+                                                                                                value={dept.id.toString()}
+                                                                                            >
+                                                                                                {
+                                                                                                    dept.name
+                                                                                                }
+                                                                                            </SelectItem>
+                                                                                        ),
+                                                                                    )}
+                                                                                </InfiniteScroll>
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                )}
 
-                                                            {/* create me dokuement peminjaman */}
-                                                            <div className="grid w-full gap-2 sm:col-span-2">
-                                                                <Label>
-                                                                    Dokumen
-                                                                    Peminjaman*
-                                                                    <span className="text-destructive">
-                                                                        {' '}
-                                                                        (jpg,
-                                                                        png,
-                                                                        pdf)
-                                                                    </span>
-                                                                </Label>
-                                                                <Input
-                                                                    className="w-full"
-                                                                    type="file"
-                                                                    accept=".pdf,.jpg,.png"
-                                                                />
-                                                            </div>
+                                                                {/* create me dokuement peminjaman */}
+                                                                <div className="grid w-full gap-2 sm:col-span-2">
+                                                                    <Label>
+                                                                        Dokumen
+                                                                        Peminjaman*
+                                                                        <span className="text-destructive">
+                                                                            {' '}
+                                                                            (jpg,
+                                                                            png,
+                                                                            pdf)
+                                                                        </span>
+                                                                    </Label>
+                                                                    <Input
+                                                                        className="w-full"
+                                                                        type="file"
+                                                                        accept=".pdf,.jpg,.png"
+                                                                    />
+                                                                </div>
 
-                                                            <div className="grid gap-2 sm:col-span-2">
-                                                                <Label>
-                                                                    Keterangan
-                                                                    (opsional)
-                                                                </Label>
-                                                                <Textarea
-                                                                    placeholder="Catatan tambahan…"
-                                                                />
+                                                                <div className="grid gap-2 sm:col-span-2">
+                                                                    <Label>
+                                                                        Keterangan
+                                                                        (opsional)
+                                                                    </Label>
+                                                                    <Textarea placeholder="Catatan tambahan…" />
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <SheetFooter>
-                                                            <Button type="submit">
-                                                                Assign
-                                                            </Button>
-                                                            <SheetClose asChild>
-                                                                <Button variant="outline">
-                                                                    Close
+                                                            <SheetFooter>
+                                                                <Button type="submit">
+                                                                    Assign
                                                                 </Button>
-                                                            </SheetClose>
-                                                        </SheetFooter>
-                                                    </SheetContent>
-                                                </Sheet>
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    className="inline-flex gap-1"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                    Delete
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
+                                                                <SheetClose
+                                                                    asChild
+                                                                >
+                                                                    <Button variant="outline">
+                                                                        Close
+                                                                    </Button>
+                                                                </SheetClose>
+                                                            </SheetFooter>
+                                                        </SheetContent>
+                                                    </Sheet>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="inline-flex gap-1"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        Delete
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                     </TableBody>
                                 </Table>
                             </div>
