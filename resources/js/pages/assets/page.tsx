@@ -488,7 +488,7 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                 </Table>
                             </div>
                         </TabsContent>
-                        \{' '}
+                        {' '}
                     </Tabs>
                 </main>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AddDataModelRequest;
+use App\Http\Requests\Admin\EditDataAssetModelRequest;
 use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Assignment;
@@ -38,7 +39,7 @@ class DataAssetController extends Controller
 
     public function create()
     {
-        return Inertia::render('assets/edit/page', [
+        return Inertia::render('assets/add/page', [
             'types' => Inertia::scroll(fn() => DataType::paginate(pageName: 'type_page')),
             'models' => Inertia::scroll(fn() => AssetModel::paginate(pageName: 'model_page')),
             'locations' => Inertia::scroll(fn() => Location::paginate(pageName: 'location_page')),
@@ -91,6 +92,39 @@ class DataAssetController extends Controller
             'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
             'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
         ]);
+    }
+
+    public function update(EditDataAssetModelRequest $request, Asset $asset)
+    {
+        $validated = $request->validated();
+        $asset->inventory_number = $validated['nomor_inventaris'];
+        $asset->type_id = $validated['tipe'];
+        $asset->model_id = $validated['model'];
+        $asset->serial_number = $validated['serial_number'];
+        $asset->item_name = $validated['item_name'];
+        $asset->purchase_date = $validated['tanggal_pembelian'];
+        $asset->purchase_year = date('Y', strtotime($validated['tanggal_pembelian']));
+        $asset->warranty_expiration = $validated['akhir_garansi'];
+        $asset->status = 'active';
+        $asset->location_id = $validated['lokasi'];
+        $asset->created_by = auth()->user()->id;
+        $asset->save();
+
+        // push documents to storage and database
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $document) {
+                $path = Storage::put('documents', $document);
+
+                $document = new Document();
+                $document->asset_id = $asset->id;
+                $document->file_path = $path;
+                $document->uploaded_by = auth()->user()->id;
+                $document->upload_date = now();
+                $document->save();
+            }
+        }
+
+        return redirect()->route('assets.index')->with('success', 'Data asset updated successfully.');
     }
 
     public function destroyDocument(Document $document)

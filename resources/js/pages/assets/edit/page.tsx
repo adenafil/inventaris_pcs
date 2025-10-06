@@ -28,7 +28,7 @@ export default function Page({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Add New Data Asset" />
+            <Head title="Edit Data Asset" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 {/* Main Content */}
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
@@ -48,7 +48,7 @@ export default function Page({
                     <Card className="p-4">
                         <AssetForm
                             mode="edit"
-                            url="/master/assets"
+                            url={`/master/assets/${asset.id}?_method=PATCH`}
                             asset={asset}
                             typesPagination={types}
                             modelsPagination={models}

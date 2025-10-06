@@ -70,37 +70,19 @@ export function AssetForm({
     const formAsset = useForm('post', url, {
         nomor_inventaris: asset?.inventory_number ?? '',
         item_name: asset?.item_name ?? '',
-        tipe: asset?.type.id ?? '',
-        model: asset?.model.id ?? '',
+        tipe: asset?.type.id.toString() ?? '',
+        model: asset?.model.id.toString() ?? '',
         serial_number: asset?.serial_number ?? '',
         tanggal_pembelian: asset?.purchase_date ?? '',
         akhir_garansi: asset?.warranty_expiration ?? '',
-        lokasi: asset?.location.id ?? '',
+        lokasi: asset?.location.id.toString() ?? '',
         documents: [],
     });
 
-    const [form, setForm] = useState({
-        nomorInventaris: defaultValue?.nomorInvent ?? '',
-        itemName: defaultValue?.item ?? '',
-        tipe: defaultValue?.tipe ?? '',
-        model: defaultValue?.brand ?? '',
-        serialNumber: defaultValue?.serial ?? '',
-        tanggalPembelian: defaultValue?.tanggalPembelian ?? '',
-        akhirGaransi: defaultValue?.akhirGaransi ?? '',
-        lokasi: defaultValue?.lokasi ?? '',
-        pengguna: defaultValue?.pemakai ?? '',
-        tanggalSerahTerima: defaultValue?.tanggalSerahTerima ?? '',
-        keterangan: '',
-    });
     const [files, setFiles] = useState<UploadItem[]>([]);
     const [openTipe, setOpenTipe] = useState(false);
     const [openModel, setOpenModel] = useState(false);
     const [openLokasi, setOpenLokasi] = useState(false);
-    const [assignmentType, setAssignmentType] = useState<
-        'pegawai' | 'bidang' | 'tidak-diassign' | ''
-    >('');
-    const [assignmentDetail, setAssignmentDetail] = useState('');
-    const [openPegawai, setOpenPegawai] = useState(false);
 
     const handleSave = () => {
         formAsset.submit({

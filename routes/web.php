@@ -75,6 +75,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/assets/create', [DataAssetController::class, 'create'])->name('assets.create');
         Route::get('/assets/{asset}/edit', [DataAssetController::class, 'edit'])->name('assets.edit');
         Route::delete('/assets/delete/document/{document}', [DataAssetController::class, 'destroyDocument'])->name('assets.delete-document');
+        Route::patch('/assets/{asset}', [DataAssetController::class, 'update'])->name('assets.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
         Route::post('/assets', [DataAssetController::class, 'store'])->name('assets.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
