@@ -8,12 +8,14 @@ use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Assignment;
 use App\Models\DataType;
+use App\Models\Document;
 use App\Models\Employee;
 use App\Models\Location;
 use App\Models\OrgUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class DataAssetController extends Controller
@@ -22,8 +24,16 @@ class DataAssetController extends Controller
     {
 
         return Inertia::render('assets/page', [
-            'dataAssets' => Inertia::scroll(fn() => Asset::with(['type', 'model', 'location', 'ownerEmployee', 'ownerOrgUnit'])->paginate(pageName: 'data_asset_page')),
+            'dataAssets' => Inertia::scroll(fn() => Asset::with(['type', 'model', 'location', 'ownerEmployee', 'ownerOrgUnit'])->paginate(pageName: 'data_asset_page')
+        ),
+            'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
+            'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
         ]);
+    }
+
+    public function testing()
+    {
+        return Inertia::render('assets/testing/page');
     }
 
     public function create()
@@ -37,69 +47,59 @@ class DataAssetController extends Controller
         ]);
     }
 
+
+            // $table->id();
+            // $table->string('inventory_number')->unique();
+            // $table->unsignedBigInteger('type_id');
+            // $table->unsignedBigInteger('model_id');
+            // $table->string('serial_number')->nullable();
+            // $table->string('item_name')->nullable();
+            // $table->date('purchase_date')->nullable();
+            // $table->year('purchase_year')->nullable();
+            // $table->date('warranty_expiration')->nullable();
+            // $table->string('status')->default('active');
+            // $table->unsignedBigInteger('location_id')->nullable();
+            // $table->timestamps();
+
+            // $table->foreign('type_id')->references('id')->on('data_types')->onDelete('cascade');
+            // $table->foreign('model_id')->references('id')->on('asset_models')->onDelete('cascade');
+            // $table->foreign('location_id')->references('id')->on('locations')->onDelete('set null');
+
+
     public function store(AddDataModelRequest $request)
     {
-        try {
-            DB::beginTransaction();
+        $validated = $request->validated();
+        $asset = new Asset();
+        $asset->inventory_number = $validated['nomor_inventaris'];
+        $asset->type_id = $validated['tipe'];
+        $asset->model_id = $validated['model'];
+        $asset->serial_number = $validated['serial_number'];
+        $asset->item_name = $validated['item_name'];
+        $asset->purchase_date = $validated['tanggal_pembelian'];
+        $asset->purchase_year = date('Y', strtotime($validated['tanggal_pembelian']));
+        $asset->warranty_expiration = $validated['akhir_garansi'];
+        $asset->status = 'active';
+        $asset->location_id = $validated['lokasi'];
+        $asset->save();
 
+        // push documents to storage and database
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $document) {
+                $path = Storage::put('documents', $document);
 
-            Log::info('Asset creation started', [
-                'user_id' => auth()->id(),
-                'data' => $request->all()
-            ]);
-
-            $validatedData = $request->validated();
-
-            // save asset
-            $asset = new Asset();
-            $asset->inventory_number = $validatedData['nomor_inventaris'];
-            $asset->item_name = $validatedData['item_name'];
-            $asset->type_id = $validatedData['tipe'];
-            $asset->model_id = $validatedData['model'];
-            $asset->serial_number = $validatedData['serial_number'];
-            $asset->purchase_date = $validatedData['tanggal_pembelian'];
-            $asset->purchase_year = date('Y', strtotime($validatedData['tanggal_pembelian']));
-            $asset->warranty_expiration = $validatedData['akhir_garansi'];
-            $asset->status = 'active';
-            $asset->location_id = $validatedData['lokasi'];
-            $asset->owner_type = $validatedData['pengguna'];
-            $asset->owner_employee_id = $validatedData['pegawai'] ?? null;
-            $asset->owner_org_unit_id = $validatedData['bidang'] ?? null;
-            $asset->save();
-
-            // do the assignment
-            $assignment = new Assignment();
-            $assignment->asset_id = $asset->id;
-            $assignment->employee_id = $validatedData['pegawai'] ?? null;
-            $assignment->org_unit_id = $validatedData['bidang'] ?? null;
-            $assignment->created_by = auth()->user()->id;
-            $assignment->assigned_at = $validatedData['tanggal_serah_terima'] ?? null;
-            $assignment->returned_at = null;
-            $assignment->save();
-
-            // up the document
-            if ($request->hasFile('documents')) {
-                foreach ($request->file('documents') as $file) {
-                    $path = $file->store('documents', 'public');
-                    $asset->documents()->create(['file_path' => $path]);
-                }
+                $document = new Document();
+                $document->asset_id = $asset->id;
+                $document->file_path = $path;
+                $document->uploaded_by = auth()->user()->id;
+                $document->upload_date = now();
+                $document->save();
             }
-            DB::commit();
-            Log::info('Asset created successfully', [
-                'user_id' => auth()->id(),
-                'asset_id' => $asset->id
-            ]);
-            return redirect()->route('assets.index')->with('success', 'Asset added successfully.');
-        } catch (\Exception $e) {
-            Log::error('Error adding asset', [
-                'user_id' => auth()->id(),
-                'error' => $e->getMessage(),
-                'data' => $request->all()
-            ]);
-            DB::rollBack();
-            return back()->withErrors(['error' => 'An error occurred while adding the asset: ' . $e->getMessage()])->withInput();
         }
+
+        return redirect()->route('assets.index')->with('success', 'Data asset created successfully.');
     }
+
+
 
     public function view()
     {

@@ -8,9 +8,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Eye, Pencil, QrCode, Trash2 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import { Eye, Pencil, QrCode, Trash2 } from 'lucide-react';
 import { DataAssets } from '../_types';
+import { AssignmentSheet } from './assignment-sheet';
 
 type Props = {
     pagination: DataAssets;
@@ -45,11 +46,15 @@ export function AssetTable({ pagination, onViewQr, onDelete }: Props) {
                             <TableCell>{a.item_name}</TableCell>
                             <TableCell>{a.type.name}</TableCell>
                             <TableCell>{a.model.brand}</TableCell>
-                            <TableCell>{(a.owner_type === "bidang" ? a.owner_org_unit?.name : a.owner_employee?.name)}</TableCell>
+                            <TableCell>
+                                {a.owner_type === 'bidang'
+                                    ? a.owner_org_unit?.name
+                                    : a.owner_employee?.name}
+                            </TableCell>
                             <TableCell>{a.owner_type}</TableCell>
                             <TableCell>{a.location.name}</TableCell>
                             <TableCell>{a.purchase_year}</TableCell>
-                            <TableCell>{""}</TableCell>
+                            <TableCell>{''}</TableCell>
                             <TableCell className="space-x-1 text-right">
                                 <Link href={`/assets/${a.id}`}>
                                     <Button
@@ -80,6 +85,16 @@ export function AssetTable({ pagination, onViewQr, onDelete }: Props) {
                                     <QrCode className="h-4 w-4" />
                                     QR
                                 </Button>
+                                <AssignmentSheet
+                                    asset={a}
+                                    onAssign={(payload) => {
+                                        console.log(
+                                            '[v0] assigned asset:',
+                                            payload,
+                                        );
+                                    }}
+                                />
+
                                 <Button
                                     size="sm"
                                     variant="destructive"

@@ -32,11 +32,6 @@ class AddDataModelRequest extends FormRequest
             'tanggal_pembelian' => 'required|date',
             'akhir_garansi' => 'required|date',
             'lokasi' => 'required|string|max:255',
-            'pengguna' => 'required|string|max:255',
-            'pegawai' => 'nullable|string|max:255',
-            'bidang' => 'nullable|string|max:255',
-            'tanggal_serah_terima' => 'nullable|date',
-            'keterangan' => 'nullable|string',
             'documents' => 'required|array',
             'documents.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
@@ -53,9 +48,19 @@ class AddDataModelRequest extends FormRequest
             'tipe.exists' => 'Tipe tidak valid',
             'model.required' => 'Model wajib dipilih',
             'model.exists' => 'Model tidak valid',
+            'serial_number.required' => 'Nomor seri wajib diisi',
+            'tanggal_pembelian.required' => 'Tanggal pembelian wajib diisi',
+            'tanggal_pembelian.date' => 'Tanggal pembelian tidak valid',
+            'akhir_garansi.required' => 'Akhir garansi wajib diisi',
+            'akhir_garansi.date' => 'Akhir garansi tidak valid',
+            'lokasi.required' => 'Lokasi wajib dipilih',
+            'lokasi.exists' => 'Lokasi tidak valid',
+            'documents.required' => 'Dokumen wajib diunggah',
+            'documents.array' => 'Dokumen tidak valid',
+            'documents.*.file' => 'Setiap dokumen harus berupa file',
+            'documents.*.mimes' => 'Dokumen harus berupa file dengan format: pdf, jpg, jpeg, png',
+            'documents.*.max' => 'Ukuran dokumen maksimal 2MB',
             'akhir_garansi.after' => 'Akhir garansi harus setelah tanggal pembelian',
-            'pegawai.required_if' => 'Pegawai wajib dipilih',
-            'bidang.required_if' => 'Bidang wajib dipilih',
         ];
     }
 }

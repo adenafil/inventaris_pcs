@@ -98,11 +98,6 @@ export function AssetForm({
         tanggal_pembelian: '',
         akhir_garansi: '',
         lokasi: '',
-        pengguna: '',
-        pegawai: '',
-        bidang: '',
-        tanggal_serah_terima: '',
-        keterangan: '',
         documents: [],
     });
 
@@ -160,7 +155,7 @@ export function AssetForm({
             }}
         >
             <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Nomor Inventaris</Label>
                     <Input
                         placeholder="INV-2025-0001"
@@ -179,7 +174,7 @@ export function AssetForm({
                         </p>
                     )}
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Item Name</Label>
                     <Input
                         placeholder="Laptop / Printer / Router"
@@ -195,7 +190,7 @@ export function AssetForm({
                         </p>
                     )}
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Tipe</Label>
                     <Popover open={openTipe} onOpenChange={setOpenTipe}>
                         <PopoverTrigger asChild>
@@ -256,7 +251,7 @@ export function AssetForm({
                         </PopoverContent>
                     </Popover>
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Model</Label>
                     <Popover open={openModel} onOpenChange={setOpenModel}>
                         <PopoverTrigger asChild>
@@ -317,7 +312,7 @@ export function AssetForm({
                         </PopoverContent>
                     </Popover>
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Serial Number</Label>
                     <Input
                         placeholder="SN-XXXXX"
@@ -327,7 +322,7 @@ export function AssetForm({
                         }
                     />
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Tanggal Pembelian</Label>
                     <Input
                         type="date"
@@ -340,7 +335,7 @@ export function AssetForm({
                         }
                     />
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Akhir Garansi</Label>
                     <Input
                         type="date"
@@ -350,7 +345,7 @@ export function AssetForm({
                         }
                     />
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
                     <Label>Lokasi</Label>
                     <Popover open={openLokasi} onOpenChange={setOpenLokasi}>
                         <PopoverTrigger asChild>
@@ -414,155 +409,6 @@ export function AssetForm({
                             </Command>
                         </PopoverContent>
                     </Popover>
-                </div>
-                <div
-                    className={`grid w-full gap-2 ${formAsset.data.pengguna && formAsset.data.pengguna !== 'tidak-diassign' ? '' : 'sm:col-span-2'}`}
-                >
-                    <Label>Pengguna</Label>
-                    <Select
-                        value={formAsset.data.pengguna}
-                        onValueChange={(value) => {
-                            formAsset.setData('pengguna', value);
-                            formAsset.setData('pegawai', '');
-                            formAsset.setData('bidang', '');
-                        }}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Pilih tipe pengguna" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="pegawai">Pegawai</SelectItem>
-                            <SelectItem value="bidang">Bidang</SelectItem>
-                            <SelectItem value="tidak-diassign">
-                                Tidak Diassign
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                {formAsset.data.pengguna === 'pegawai' && (
-                    <div className="grid gap-2">
-                        <Label>Pilih Pegawai</Label>
-                        <Popover
-                            open={openPegawai}
-                            onOpenChange={setOpenPegawai}
-                        >
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={openPegawai}
-                                    className="w-full justify-between bg-transparent font-normal"
-                                >
-                                    {formAsset.data.pegawai
-                                        ? employeesPagination?.data.find(
-                                              (u) =>
-                                                  u.id.toString() ===
-                                                  formAsset.data.pegawai,
-                                          )?.name
-                                        : 'Pilih pegawai'}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                                className="w-full p-0"
-                                align="start"
-                            >
-                                <Command>
-                                    <CommandInput placeholder="Cari pegawai..." />
-                                    <CommandList>
-                                        <CommandEmpty>
-                                            Tidak ditemukan.
-                                        </CommandEmpty>
-                                        <CommandGroup>
-                                            <InfiniteScroll
-                                                data="employees"
-                                                buffer={1}
-                                            >
-                                                {employeesPagination!.data.map(
-                                                    (u) => (
-                                                        <CommandItem
-                                                            key={u.id}
-                                                            value={u.name.toString()}
-                                                            onSelect={() => {
-                                                                formAsset.setData(
-                                                                    'pegawai',
-                                                                    u.id.toString(),
-                                                                );
-                                                                setOpenPegawai(
-                                                                    false,
-                                                                );
-                                                            }}
-                                                        >
-                                                            <Check
-                                                                className={cn(
-                                                                    'mr-2 h-4 w-4',
-                                                                    formAsset
-                                                                        .data
-                                                                        .pegawai ===
-                                                                        u.id.toString()
-                                                                        ? 'opacity-100'
-                                                                        : 'opacity-0',
-                                                                )}
-                                                            />
-                                                            {u.name}
-                                                        </CommandItem>
-                                                    ),
-                                                )}
-                                            </InfiniteScroll>
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                )}
-                {formAsset.data.pengguna === 'bidang' && (
-                    <div className="grid gap-2">
-                        <Label>Pilih Bidang</Label>
-                        <Select
-                            value={assignmentDetail}
-                            onValueChange={setAssignmentDetail}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Pilih bidang" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <InfiniteScroll data="employees" buffer={1}>
-                                    {orgUnitsPagination?.data.map((dept) => (
-                                        <SelectItem
-                                            key={dept.id}
-                                            value={dept.id.toString()}
-                                        >
-                                            {dept.name}
-                                        </SelectItem>
-                                    ))}
-                                </InfiniteScroll>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
-                <div className="grid gap-2 sm:col-span-2">
-                    <Label>Tanggal Serah Terima (Date & Time)</Label>
-                    <Input
-                        type="datetime-local"
-                        value={formAsset.data.tanggal_serah_terima}
-                        onChange={(e) =>
-                            formAsset.setData(
-                                'tanggal_serah_terima',
-                                e.target.value,
-                            )
-                        }
-                    />
-                </div>
-                <div className="grid gap-2 sm:col-span-2">
-                    <Label>Keterangan (opsional)</Label>
-                    <Textarea
-                        placeholder="Catatan tambahan…"
-                        value={formAsset.data.keterangan}
-                        onChange={(e) =>
-                            formAsset.setData('keterangan', e.target.value)
-                        }
-                    />
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Dokumen & Foto (multiple)</Label>
