@@ -38,7 +38,7 @@ class DataAssetController extends Controller
 
     public function create()
     {
-        return Inertia::render('assets/add/page', [
+        return Inertia::render('assets/edit/page', [
             'types' => Inertia::scroll(fn() => DataType::paginate(pageName: 'type_page')),
             'models' => Inertia::scroll(fn() => AssetModel::paginate(pageName: 'model_page')),
             'locations' => Inertia::scroll(fn() => Location::paginate(pageName: 'location_page')),
@@ -46,25 +46,6 @@ class DataAssetController extends Controller
             'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
         ]);
     }
-
-
-            // $table->id();
-            // $table->string('inventory_number')->unique();
-            // $table->unsignedBigInteger('type_id');
-            // $table->unsignedBigInteger('model_id');
-            // $table->string('serial_number')->nullable();
-            // $table->string('item_name')->nullable();
-            // $table->date('purchase_date')->nullable();
-            // $table->year('purchase_year')->nullable();
-            // $table->date('warranty_expiration')->nullable();
-            // $table->string('status')->default('active');
-            // $table->unsignedBigInteger('location_id')->nullable();
-            // $table->timestamps();
-
-            // $table->foreign('type_id')->references('id')->on('data_types')->onDelete('cascade');
-            // $table->foreign('model_id')->references('id')->on('asset_models')->onDelete('cascade');
-            // $table->foreign('location_id')->references('id')->on('locations')->onDelete('set null');
-
 
     public function store(AddDataModelRequest $request)
     {
@@ -98,6 +79,30 @@ class DataAssetController extends Controller
         }
 
         return redirect()->route('assets.index')->with('success', 'Data asset created successfully.');
+    }
+
+    public function edit(Asset $asset)
+    {
+        return Inertia::render('assets/edit/page', [
+            'asset' => $asset->load(['type', 'model', 'location', 'creator', 'documents']),
+            'types' => Inertia::scroll(fn() => DataType::paginate(pageName: 'type_page')),
+            'models' => Inertia::scroll(fn() => AssetModel::paginate(pageName: 'model_page')),
+            'locations' => Inertia::scroll(fn() => Location::paginate(pageName: 'location_page')),
+            'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
+            'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
+        ]);
+    }
+
+    public function destroyDocument(Document $document)
+    {
+        try {
+            Storage::delete($document->file_path);
+            $document->delete();
+            return redirect()->back()->with('success', 'Document deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting document: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete document.');
+        }
     }
 
 

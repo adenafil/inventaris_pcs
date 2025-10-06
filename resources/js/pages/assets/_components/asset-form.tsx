@@ -16,19 +16,12 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { InfiniteScroll } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import {
     Employee,
     Location,
@@ -37,9 +30,8 @@ import {
     Pagination,
     Type,
 } from '../add/_types';
+import { Asset } from '../edit/_types';
 import { FileUpload, type UploadItem } from './file-upload';
-import { models, type Asset } from './lib/assets-data';
-import { toast } from 'sonner';
 
 type Props = {
     defaultValue?: Partial<Asset>;
@@ -51,6 +43,7 @@ type Props = {
     locationsPagination?: Pagination<Location>;
     employeesPagination?: Pagination<Employee>;
     orgUnitsPagination?: Pagination<OrgUnit>;
+    asset?: Asset;
 };
 
 const departments = [
@@ -62,22 +55,6 @@ const departments = [
     'Produksi',
 ];
 
-// 'nomor_inventaris' => 'required|string|max:255',
-// 'item_name' => 'required|string|max:255',
-// 'tipe' => 'required|string|max:255',
-// 'model' => 'required|string|max:255',
-// 'serial_number' => 'required|string|max:255',
-// 'tanggal_pembelian' => 'required|date',
-// 'akhir_garansi' => 'required|date',
-// 'lokasi' => 'required|string|max:255',
-// 'pengguna' => 'required|string|max:255',
-// 'pegawai' => 'nullable|string|max:255',
-// 'bidang' => 'nullable|string|max:255',
-// 'tanggal_serah_terima' => 'nullable|date',
-// 'keterangan' => 'nullable|string',
-// 'documents' => 'nullable|array',
-// 'documents.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
-
 export function AssetForm({
     defaultValue,
     mode,
@@ -88,16 +65,17 @@ export function AssetForm({
     locationsPagination,
     employeesPagination,
     orgUnitsPagination,
+    asset,
 }: Props) {
     const formAsset = useForm('post', url, {
-        nomor_inventaris: '',
-        item_name: '',
-        tipe: '',
-        model: '',
-        serial_number: '',
-        tanggal_pembelian: '',
-        akhir_garansi: '',
-        lokasi: '',
+        nomor_inventaris: asset?.inventory_number ?? '',
+        item_name: asset?.item_name ?? '',
+        tipe: asset?.type.id ?? '',
+        model: asset?.model.id ?? '',
+        serial_number: asset?.serial_number ?? '',
+        tanggal_pembelian: asset?.purchase_date ?? '',
+        akhir_garansi: asset?.warranty_expiration ?? '',
+        lokasi: asset?.location.id ?? '',
         documents: [],
     });
 
@@ -130,9 +108,9 @@ export function AssetForm({
                 toast.success('Asset saved successfully!');
             },
             onValidationError: (error) => {
-                toast.error(error.data.message)
-            }
-        })
+                toast.error(error.data.message);
+            },
+        });
     };
     const onBack = () => {
         console.log('[v0] back from form');
@@ -143,7 +121,10 @@ export function AssetForm({
     }, [formAsset]);
 
     useEffect(() => {
-        formAsset.setData('documents', files.map((f) => f.file));
+        formAsset.setData(
+            'documents',
+            files.map((f) => f.file),
+        );
     }, [files]);
 
     return (
@@ -201,12 +182,13 @@ export function AssetForm({
                                 className="w-full justify-between bg-transparent font-normal"
                             >
                                 {formAsset.data.tipe
-                                    ? typesPagination?.data.find(
+                                    ? (typesPagination?.data.find(
                                           (t) =>
                                               t.id.toString() ===
                                               formAsset.data.tipe,
-                                      )?.name
+                                      )?.name ?? asset?.type.name)
                                     : 'Pilih tipe'}
+
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </PopoverTrigger>
@@ -262,11 +244,11 @@ export function AssetForm({
                                 className="w-full justify-between bg-transparent font-normal"
                             >
                                 {formAsset.data.model
-                                    ? modelsPagination?.data.find(
+                                    ? (modelsPagination?.data.find(
                                           (m) =>
                                               m.id.toString() ===
                                               formAsset.data.model,
-                                      )?.brand
+                                      )?.brand ?? asset?.model.brand)
                                     : 'Pilih model'}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -356,11 +338,11 @@ export function AssetForm({
                                 className="w-full justify-between bg-transparent font-normal"
                             >
                                 {formAsset.data.lokasi
-                                    ? locationsPagination?.data.find(
+                                    ? (locationsPagination?.data.find(
                                           (l) =>
                                               l.id.toString() ===
                                               formAsset.data.lokasi,
-                                      )?.name
+                                      )?.name ?? asset?.location.name)
                                     : 'Pilih lokasi'}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -412,7 +394,11 @@ export function AssetForm({
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Dokumen & Foto (multiple)</Label>
-                    <FileUpload value={files} onChange={setFiles} />
+                    {asset?.documents && asset.documents.length > 0 ? (
+                        <FileUpload value={files} onChange={setFiles} documents={asset.documents} />
+                    ) : (
+                        <FileUpload value={files} onChange={setFiles} />
+                    )}
                     {formAsset.invalid('documents') && (
                         <p className="mt-1 text-sm text-red-600">
                             {formAsset.errors.documents}

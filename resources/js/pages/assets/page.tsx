@@ -191,7 +191,7 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                             View
                                                         </Button>
                                                     </Link>
-                                                    <Link href={`/`}>
+                                                    <Link href={`/master/assets/${data.id}/edit`}>
                                                         <Button
                                                             size="sm"
                                                             variant="outline"

@@ -33,7 +33,7 @@ class AddDataModelRequest extends FormRequest
             'akhir_garansi' => 'required|date',
             'lokasi' => 'required|string|max:255',
             'documents' => 'required|array',
-            'documents.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'documents.*' => 'file|mimes:pdf,jpg,jpeg,png',
         ];
     }
 

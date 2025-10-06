@@ -2,6 +2,9 @@
 import { Input } from '@/components/ui/input';
 import { FileText, Upload, X } from 'lucide-react';
 import { useState } from 'react';
+import { Document } from '../edit/_types';
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 
 export type UploadItem = {
     id: string;
@@ -13,10 +16,12 @@ export type UploadItem = {
 type FileUploadProps = {
     value: UploadItem[];
     onChange: (items: UploadItem[]) => void;
+    documents?: Document[];
 };
 
-export function FileUpload({ value, onChange }: FileUploadProps) {
+export function FileUpload({ value, onChange, documents }: FileUploadProps) {
     const [isDragging, setIsDragging] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const onFiles = (files: FileList | null) => {
         if (!files) return;
@@ -132,6 +137,63 @@ export function FileUpload({ value, onChange }: FileUploadProps) {
                                         <FileText className="h-8 w-8" />
                                         <span className="text-xs">
                                             {item.file.name}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {documents && documents.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    {documents.map((doc) => (
+                        <div
+                            key={doc.id}
+                            className="relative rounded-md border bg-card p-2"
+                        >
+                            <button
+                                type="button"
+                                aria-label="Remove file"
+                                className={`absolute top-1 right-1 inline-flex h-6 w-6 items-center justify-center rounded-md border bg-background/80 ${
+                                    documents.length === 1 || isLoading
+                                        ? 'cursor-not-allowed opacity-50'
+                                        : ''
+                                }`}
+                                disabled={documents.length === 1 || isLoading}
+                                onClick={() =>
+                                    router.delete(
+                                        `/master/assets/delete/document/${doc.id}`,
+                                        {
+                                            preserveScroll: true, onSuccess: () => {
+                                                toast.success('Document successfully deleted');
+                                                setIsLoading(false);
+                                            }
+                                        , onBefore: () => setIsLoading(true) }
+                                    )
+                                }
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                            {doc.file_path.endsWith('.jpg') ||
+                            doc.file_path.endsWith('.jpeg') ||
+                            doc.file_path.endsWith('.png') ? (
+                                <img
+                                    src={
+                                        `/storage/${doc.file_path}` ||
+                                        '/placeholder.svg'
+                                    }
+                                    alt={doc.file_path}
+                                    className="h-28 w-full rounded object-cover"
+                                    crossOrigin="anonymous"
+                                />
+                            ) : (
+                                <div className="flex h-28 w-full items-center justify-center">
+                                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                        <FileText className="h-8 w-8" />
+                                        <span className="text-xs">
+                                            {doc.file_path.split('/').pop()}
                                         </span>
                                     </div>
                                 </div>
