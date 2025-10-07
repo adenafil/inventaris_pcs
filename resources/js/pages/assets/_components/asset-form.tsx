@@ -17,7 +17,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { InfiniteScroll } from '@inertiajs/react';
+import { InfiniteScroll, Link } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -94,10 +94,6 @@ export function AssetForm({
             },
         });
     };
-    const onBack = () => {
-        console.log('[v0] back from form');
-    };
-
     useEffect(() => {
         console.log(formAsset.data);
     }, [formAsset]);
@@ -214,6 +210,11 @@ export function AssetForm({
                             </Command>
                         </PopoverContent>
                     </Popover>
+                    {formAsset.invalid('tipe') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.tipe}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Model</Label>
@@ -275,6 +276,11 @@ export function AssetForm({
                             </Command>
                         </PopoverContent>
                     </Popover>
+                    {formAsset.invalid('model') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.model}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Serial Number</Label>
@@ -285,6 +291,11 @@ export function AssetForm({
                             formAsset.setData('serial_number', e.target.value)
                         }
                     />
+                    {formAsset.invalid('serial_number') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.serial_number}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Tanggal Pembelian</Label>
@@ -298,6 +309,11 @@ export function AssetForm({
                             )
                         }
                     />
+                    {formAsset.invalid('tanggal_pembelian') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.tanggal_pembelian}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Akhir Garansi</Label>
@@ -308,6 +324,11 @@ export function AssetForm({
                             formAsset.setData('akhir_garansi', e.target.value)
                         }
                     />
+                    {formAsset.invalid('akhir_garansi') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.akhir_garansi}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Lokasi</Label>
@@ -373,11 +394,20 @@ export function AssetForm({
                             </Command>
                         </PopoverContent>
                     </Popover>
+                    {formAsset.invalid('lokasi') && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {formAsset.errors.lokasi}
+                        </p>
+                    )}
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Dokumen & Foto (multiple)</Label>
                     {asset?.documents && asset.documents.length > 0 ? (
-                        <FileUpload value={files} onChange={setFiles} documents={asset.documents} />
+                        <FileUpload
+                            value={files}
+                            onChange={setFiles}
+                            documents={asset.documents}
+                        />
                     ) : (
                         <FileUpload value={files} onChange={setFiles} />
                     )}
@@ -390,10 +420,14 @@ export function AssetForm({
             </div>
 
             <div className="flex items-center gap-3">
-                <Button type="submit">Save</Button>
-                <Button type="button" variant="secondary" onClick={onBack}>
-                    Back
+                <Button type="submit" disabled={formAsset.processing}>
+                    {formAsset.processing ? 'Saving...' : 'Save'}
                 </Button>
+                <Link href={"/master/assets"} preserveScroll>
+                    <Button type="button" className='cursor-pointer' variant="secondary">
+                        Back
+                    </Button>
+                </Link>
             </div>
         </form>
     );
