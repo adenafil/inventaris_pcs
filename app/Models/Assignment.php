@@ -13,6 +13,9 @@ class Assignment extends Model
         'employee_id',
         'org_unit_id',
         'created_by',
+        'notes',
+        'dokument_peminjaman',
+        'status',
         'assigned_at',
         'returned_at',
     ];

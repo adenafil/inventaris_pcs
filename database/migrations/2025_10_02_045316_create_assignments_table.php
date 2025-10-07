@@ -17,6 +17,9 @@ return new class extends Migration
             $table->unsignedBigInteger('employee_id')->nullable();
             $table->unsignedBigInteger('org_unit_id')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
+            $table->text('notes')->nullable();
+            $table->text('dokument_peminjaman')->nullable();
+            $table->enum('status', ['assigned', 'returned', 'lost'])->default('assigned');
             $table->date('assigned_at')->nullable();
             $table->date('returned_at')->nullable();
             $table->timestamps();

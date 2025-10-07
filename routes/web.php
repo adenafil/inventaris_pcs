@@ -81,6 +81,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/assets', [DataAssetController::class, 'store'])->name('assets.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::post('/assets/assignment', [DataAssetController::class, 'assginment'])->name('assets.assignment')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
+
         Route::get('/assets/view', [DataAssetController::class, 'view'])->name('assets.view');
 
         Route::get('/assets/testing', [DataAssetController::class, 'testing'])->name('assets.testing');

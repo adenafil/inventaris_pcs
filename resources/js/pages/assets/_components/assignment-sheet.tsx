@@ -33,10 +33,11 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
-import type { Asset } from './lib/assets-data';
 import { cn } from '@/lib/utils';
+import { useForm } from 'laravel-precognition-react';
 import { Building2, Check, ChevronsUpDown, UserRound } from 'lucide-react';
 import * as React from 'react';
+import type { Asset } from './lib/assets-data';
 
 type AssignmentType = 'pegawai' | 'bidang' | 'none';
 
@@ -68,6 +69,7 @@ const DUMMY_BIDANG = [
 ];
 
 export function AssignmentSheet({ asset, onAssign }: Props) {
+
     const [type, setType] = React.useState<AssignmentType>('none');
     const [openUser, setOpenUser] = React.useState(false);
     const [selectedUserId, setSelectedUserId] = React.useState<string | null>(

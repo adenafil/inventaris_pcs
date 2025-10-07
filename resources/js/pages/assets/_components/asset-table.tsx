@@ -12,6 +12,7 @@ import { Link } from '@inertiajs/react';
 import { Eye, Pencil, QrCode, Trash2 } from 'lucide-react';
 import { DataAssets } from '../_types';
 import { AssignmentSheet } from './assignment-sheet';
+import { useForm } from 'laravel-precognition-react';
 
 type Props = {
     pagination: DataAssets;
@@ -19,7 +20,18 @@ type Props = {
     onDelete: (asset: Asset) => void;
 };
 
+            // 'asset_id' => 'required|exists:assets,id',
+            // 'employee_id' => 'nullable|exists:employees,id',
+            // 'org_unit_id' => 'nullable|exists:org_units,id',
+            // 'notes' => 'nullable|string|max:500',
+            // 'dokument_peminjaman' => 'nullable|string|max:500',
+            // 'status' => 'required|in:assigned,returned,lost',
+            // 'assigned_at' => 'nullable|date',
+            // 'returned_at' => 'nullable|date|after_or_equal:assigned_at',
+
+
 export function AssetTable({ pagination, onViewQr, onDelete }: Props) {
+
     return (
         <div className="rounded-md border">
             <Table>

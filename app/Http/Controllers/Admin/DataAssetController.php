@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AddAssignmentRequest;
 use App\Http\Requests\Admin\AddDataModelRequest;
 use App\Http\Requests\Admin\EditDataAssetModelRequest;
 use App\Models\Asset;
@@ -144,5 +145,43 @@ class DataAssetController extends Controller
     public function view()
     {
         return Inertia::render('assets/view/page');
+    }
+
+    public function assginment(AddAssignmentRequest $request)
+    {
+        $validated = $request->validated();
+
+        $assignment = new Assignment();
+        $assignment->asset_id = $validated['asset_id'];
+        $assignment->employee_id = $validated['employee_id'] ?? null;
+        $assignment->org_unit_id = $validated['org_unit_id'] ?? null;
+        $assignment->created_by = auth()->user()->id;
+        $assignment->notes = $validated['notes'] ?? null;
+        // up document peminjaman
+        if ($request->hasFile('dokument_peminjaman')) {
+            $path = Storage::put('documents', $request->file('dokument_peminjaman'));
+            $assignment->dokument_peminjaman = $path;
+        } else {
+            $assignment->dokument_peminjaman = null;
+        }
+        $assignment->status = $validated['status'];
+        $assignment->assigned_at = $validated['assigned_at'] ?? null;
+        $assignment->returned_at = $validated['returned_at'] ?? null;
+        $assignment->save();
+
+        // Update asset status based on assignment status
+        $asset = Asset::find($validated['asset_id']);
+        if ($asset) {
+            if ($validated['status'] === 'assigned') {
+                $asset->status = 'assigned';
+            } elseif ($validated['status'] === 'returned') {
+                $asset->status = 'active';
+            } elseif ($validated['status'] === 'lost') {
+                $asset->status = 'lost';
+            }
+            $asset->save();
+        }
+
+        return redirect()->back()->with('success', 'Asset assigned successfully.');
     }
 }

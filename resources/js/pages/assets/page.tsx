@@ -1,6 +1,19 @@
 import { Button } from '@/components/ui/button';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -27,11 +40,22 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, InfiniteScroll, Link } from '@inertiajs/react';
-import { Check, ChevronsUpDown, Eye, Pencil, QrCode, Trash2, UserCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useForm } from 'laravel-precognition-react';
+import {
+    Check,
+    ChevronsUpDown,
+    Eye,
+    Pencil,
+    QrCode,
+    Trash2,
+    UserCheck,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
     type Asset,
     assetsIT,
@@ -40,10 +64,7 @@ import {
 } from './_components/lib/assets-data';
 import { QrModal } from './_components/qr-modal';
 import { PageProps } from './_types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { cn } from '@/lib/utils';
-import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -57,7 +78,9 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
 
     const [isOpenPegawai, setOpenPegawai] = useState(false);
     const [isOpenBidang, setOpenBidang] = useState(false);
-    const [typePengguna, setTypePengguna] = useState<'pegawai' | 'bidang' | 'tidak-diassign' | ''>('');
+    const [typePengguna, setTypePengguna] = useState<
+        'pegawai' | 'bidang' | 'tidak-diassign' | ''
+    >('');
 
     const [tab, setTab] = useState<'it' | 'kantor'>('it');
     const [search, setSearch] = useState('');
@@ -65,32 +88,40 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
     const [qrAsset, setQrAsset] = useState<Asset | null>(null);
 
     const dataSrc = tab === 'it' ? assetsIT : assetsKantor;
-    const filtered = dataSrc.filter((a) => {
-        const q = search.toLowerCase();
-        const matchQ =
-            !q ||
-            a.nomorInvent.toLowerCase().includes(q) ||
-            a.item.toLowerCase().includes(q) ||
-            a.brand.toLowerCase().includes(q) ||
-            a.pemakai.toLowerCase().includes(q) ||
-            a.lokasi.toLowerCase().includes(q);
-        const matchTipe = !tipe || a.tipe === tipe;
-        return matchQ && matchTipe;
-    });
-
-    const onViewQr = (asset: Asset) => {
-        console.log('[v0] open qr for asset:', asset.id);
-        setQrAsset(asset);
-    };
-
-    const onDelete = (asset: Asset) => {
-        console.log('[v0] delete asset clicked:', asset);
-        alert('Dummy: delete action logged to console.');
-    };
-
     const qrValue = qrAsset
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${qrAsset.id}`
         : '';
+
+    const formAssign = useForm('post', 'assets/assignment', {
+        asset_id: '',
+        employee_id: '',
+        org_unit_id: '',
+        notes: '',
+        dokument_peminjaman: '',
+        status: 'assigned',
+        assigned_at: '',
+        returned_at: '',
+    });
+
+    const handleAssign = () => {
+        formAssign.setData('assigned_at', new Date().toISOString().split('T')[0]);
+        formAssign.submit({
+            onSuccess: () => {
+                setTypePengguna('');
+                setOpenBidang(false);
+                setOpenPegawai(false);
+                formAssign.reset();
+                toast.success('Asset assigned successfully');
+            },
+            onValidationError: (error) => {
+                toast.error(error.data.message.split('(')[0] || 'Sorry, something went wrong. Please try again later.');
+            }
+        })
+    };
+
+    useEffect(() => {
+        console.log(formAssign.data);
+    }, [formAssign.data]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -161,7 +192,7 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                     </TableHeader>
                                     <TableBody>
                                         {dataAssets.data.map((data) => (
-                                            <TableRow>
+                                            <TableRow key={data.id}>
                                                 <TableCell className="whitespace-nowrap">
                                                     {data.inventory_number}
                                                 </TableCell>
@@ -191,7 +222,9 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                             View
                                                         </Button>
                                                     </Link>
-                                                    <Link href={`/master/assets/${data.id}/edit`}>
+                                                    <Link
+                                                        href={`/master/assets/${data.id}/edit`}
+                                                    >
                                                         <Button
                                                             size="sm"
                                                             variant="outline"
@@ -281,6 +314,7 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                                                     false,
                                                                                 );
                                                                             }
+                                                                            formAssign.setData('asset_id', data.id.toString());
                                                                         }}
                                                                     >
                                                                         <SelectTrigger>
@@ -326,7 +360,22 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                                                     }
                                                                                     className="w-full justify-between bg-transparent font-normal"
                                                                                 >
-                                                                                    {`Pilih pegawai...`}
+                                                                                    {formAssign
+                                                                                        .data
+                                                                                        .employee_id
+                                                                                        ? employees.data.find(
+                                                                                              (
+                                                                                                  e,
+                                                                                              ) =>
+                                                                                                  e.id ===
+                                                                                                  Number(
+                                                                                                      formAssign
+                                                                                                          .data
+                                                                                                          .employee_id,
+                                                                                                  ),
+                                                                                          )
+                                                                                              ?.name
+                                                                                        : 'Pilih pegawai'}
                                                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                                                 </Button>
                                                                             </PopoverTrigger>
@@ -356,12 +405,20 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                                                                             key={
                                                                                                                 u.id
                                                                                                             }
-                                                                                                            value={u.name.toString()}
                                                                                                             onSelect={() => {
+                                                                                                                formAssign.setData(
+                                                                                                                    'employee_id',
+                                                                                                                    u.id,
+                                                                                                                );
                                                                                                                 setOpenPegawai(
                                                                                                                     false,
                                                                                                                 );
+                                                                                                                formAssign.setData(
+                                                                                                                    'org_unit_id',
+                                                                                                                    '',
+                                                                                                                );
                                                                                                             }}
+                                                                                                            value={u.id.toString()}
                                                                                                         >
                                                                                                             <Check
                                                                                                                 className={cn(
@@ -397,7 +454,17 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                                         </Label>
                                                                         <Select
                                                                             value={
-                                                                                ''
+                                                                                formAssign
+                                                                                    .data
+                                                                                    .org_unit_id
+                                                                            }
+                                                                            onValueChange={(
+                                                                                value,
+                                                                            ) =>
+                                                                                formAssign.setData(
+                                                                                    'org_unit_id',
+                                                                                    value,
+                                                                                )
                                                                             }
                                                                         >
                                                                             <SelectTrigger>
@@ -448,6 +515,22 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                                         className="w-full"
                                                                         type="file"
                                                                         accept=".pdf,.jpg,.png"
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) => {
+                                                                            if (
+                                                                                e
+                                                                                    .target
+                                                                                    .files
+                                                                            ) {
+                                                                                formAssign.setData(
+                                                                                    'dokument_peminjaman',
+                                                                                    e
+                                                                                        .target
+                                                                                        .files[0],
+                                                                                );
+                                                                            }
+                                                                        }}
                                                                     />
                                                                 </div>
 
@@ -456,12 +539,24 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                                         Keterangan
                                                                         (opsional)
                                                                     </Label>
-                                                                    <Textarea placeholder="Catatan tambahan…" />
+                                                                    <Textarea
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            formAssign.setData(
+                                                                                'notes',
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                        placeholder="Catatan tambahan…"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <SheetFooter>
-                                                                <Button type="submit">
-                                                                    Assign
+                                                                <Button disabled={formAssign.processing} type="submit" onClick={() => handleAssign()}>
+                                                                    {formAssign.processing ? 'Assigning...' : 'Assign'}
                                                                 </Button>
                                                                 <SheetClose
                                                                     asChild
@@ -487,8 +582,7 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                     </TableBody>
                                 </Table>
                             </div>
-                        </TabsContent>
-                        {' '}
+                        </TabsContent>{' '}
                     </Tabs>
                 </main>
 
