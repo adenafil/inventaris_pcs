@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class DataAssetController extends Controller
 {
@@ -142,12 +143,22 @@ class DataAssetController extends Controller
 
 
 
-    public function view()
+    public function view($id)
     {
-        return Inertia::render('assets/view/page');
+        $dataAsset = Asset::with(['type', 'model', 'location', 'creator', 'documents'])->where('id', $id)->firstOrFail();
+        $assignments = Assignment::with(['employee', 'orgUnit', 'creator'])
+            ->where('asset_id', $dataAsset->id)
+            ->orderBy('assigned_at', 'desc')
+            ->get();
+        return Inertia::render('assets/view/page', [
+            'dataAsset' => $dataAsset,
+            'assignments' => $assignments,
+            'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
+            'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
+        ]);
     }
 
-    public function assginment(AddAssignmentRequest $request)
+    public function assignment(AddAssignmentRequest $request)
     {
         $validated = $request->validated();
 
@@ -167,6 +178,8 @@ class DataAssetController extends Controller
         $assignment->status = $validated['status'];
         $assignment->assigned_at = $validated['assigned_at'] ?? null;
         $assignment->returned_at = $validated['returned_at'] ?? null;
+        $assignment->key_qr = Str::uuid();
+
         $assignment->save();
 
         // Update asset status based on assignment status

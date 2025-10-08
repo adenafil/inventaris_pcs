@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -6,7 +6,10 @@ import { AssetDetail } from '../_components/asset-detail';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, QrCode, Trash2, Undo2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { PageProps } from './_types';
+import AssignForm from '../_components/assign-form';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,7 +47,10 @@ const logsDummy = [
     },
 ];
 
-export default function Page() {
+
+export default function Page({ dataAsset, assignments, employees, orgUnits }: PageProps) {
+    console.log({dataAsset, assignments, employees, orgUnits});
+
     const [filter, setFilter] = useState<
         'all' | 'service' | 'repair' | 'other'
     >('all');
@@ -64,7 +70,7 @@ export default function Page() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Add New Data Asset" />
+            <Head title={`View Asset ${dataAsset.id}`} />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 {/* Main Content */}
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
@@ -107,9 +113,6 @@ export default function Page() {
                                     <Row k="Brand/Model" v={'ThinkPad X1'} />
                                     <Row k="Serial" v={'SN-ABC-001'} />
                                     <Row k="Lokasi" v={'Kantor Pusat'} />
-                                    <Row k="Pemakai" v={'Andi'} />
-                                    <Row k="Bidang" v={'IT'} />
-                                    <Row k="Tahun" v={String('2024')} />
                                     <Row
                                         k="Tanggal Pembelian"
                                         v={String('2024-01-01')}
@@ -119,7 +122,7 @@ export default function Page() {
                                         v={String('2025-01-01')}
                                     />
                                 </div>
-                                <div className="flex gap-2 justify-end mt-4 md:col-span-2">
+                                <div className="mt-4 flex justify-end gap-2 md:col-span-2">
                                     <Button variant="outline" size="sm">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back
@@ -128,6 +131,11 @@ export default function Page() {
                                         <Edit className="mr-2 h-4 w-4" />
                                         Edit
                                     </Button>
+                                    <Button variant="outline" size="sm">
+                                        <QrCode />
+                                        QR
+                                    </Button>
+                                    <AssignForm key={dataAsset.id} asset_id={dataAsset.id} employees={employees} orgUnits={orgUnits} />
                                     <Button variant="destructive" size="sm">
                                         <Trash2 className="mr-2 h-4 w-4" />
                                         Delete
@@ -193,29 +201,43 @@ export default function Page() {
                             </CardContent>
                         </Card>
 
+                        {/* Borrowers / Assignees */}
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>QR Code</CardTitle>
-                                <Button onClick={downloadQR}>
-                                    Download QR
-                                </Button>
+                            <CardHeader>
+                                <CardTitle>
+                                    Informasi Peminjam (Assigned)
+                                </CardTitle>
+                                <CardDescription>
+                                    Riwayat peminjaman dan status pengembalian.
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center justify-center p-4">
-                                    {qrUrl ? (
-                                        <img
-                                            src={qrUrl || '/placeholder.svg'}
-                                            alt="QR code"
-                                            className="h-auto w-40"
-                                        />
-                                    ) : (
-                                        <div className="text-sm text-muted-foreground">
-                                            Generating QR…
+                            <CardContent className="space-y-3">
+                                <div className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between">
+                                    <div className="space-y-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="text-sm font-medium">
+                                                {'Sinta Dewi'}
+                                            </span>
+                                            <Badge variant="outline">
+                                                {'sinta@company.com'}
+                                            </Badge>
                                         </div>
-                                    )}
-                                </div>
-                                <div className="text-center text-xs break-all text-muted-foreground">
-                                    {'https://example.com/asset/INV-2024-0001'}
+                                        <div className="text-sm text-muted-foreground">
+                                            Status:{' '}
+                                            <span className="capitalize">
+                                                {'dipinjam'}
+                                            </span>{' '}
+                                            • Tgl Pinjam: {'2024-06-01'} •
+                                            Kembali: {'Ya'}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="destructive">
+                                            {/* gimme return icon */}
+                                            <Undo2 />
+                                            Return
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

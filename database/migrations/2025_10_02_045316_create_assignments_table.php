@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('org_unit_id')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->text('notes')->nullable();
+            $table->string('key_qr')->unique()->nullable();
             $table->text('dokument_peminjaman')->nullable();
             $table->enum('status', ['assigned', 'returned', 'lost'])->default('assigned');
             $table->date('assigned_at')->nullable();

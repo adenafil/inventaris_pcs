@@ -18,6 +18,7 @@ class Assignment extends Model
         'status',
         'assigned_at',
         'returned_at',
+        'key_qr'
     ];
 
     public function asset()

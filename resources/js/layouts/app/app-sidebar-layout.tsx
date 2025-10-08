@@ -11,32 +11,32 @@ export default function AppSidebarLayout({
     breadcrumbs = [],
 }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
 
-    setInterval(() => {
-        fetch('/geez')
-            .then(response => response.json())
-            .then(data => {
-                console.log('User activity updated:', data);
-            })
-            .catch(error => {
-                console.error('Error updating user activity:', error);
-            });
-    }, 60 * 1000);
+    // setInterval(() => {
+    //     fetch('/geez')
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             console.log('User activity updated:', data);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error updating user activity:', error);
+    //         });
+    // }, 60 * 1000);
 
-    useEffect(() => {
-        const handleActivity = () => {
-            fetch('/geez')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('User activity updated:', data);
-                })
-                .catch(error => {
-                    console.error('Error updating user activity:', error);
-                });
-        };
+    // useEffect(() => {
+    //     const handleActivity = () => {
+    //         fetch('/geez')
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 console.log('User activity updated:', data);
+    //             })
+    //             .catch(error => {
+    //                 console.error('Error updating user activity:', error);
+    //             });
+    //     };
 
-        handleActivity(); 
+    //     handleActivity();
 
-    }, []);
+    // }, []);
 
     return (
         <>
