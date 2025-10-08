@@ -63,7 +63,7 @@ export default function AssignForm({ employees, orgUnits, asset_id }: { employee
                 <Button
                     size="sm"
                     variant="outline"
-                    className="inline-flex gap-1 bg-transparent"
+                    className="w-full sm:w-auto"
                 >
                     <UserCheck className="h-4 w-4" />
                     Assign

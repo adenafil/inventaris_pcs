@@ -1,15 +1,26 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { AssetDetail } from '../_components/asset-detail';
-import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, QrCode, Trash2, Undo2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { PageProps } from './_types';
+import { useState } from 'react';
 import AssignForm from '../_components/assign-form';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,7 +32,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '#',
     },
 ];
-
 
 const logsDummy = [
     {
@@ -47,26 +57,32 @@ const logsDummy = [
     },
 ];
 
+export default function Page({
+    dataAsset,
+    assignments,
+    employees,
+    orgUnits,
+}: PageProps) {
+    console.log({ dataAsset, assignments, employees, orgUnits });
 
-export default function Page({ dataAsset, assignments, employees, orgUnits }: PageProps) {
-    console.log({dataAsset, assignments, employees, orgUnits});
-
+    // in the meantime, let the fake data appear, until the api is ready
     const [filter, setFilter] = useState<
         'all' | 'service' | 'repair' | 'other'
     >('all');
     const [qrUrl, setQrUrl] = useState<string>('');
 
-    const filtered = logsDummy.filter((l) => filter === 'all' || l.type === filter);
+    const filtered = logsDummy.filter(
+        (l) => filter === 'all' || l.type === filter,
+    );
 
-    const downloadQR = () => {
-        if (!qrUrl) return;
-        const a = document.createElement('a');
-        a.href = qrUrl;
-        a.download = `qr-${asset.id}.png`;
-        a.click();
-        console.log('[v0] download detail QR', asset.id);
-    };
-
+    const image =
+        dataAsset.documents.find(
+            (doc) =>
+                doc.file_path.endsWith('.jpg') ||
+                doc.file_path.endsWith('.png'),
+        )?.file_path ||
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbs0vCHg_BgDHk7PcAG1KlgccMtNurSJ4YDg&s';
+    const urlAssetImage = image.startsWith('https') ? image : `/storage/${image}`;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -91,13 +107,11 @@ export default function Page({ dataAsset, assignments, employees, orgUnits }: Pa
                             <CardHeader>
                                 <CardTitle>Informasi Asset</CardTitle>
                             </CardHeader>
-                            <CardContent className="grid gap-6 md:grid-cols-2">
+                            <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="grid gap-2">
                                     <div className="grid grid-cols-2 gap-2">
                                         <img
-                                            src={
-                                                'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/asset-pc-photo-59sUbgRzrIIAmPsRFmc47VKvDsTMm3.jpg'
-                                            }
+                                            src={urlAssetImage}
                                             alt={`asset image`}
                                             className="rounded-md border"
                                         />
@@ -106,41 +120,71 @@ export default function Page({ dataAsset, assignments, employees, orgUnits }: Pa
                                 <div className="grid gap-2 text-sm">
                                     <Row
                                         k="Nomor Inventaris"
-                                        v={'INV-2024-0001'}
+                                        v={dataAsset.inventory_number}
                                     />
-                                    <Row k="Item" v={'Laptop'} />
-                                    <Row k="Tipe" v={'Laptop'} />
-                                    <Row k="Brand/Model" v={'ThinkPad X1'} />
-                                    <Row k="Serial" v={'SN-ABC-001'} />
-                                    <Row k="Lokasi" v={'Kantor Pusat'} />
+                                    <Row k="Item" v={dataAsset.item_name} />
+                                    <Row k="Tipe" v={dataAsset.type.name} />
+                                    <Row
+                                        k="Brand/Model"
+                                        v={dataAsset.model.brand}
+                                    />
+                                    <Row
+                                        k="Serial"
+                                        v={dataAsset.serial_number}
+                                    />
+                                    <Row
+                                        k="Lokasi"
+                                        v={dataAsset.location.name}
+                                    />
                                     <Row
                                         k="Tanggal Pembelian"
-                                        v={String('2024-01-01')}
+                                        v={dataAsset.purchase_date}
                                     />
                                     <Row
                                         k="Akhir Garansi"
-                                        v={String('2025-01-01')}
+                                        v={dataAsset.warranty_expiration}
                                     />
                                 </div>
-                                <div className="mt-4 flex justify-end gap-2 md:col-span-2">
-                                    <Button variant="outline" size="sm">
+                                <div className="mt-4 flex flex-wrap justify-start gap-2 sm:justify-end md:col-span-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full sm:w-auto"
+                                    >
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back
                                     </Button>
-                                    <Button variant="outline" size="sm">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full sm:w-auto"
+                                    >
                                         <Edit className="mr-2 h-4 w-4" />
                                         Edit
                                     </Button>
-                                    <Button variant="outline" size="sm">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full sm:w-auto"
+                                    >
                                         <QrCode />
                                         QR
                                     </Button>
-                                    <AssignForm key={dataAsset.id} asset_id={dataAsset.id} employees={employees} orgUnits={orgUnits} />
-                                    <Button variant="destructive" size="sm">
+                                    <AssignForm
+                                        key={dataAsset.id}
+                                        asset_id={dataAsset.id}
+                                        employees={employees}
+                                        orgUnits={orgUnits}
+                                    />
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        className="w-full sm:w-auto"
+                                    >
                                         <Trash2 className="mr-2 h-4 w-4" />
                                         Delete
                                     </Button>
-                                </div>
+                                </div>{' '}
                             </CardContent>
                         </Card>
 
@@ -150,12 +194,7 @@ export default function Page({ dataAsset, assignments, employees, orgUnits }: Pa
                                     Riwayat Servis & Perbaikan
                                 </CardTitle>
                                 <div className="w-40">
-                                    <Select
-                                        value={filter}
-                                        onValueChange={(v) =>
-                                            setFilter(v as any)
-                                        }
-                                    >
+                                    <Select>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Filter" />
                                         </SelectTrigger>
@@ -212,33 +251,43 @@ export default function Page({ dataAsset, assignments, employees, orgUnits }: Pa
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                <div className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between">
-                                    <div className="space-y-1">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <span className="text-sm font-medium">
-                                                {'Sinta Dewi'}
-                                            </span>
-                                            <Badge variant="outline">
-                                                {'sinta@company.com'}
-                                            </Badge>
+                                {assignments.map((a) => (
+                                    <div className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between">
+                                        <div className="space-y-1">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-sm font-medium">
+                                                    {a.employee?.name
+                                                        ? a.employee.name
+                                                        : a.org_unit?.name}
+                                                </span>
+                                                {a.employee && (
+                                                    <Badge variant="outline">
+                                                        {a.employee.email}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                Status:{' '}
+                                                <span className="capitalize">
+                                                    {a.status}
+                                                </span>{' '}
+                                                • Tgl Pinjam:{' '}
+                                                {new Date(
+                                                    a.created_at,
+                                                ).toLocaleString()}{' '}
+                                                • Kembali:{' '}
+                                                {a.returned_at || '-'}
+                                            </div>
                                         </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Status:{' '}
-                                            <span className="capitalize">
-                                                {'dipinjam'}
-                                            </span>{' '}
-                                            • Tgl Pinjam: {'2024-06-01'} •
-                                            Kembali: {'Ya'}
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="destructive">
+                                                {/* gimme return icon */}
+                                                <Undo2 />
+                                                Return
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div className="flex justify-end gap-2">
-                                        <Button variant="destructive">
-                                            {/* gimme return icon */}
-                                            <Undo2 />
-                                            Return
-                                        </Button>
-                                    </div>
-                                </div>
+                                ))}
                             </CardContent>
                         </Card>
                     </div>
