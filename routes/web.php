@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DataModelController;
 use App\Http\Controllers\Admin\DataPegawaiController;
 use App\Http\Controllers\Admin\DataTipeController;
 use App\Http\Controllers\Admin\UserAccountController;
+use App\Http\Controllers\DetailAssetController;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -99,6 +100,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('accounts/{id}/toggle', [UserAccountController::class, 'toggleSoftDelete'])->name('accounts.toggle-soft-delete');
     });
 });
+
+Route::get('/detail-asset/{key}', [DetailAssetController::class, 'index'])->name('detail-asset');
 
 // a special goddamn route for updating activity user so we know that user is online
 Route::get('/geez', function (Request $request) {

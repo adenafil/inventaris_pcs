@@ -1,3 +1,4 @@
+import { AlertDialogHeader } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,6 +9,15 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -16,11 +26,14 @@ import {
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { ArrowLeft, Edit, QrCode, Trash2, Undo2 } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { ArrowLeft, Edit, QrCode, QrCodeIcon, Trash2, Undo2 } from 'lucide-react';
 import { useState } from 'react';
 import AssignForm from '../_components/assign-form';
 import { PageProps } from './_types';
+import QRCode from 'react-qr-code';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -82,7 +95,9 @@ export default function Page({
                 doc.file_path.endsWith('.png'),
         )?.file_path ||
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbs0vCHg_BgDHk7PcAG1KlgccMtNurSJ4YDg&s';
-    const urlAssetImage = image.startsWith('https') ? image : `/storage/${image}`;
+    const urlAssetImage = image.startsWith('https')
+        ? image
+        : `/storage/${image}`;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -158,18 +173,17 @@ export default function Page({
                                         variant="outline"
                                         size="sm"
                                         className="w-full sm:w-auto"
+                                        onClick={() =>
+                                            router.visit(
+                                                `/master/assets/${dataAsset.id}/edit`,
+                                                { preserveScroll: true },
+                                            )
+                                        }
                                     >
                                         <Edit className="mr-2 h-4 w-4" />
                                         Edit
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full sm:w-auto"
-                                    >
-                                        <QrCode />
-                                        QR
-                                    </Button>
+
                                     <AssignForm
                                         key={dataAsset.id}
                                         asset_id={dataAsset.id}
@@ -252,7 +266,10 @@ export default function Page({
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 {assignments.map((a) => (
-                                    <div className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between">
+                                    <div
+                                        key={a.id}
+                                        className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between"
+                                    >
                                         <div className="space-y-1">
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <span className="text-sm font-medium">
@@ -280,14 +297,139 @@ export default function Page({
                                             </div>
                                         </div>
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="destructive">
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                            >
                                                 {/* gimme return icon */}
                                                 <Undo2 />
                                                 Return
                                             </Button>
+
+                                            <Dialog>
+                                                <form>
+                                                    <DialogTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            <QrCodeIcon />
+                                                            QR
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="sm:max-w-[425px]">
+                                                        <AlertDialogHeader>
+                                                            <DialogTitle>
+                                                                QR Code
+                                                            </DialogTitle>
+                                                            <DialogDescription>
+                                                                Scan this QR to
+                                                                access the asset
+                                                                information on
+                                                                your device. You
+                                                                can also edit
+                                                                the asset link
+                                                                if the QR has
+                                                                been
+                                                                accidentally
+                                                                spreaded.
+                                                            </DialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <div className="flex flex-col items-center justify-center">
+                                                            <QRCode id='QRCode'
+                                                                value={
+                                                                    'afasfasfasfsaf'
+                                                                }
+                                                                size={256}
+                                                                viewBox={`0 0 21 21`}
+                                                            />
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    const svg =
+                                                                        document.getElementById(
+                                                                            'QRCode',
+                                                                        );
+                                                                    const svgData =
+                                                                        new XMLSerializer().serializeToString(
+                                                                            svg,
+                                                                        );
+                                                                    const canvas =
+                                                                        document.createElement(
+                                                                            'canvas',
+                                                                        );
+                                                                    const ctx =
+                                                                        canvas.getContext(
+                                                                            '2d',
+                                                                        );
+                                                                    const img =
+                                                                        new Image();
+                                                                    img.onload =
+                                                                        () => {
+                                                                            canvas.width =
+                                                                                img.width;
+                                                                            canvas.height =
+                                                                                img.height;
+                                                                            ctx.drawImage(
+                                                                                img,
+                                                                                0,
+                                                                                0,
+                                                                            );
+                                                                            const pngFile =
+                                                                                canvas.toDataURL(
+                                                                                    'image/png',
+                                                                                );
+                                                                            const downloadLink =
+                                                                                document.createElement(
+                                                                                    'a',
+                                                                                );
+                                                                            downloadLink.download =
+                                                                                'QRCode';
+                                                                            downloadLink.href = `${pngFile}`;
+                                                                            downloadLink.click();
+                                                                        };
+                                                                    img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+                                                                }}
+                                                                size="sm"
+                                                                className="mt-2"
+                                                            >
+                                                                Download QR
+                                                            </Button>
+
+                                                            <div className="w-full space-y-2 pt-4">
+                                                                <Label htmlFor="qr-key">
+                                                                    QR Key
+                                                                </Label>
+                                                                <Input
+                                                                    id="qr-key"
+                                                                    name="qr-key"
+                                                                    defaultValue="afasfasfasfsaf"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <DialogFooter>
+                                                            <DialogClose
+                                                                asChild
+                                                            >
+                                                                <Button variant="outline">
+                                                                    Cancel
+                                                                </Button>
+                                                            </DialogClose>
+                                                            <Button type="submit">
+                                                                Save changes
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </DialogContent>
+                                                </form>
+                                            </Dialog>
                                         </div>
                                     </div>
                                 ))}
+                                {assignments.length === 0 && (
+                                    <div className="text-sm text-muted-foreground">
+                                        Belum ada riwayat peminjaman.
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

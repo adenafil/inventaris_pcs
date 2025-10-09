@@ -237,14 +237,6 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                             Edit
                                                         </Button>
                                                     </Link>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="inline-flex gap-1 bg-transparent"
-                                                    >
-                                                        <QrCode className="h-4 w-4" />
-                                                        QR
-                                                    </Button>
                                                     <AssignForm key={data.id} asset_id={data.id} employees={employees} orgUnits={orgUnits} />
                                                     <Button
                                                         size="sm"
