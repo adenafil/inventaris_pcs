@@ -17,6 +17,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -27,13 +29,14 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, QrCode, QrCodeIcon, Trash2, Undo2 } from 'lucide-react';
+import { ArrowLeft, Edit, Loader2, QrCodeIcon, Undo2 } from 'lucide-react';
 import { useState } from 'react';
-import AssignForm from '../_components/assign-form';
-import { PageProps } from './_types';
 import QRCode from 'react-qr-code';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import AssignForm from '../_components/assign-form';
+import DeleteAssetBtn from '../_components/delete-asset-btn';
+import { PageProps } from './_types';
+import ReturnBtn from './_components/return-btn';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -98,6 +101,23 @@ export default function Page({
     const urlAssetImage = image.startsWith('https')
         ? image
         : `/storage/${image}`;
+
+    const [loading, setLoading] = useState(false);
+
+    const handleReturn = (assignmentId: number) => {
+        router.post(
+            `/master/assets/assignment/${assignmentId}?_method=PATCH`,
+            {},
+            {
+                onBefore: () => setLoading(true),
+                onFinish: () => setLoading(false),
+                onSuccess: () => {
+                    toast.success('Asset returned successfully');
+                },
+                preserveScroll: true,
+            },
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -165,6 +185,11 @@ export default function Page({
                                         variant="outline"
                                         size="sm"
                                         className="w-full sm:w-auto"
+                                        onClick={() =>
+                                            router.visit('/master/assets', {
+                                                preserveScroll: true,
+                                            })
+                                        }
                                     >
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back
@@ -190,14 +215,7 @@ export default function Page({
                                         employees={employees}
                                         orgUnits={orgUnits}
                                     />
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        className="w-full sm:w-auto"
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                    </Button>
+                                    <DeleteAssetBtn assetId={dataAsset.id} />
                                 </div>{' '}
                             </CardContent>
                         </Card>
@@ -297,14 +315,9 @@ export default function Page({
                                             </div>
                                         </div>
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                            >
-                                                {/* gimme return icon */}
-                                                <Undo2 />
-                                                Return
-                                            </Button>
+                                            {a.status === 'assigned' && (
+                                                <ReturnBtn assignmentId={a.id }/>
+                                            )}
 
                                             <Dialog>
                                                 <form>
@@ -336,10 +349,9 @@ export default function Page({
                                                             </DialogDescription>
                                                         </AlertDialogHeader>
                                                         <div className="flex flex-col items-center justify-center">
-                                                            <QRCode id='QRCode'
-                                                                value={
-                                                                    'afasfasfasfsaf'
-                                                                }
+                                                            <QRCode
+                                                                id="QRCode"
+                                                                value={a.key_qr}
                                                                 size={256}
                                                                 viewBox={`0 0 21 21`}
                                                             />
@@ -403,7 +415,9 @@ export default function Page({
                                                                 <Input
                                                                     id="qr-key"
                                                                     name="qr-key"
-                                                                    defaultValue="afasfasfasfsaf"
+                                                                    defaultValue={
+                                                                        a.key_qr
+                                                                    }
                                                                 />
                                                             </div>
                                                         </div>

@@ -211,4 +211,27 @@ class DataAssetController extends Controller
             return redirect()->route('assets.index')->with('error', 'Failed to delete data asset.');
         }
     }
+
+    public function returnTheAsset(Assignment $assignment)
+    {
+        DB::beginTransaction();
+        try {
+            $assignment->status = 'returned';
+            $assignment->returned_at = now();
+            $assignment->save();
+
+            $asset = Asset::find($assignment->asset_id);
+            if ($asset) {
+                $asset->status = 'active';
+                $asset->save();
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Asset returned successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error returning asset: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to return asset.');
+        }
+    }
 }

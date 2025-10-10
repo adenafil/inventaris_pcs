@@ -29,9 +29,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { useForm } from 'laravel-precognition-react';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import AssignForm from './_components/assign-form';
 import {
@@ -42,6 +41,7 @@ import {
 } from './_components/lib/assets-data';
 import { QrModal } from './_components/qr-modal';
 import { PageProps } from './_types';
+import DeleteAssetBtn from './_components/delete-asset-btn';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -53,8 +53,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
     console.log({ dataAssets, employees, orgUnits });
 
-    const [loading, setLoading] = useState(false);
-
     const [tab, setTab] = useState<'it' | 'kantor'>('it');
     const [search, setSearch] = useState('');
     const [tipe, setTipe] = useState<string>('all'); // Updated default value
@@ -64,20 +62,6 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
     const qrValue = qrAsset
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${qrAsset.id}`
         : '';
-
-
-    const handleDelete = (assetId: number) => {
-        router.delete(`/master/assets/${assetId}`, {
-            onBefore: () => setLoading(true),
-            onFinish: () => setLoading(false),
-            onSuccess: () => {
-                toast.success('Asset deleted successfully');
-            },
-            onError: () => {
-                toast.error('Failed to delete asset');
-            }
-        })
-    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -207,49 +191,8 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                         employees={employees}
                                                         orgUnits={orgUnits}
                                                     />
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger
-                                                            asChild
-                                                        >
-                                                            <Button
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                className="inline-flex gap-1"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                                Delete
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>
-                                                                    Are you
-                                                                    absolutely
-                                                                    sure want to
-                                                                    delete this
-                                                                    Asset?
-                                                                </AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    This action
-                                                                    cannot be
-                                                                    undone. This
-                                                                    will
-                                                                    permanently
-                                                                    delete the
-                                                                    asset from
-                                                                    the system.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>
-                                                                    Cancel
-                                                                </AlertDialogCancel>
-                                                                <Button disabled={loading} onClick={() => handleDelete(data.id)} variant="destructive">
-                                                                    {loading ? 'Deleting...' : 'Sure'}
-                                                                </Button>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+
+                                                    <DeleteAssetBtn assetId={data.id} />
                                                 </TableCell>
                                             </TableRow>
                                         ))}

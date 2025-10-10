@@ -86,6 +86,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/assets/assignment', [DataAssetController::class, 'assignment'])->name('assets.assignment')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::patch('/assets/assignment/{assignment}', [DataAssetController::class, 'returnTheAsset'])->name('assets.assignment.update');
 
         Route::get('/assets/view/{id}', [DataAssetController::class, 'view'])->name('assets.view');
 

@@ -127,6 +127,7 @@ interface Assignment {
     returned_at: string | null;
     created_at: string;
     updated_at: string;
+    key_qr: string;
     employee: Employee | null;
     org_unit: OrgUnit | null;
     creator: Creator;
