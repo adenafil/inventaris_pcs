@@ -25,14 +25,91 @@ class DataAssetController extends Controller
 {
     public function index(Request $request)
     {
+        $search = $request->get('search', '');
+
+        // Buat query dengan relasi
+        $query = Asset::with('type', 'model', 'location', 'creator');
+
+        // Tambahkan kondisi search untuk multiple fields
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('inventory_number', 'like', '%' . $search . '%')
+                    ->orWhere('item_name', 'like', '%' . $search . '%')
+                    ->orWhereHas('location', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('model', function ($q) use ($search) {
+                        $q->where('model', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('model', function ($q) use ($search) {
+                        $q->where('brand', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('type', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $page = request()->get('data_asset_page', 1);
+        $dataAssets = $query->paginate(pageName: 'data_asset_page', perPage: 14)->withQueryString();
+
+
+        if (!request()->header('X-inertia')) {
+            $allResults = collect();
+
+            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
+                // Buat query baru dengan relasi untuk setiap halaman
+                $pageQuery = Asset::with('type', 'model', 'location', 'creator');
+
+                // Tambahkan kondisi search yang sama
+                if ($search) {
+                    $pageQuery->where(function ($q) use ($search) {
+                        $q->where('inventory_number', 'like', '%' . $search . '%')
+                            ->orWhere('item_name', 'like', '%' . $search . '%')
+                            ->orWhereHas('location', function ($q) use ($search) {
+                                $q->where('name', 'like', '%' . $search . '%');
+                            })
+                            ->orWhereHas('model', function ($q) use ($search) {
+                                $q->where('model', 'like', '%' . $search . '%');
+                            })
+                            ->orWhereHas('model', function ($q) use ($search) {
+                                $q->where('brand', 'like', '%' . $search . '%');
+                            })
+                            ->orWhereHas('type', function ($q) use ($search) {
+                                $q->where('name', 'like', '%' . $search . '%');
+                            });
+                    });
+                }
+
+                $pageResults = $pageQuery->paginate(14, ['*'], 'data_asset_page', $initialPage);
+                $allResults = $allResults->concat($pageResults->items());
+            }
+
+            return Inertia::render('assets/page', [
+                'dataAssets' => $allResults,
+                'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
+                    $allResults,
+                    $dataAssets->total(),
+                    $dataAssets->perPage(),
+                    $page,
+                    ['path' => request()->url(), 'query' => request()->query()]
+                ),
+                'page' => $page,
+                'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
+                'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
+
+            ]);
+        }
 
         return Inertia::render('assets/page', [
-            'dataAssets' => Inertia::scroll(fn() => Asset::with(['type', 'model', 'location', 'creator'])->paginate(pageName: 'data_asset_page')
-        ),
+            'dataAssets' => Inertia::merge(fn() => $dataAssets->items()),
+            'pagination' => $dataAssets,
+            'page' => $page,
             'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
             'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
         ]);
     }
+
 
     public function testing()
     {

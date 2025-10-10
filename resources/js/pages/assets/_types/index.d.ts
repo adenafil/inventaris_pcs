@@ -103,8 +103,12 @@ interface OrgUnit {
     updated_at: string;
 }
 
+
 export interface PageProps {
-    dataAssets: PaginatedResponse<Asset>;
+    dataAssets: Asset[];
     employees: PaginatedResponse<Employee>;
     orgUnits: PaginatedResponse<OrgUnit>;
+    page: number;
+    pagination: PaginatedResponse<Asset>;
 }
+

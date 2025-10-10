@@ -28,7 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, WhenVisible } from '@inertiajs/react';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -50,8 +50,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
-    console.log({ dataAssets, employees, orgUnits });
+export default function Page({ dataAssets, pagination, page, employees, orgUnits }: PageProps) {
+    console.log({ dataAssets, pagination, page, employees, orgUnits });
 
     const [tab, setTab] = useState<'it' | 'kantor'>('it');
     const [search, setSearch] = useState('');
@@ -139,7 +139,7 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {dataAssets.data.map((data) => (
+                                        {dataAssets.map((data) => (
                                             <TableRow key={data.id}>
                                                 <TableCell className="whitespace-nowrap">
                                                     {data.inventory_number}
@@ -154,7 +154,7 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                     {data.model.brand}
                                                 </TableCell>
                                                 <TableCell>
-                                                    Umum Dan IT
+                                                    {data.location.name}
                                                 </TableCell>
                                                 <TableCell>
                                                     {data.creator.name}
@@ -192,10 +192,60 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                         orgUnits={orgUnits}
                                                     />
 
-                                                    <DeleteAssetBtn assetId={data.id} />
+                                                    <DeleteAssetBtn
+                                                        assetId={data.id}
+                                                    />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
+
+                                        {pagination.current_page <
+                                            pagination.last_page && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={7}
+                                                    className="text-center"
+                                                >
+                                                    <WhenVisible
+                                                        always={
+                                                            pagination.current_page <
+                                                            pagination.last_page
+                                                        }
+                                                        params={{
+                                                            data: {
+                                                                data_asset_page:
+                                                                    pagination.current_page <
+                                                                    pagination.last_page
+                                                                        ? pagination.current_page +
+                                                                          1
+                                                                        : pagination.current_page,
+                                                            },
+                                                            only: [
+                                                                'dataAssets',
+                                                                'pagination',
+                                                            ],
+                                                        }}
+                                                        buffer={0.1}
+                                                        fallback={
+                                                            <p>
+                                                                data not found.
+                                                            </p>
+                                                        }
+                                                        as="div"
+                                                    >
+                                                        {pagination.current_page >=
+                                                        pagination.last_page ? (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                        ) : (
+                                                            <div className="w-full p-2 text-center text-sm text-muted-foreground">
+                                                                Loading more
+                                                                data...
+                                                            </div>
+                                                        )}
+                                                    </WhenVisible>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
