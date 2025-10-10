@@ -197,4 +197,18 @@ class DataAssetController extends Controller
 
         return redirect()->back()->with('success', 'Asset assigned successfully.');
     }
+
+    public function destroy(Asset $asset)
+    {
+        try {
+            $asset->documents()->each(function ($document) {
+                Storage::delete($document->file_path);
+            });
+            $asset->delete();
+            return redirect()->route('assets.index')->with('success', 'Data asset deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting asset: ' . $e->getMessage());
+            return redirect()->route('assets.index')->with('error', 'Failed to delete data asset.');
+        }
+    }
 }

@@ -1,19 +1,15 @@
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -21,16 +17,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
 import {
     Table,
     TableBody,
@@ -40,22 +26,14 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Head, InfiniteScroll, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
-import {
-    Check,
-    ChevronsUpDown,
-    Eye,
-    Pencil,
-    QrCode,
-    Trash2,
-    UserCheck,
-} from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import AssignForm from './_components/assign-form';
 import {
     type Asset,
     assetsIT,
@@ -64,8 +42,6 @@ import {
 } from './_components/lib/assets-data';
 import { QrModal } from './_components/qr-modal';
 import { PageProps } from './_types';
-import { toast } from 'sonner';
-import AssignForm from './_components/assign-form';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -77,11 +53,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
     console.log({ dataAssets, employees, orgUnits });
 
-    const [isOpenPegawai, setOpenPegawai] = useState(false);
-    const [isOpenBidang, setOpenBidang] = useState(false);
-    const [typePengguna, setTypePengguna] = useState<
-        'pegawai' | 'bidang' | 'tidak-diassign' | ''
-    >('');
+    const [loading, setLoading] = useState(false);
 
     const [tab, setTab] = useState<'it' | 'kantor'>('it');
     const [search, setSearch] = useState('');
@@ -93,36 +65,19 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${qrAsset.id}`
         : '';
 
-    const formAssign = useForm('post', 'assets/assignment', {
-        asset_id: '',
-        employee_id: '',
-        org_unit_id: '',
-        notes: '',
-        dokument_peminjaman: '',
-        status: 'assigned',
-        assigned_at: '',
-        returned_at: '',
-    });
 
-    const handleAssign = () => {
-        formAssign.setData('assigned_at', new Date().toISOString().split('T')[0]);
-        formAssign.submit({
+    const handleDelete = (assetId: number) => {
+        router.delete(`/master/assets/${assetId}`, {
+            onBefore: () => setLoading(true),
+            onFinish: () => setLoading(false),
             onSuccess: () => {
-                setTypePengguna('');
-                setOpenBidang(false);
-                setOpenPegawai(false);
-                formAssign.reset();
-                toast.success('Asset assigned successfully');
+                toast.success('Asset deleted successfully');
             },
-            onValidationError: (error) => {
-                toast.error(error.data.message.split('(')[0] || 'Sorry, something went wrong. Please try again later.');
+            onError: () => {
+                toast.error('Failed to delete asset');
             }
         })
-    };
-
-    useEffect(() => {
-        console.log(formAssign.data);
-    }, [formAssign.data]);
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -130,40 +85,48 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 {/* Main Content */}
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                            <h1 className="mb-2 text-2xl font-bold text-gray-900 md:text-3xl">
                                 Data Assets
                             </h1>
-                            <p className="text-gray-600">
+                            <p className="text-sm text-gray-600 md:text-base">
                                 Kelola data aset perangkat di dalam sistem.
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                             <Input
                                 placeholder="Pencarian…"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="w-48 md:w-64"
+                                className="w-full sm:w-48 md:w-64"
                             />
-                            <Select value={tipe} onValueChange={setTipe}>
-                                <SelectTrigger className="w-40">
-                                    <SelectValue placeholder="Tipe" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua</SelectItem>{' '}
-                                    {/* Updated value prop */}
-                                    {assetTypes.map((t) => (
-                                        <SelectItem key={t} value={t}>
-                                            {t}
+                            <div className="flex items-center gap-2">
+                                <Select value={tipe} onValueChange={setTipe}>
+                                    <SelectTrigger className="w-full sm:w-40">
+                                        <SelectValue placeholder="Tipe" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            Semua
                                         </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Link preserveScroll href="/master/assets/create">
-                                <Button>Add Asset</Button>
-                            </Link>
+                                        {assetTypes.map((t) => (
+                                            <SelectItem key={t} value={t}>
+                                                {t}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Link
+                                    preserveScroll
+                                    href="/master/assets/create"
+                                >
+                                    <Button className="w-full sm:w-auto">
+                                        Add Asset
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -213,7 +176,8 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                     {data.creator.name}
                                                 </TableCell>
                                                 <TableCell className="space-x-2 text-center">
-                                                    <Link preserveScroll
+                                                    <Link
+                                                        preserveScroll
                                                         href={`/master/assets/view/${data.id}`}
                                                     >
                                                         <Button
@@ -237,15 +201,55 @@ export default function Page({ dataAssets, employees, orgUnits }: PageProps) {
                                                             Edit
                                                         </Button>
                                                     </Link>
-                                                    <AssignForm key={data.id} asset_id={data.id} employees={employees} orgUnits={orgUnits} />
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        className="inline-flex gap-1"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        Delete
-                                                    </Button>
+                                                    <AssignForm
+                                                        key={data.id}
+                                                        asset_id={data.id}
+                                                        employees={employees}
+                                                        orgUnits={orgUnits}
+                                                    />
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger
+                                                            asChild
+                                                        >
+                                                            <Button
+                                                                size="sm"
+                                                                variant="destructive"
+                                                                className="inline-flex gap-1"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                                Delete
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>
+                                                                    Are you
+                                                                    absolutely
+                                                                    sure want to
+                                                                    delete this
+                                                                    Asset?
+                                                                </AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action
+                                                                    cannot be
+                                                                    undone. This
+                                                                    will
+                                                                    permanently
+                                                                    delete the
+                                                                    asset from
+                                                                    the system.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>
+                                                                    Cancel
+                                                                </AlertDialogCancel>
+                                                                <Button disabled={loading} onClick={() => handleDelete(data.id)} variant="destructive">
+                                                                    {loading ? 'Deleting...' : 'Sure'}
+                                                                </Button>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

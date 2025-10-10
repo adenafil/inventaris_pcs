@@ -79,6 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/assets/{asset}', [DataAssetController::class, 'update'])->name('assets.update')->middleware([
             HandlePrecognitiveRequests::class
         ]);
+        Route::delete('/assets/{asset}', [DataAssetController::class, 'destroy'])->name('assets.destroy');
         Route::post('/assets', [DataAssetController::class, 'store'])->name('assets.store')->middleware([
             HandlePrecognitiveRequests::class
         ]);
