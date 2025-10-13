@@ -30,7 +30,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, WhenVisible } from '@inertiajs/react';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import AssignForm from './_components/assign-form';
 import {
@@ -53,6 +53,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Page({ dataAssets, pagination, page, employees, orgUnits }: PageProps) {
     console.log({ dataAssets, pagination, page, employees, orgUnits });
 
+    const [searchTerm, setSearchTerm] = useState('');
+    const isFirstRender = useRef(true);
+
+
     const [tab, setTab] = useState<'it' | 'kantor'>('it');
     const [search, setSearch] = useState('');
     const [tipe, setTipe] = useState<string>('all'); // Updated default value
@@ -63,6 +67,8 @@ export default function Page({ dataAssets, pagination, page, employees, orgUnits
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${qrAsset.id}`
         : '';
 
+
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data Assets" />
@@ -71,10 +77,10 @@ export default function Page({ dataAssets, pagination, page, employees, orgUnits
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
                     <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="mb-2 text-2xl font-bold text-gray-900 md:text-3xl">
+                            <h1 className="mb-2 text-2xl font-bold text-gray-900 md:text-3xl dark:text-white">
                                 Data Assets
                             </h1>
-                            <p className="text-sm text-gray-600 md:text-base">
+                            <p className="text-sm text-gray-600 md:text-base dark:text-muted-foreground">
                                 Kelola data aset perangkat di dalam sistem.
                             </p>
                         </div>

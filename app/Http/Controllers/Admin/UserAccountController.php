@@ -12,22 +12,13 @@ use Inertia\Inertia;
 
 class UserAccountController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $orgUnits = OrgUnit::all();
-    //     return Inertia::render('account-list/page', [
-    //         'orgUnits' => $orgUnits,
-    //         'paginationUser' => Inertia::scroll(fn() => User::with('orgUnit')->withTrashed()->paginate()),
-    //     ]);
-    // }
-
     public function index(Request $request)
     {
         $search = $request->get('search', '');
         $orgUnits = OrgUnit::all();
 
         // Buat query dengan relasi
-        $query = User::with('orgUnit');
+        $query = User::with('orgUnit')->withTrashed();
 
         // Tambahkan kondisi search untuk multiple fields
         if ($search) {
@@ -50,7 +41,7 @@ class UserAccountController extends Controller
 
             for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
                 // Buat query baru dengan relasi untuk setiap halaman
-                $pageQuery = User::with('orgUnit');
+                $pageQuery = User::with('orgUnit')->withTrashed();
 
                 // Tambahkan kondisi search yang sama
                 if ($search) {

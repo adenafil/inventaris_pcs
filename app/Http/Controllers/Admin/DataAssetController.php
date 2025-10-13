@@ -46,6 +46,9 @@ class DataAssetController extends Controller
                     })
                     ->orWhereHas('type', function ($q) use ($search) {
                         $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('creator', function ($q) use ($search) {
+                    $q->where('role', 'like', '%' . $search . '%');
                     });
             });
         }
@@ -77,6 +80,9 @@ class DataAssetController extends Controller
                             })
                             ->orWhereHas('type', function ($q) use ($search) {
                                 $q->where('name', 'like', '%' . $search . '%');
+                            })
+                            ->orWhereHas('creator', function ($q) use ($search) {
+                                $q->where('role', 'like', '%' . $search . '%');
                             });
                     });
                 }

@@ -463,7 +463,7 @@ export default function AccountsPage({
                     {/* Header */}
                     <header className="mb-6 flex flex-col gap-4">
                         <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-balance">
+                            <h1 className="text-2xl font-semibold tracking-tight text-balance dark:text-white">
                                 List Account
                             </h1>
                             <p className="text-sm text-muted-foreground">
@@ -593,11 +593,10 @@ export default function AccountsPage({
                                                     onClick={() =>
                                                         onClickDisable(acc)
                                                     }
-                                                    disabled={
-                                                        acc.deleted_at !== null
-                                                    }
                                                 >
-                                                    Disable
+                                                    {acc.deleted_at === null ?
+                                                        'Disable' :
+                                                        'Enable'}
                                                 </Button>
                                             </div>
                                         </TableCell>

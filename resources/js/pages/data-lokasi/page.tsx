@@ -144,10 +144,10 @@ export default function Page({ locations, pagination, page }: PageProps) {
                 {/* Main Content */}
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
                     <div className="">
-                        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
                             Data Lokasi
                         </h1>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 dark:text-muted-foreground">
                             Kelola data lokasi dalam organisasi Anda di sini.
                         </p>
                     </div>
@@ -193,9 +193,9 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                             </DialogTitle>
                                         </DialogHeader>
                                         <DialogDescription asChild>
-                                            <div className="space-y-4 pt-4">
-                                                <div>
-                                                    <Label htmlFor="new-location-name">
+                                            <div className="">
+                                                <div className="mb-4 flex flex-col gap-4">
+                                                    <Label htmlFor="new-location-name" className=''>
                                                         Nama Lokasi
                                                     </Label>
                                                     <Input

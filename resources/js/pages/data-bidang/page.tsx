@@ -131,10 +131,10 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                 {/* Main Content */}
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
                     <div className="">
-                        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
                             Master Bidang
                         </h1>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 dark:text-muted-foreground">
                             Kelola data bidang dalam organisasi Anda di sini.
                         </p>
                     </div>

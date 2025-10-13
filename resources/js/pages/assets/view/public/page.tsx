@@ -94,26 +94,25 @@ export default function Page({ assignment }: { assignment: Assignment }) {
         <div className="flex h-full min-h-screen flex-1 flex-col">
             {/* Navbar */}
             <Head title={`Detail Asset - ${assignment.asset.item_name}`} />
-            <nav className="sticky top-0 z-50 border-b bg-white shadow-sm">
+            <nav className="sticky top-0 z-50 border-b bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
                 <div className="mx-auto flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4">
                         <img
                             src="/assets/images/logo.png"
                             alt="Logo PCS"
-                            className="h-10 w-auto"
+                            className="h-10 w-auto dark:hidden"
                         />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 sm:text-xl">
+                            <h1 className="text-lg font-bold text-gray-900 sm:text-xl dark:text-gray-100">
                                 Inventaris PCS
                             </h1>
-                            <p className="hidden text-xs text-gray-600 sm:block">
+                            <p className="hidden text-xs text-gray-600 sm:block dark:text-gray-400">
                                 Petrokopindo Cipta Selaras
                             </p>
                         </div>
                     </div>
                 </div>
-            </nav>
-
+            </nav>{' '}
             {/* Main Content */}
             <div className="flex flex-1 flex-col gap-4 overflow-x-auto p-4">
                 <div className="max-w-8xl mx-auto w-full space-y-4 px-4 sm:px-6 lg:px-8">

@@ -33,10 +33,10 @@ export default function Page({
                 {/* Main Content */}
                 <main className="max-w-8xl mx-auto w-full px-4 sm:px-6 lg:px-8">
                     <div className="">
-                        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
                             Edit Data Assets
                         </h1>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 dark:text-muted-foreground">
                             Use this form to edit the asset details.
                             Fill in the details below and click "Save" to
                             submit.
