@@ -1,13 +1,3 @@
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,19 +19,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, WhenVisible } from '@inertiajs/react';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { useDebounce } from 'react-use';
 import AssignForm from './_components/assign-form';
-import {
-    type Asset,
-    assetsIT,
-    assetsKantor,
-    assetTypes,
-} from './_components/lib/assets-data';
+import DeleteAssetBtn from './_components/delete-asset-btn';
+import { type Asset } from './_components/lib/assets-data';
 import { QrModal } from './_components/qr-modal';
 import { PageProps } from './_types';
-import DeleteAssetBtn from './_components/delete-asset-btn';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -50,24 +35,99 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Page({ dataAssets, pagination, page, employees, orgUnits }: PageProps) {
-    console.log({ dataAssets, pagination, page, employees, orgUnits });
+export default function Page({
+    dataAssets,
+    pagination,
+    page,
+    employees,
+    orgUnits,
+    types,
+    role,
+    typeReq,
+}: PageProps) {
+    console.log({
+        dataAssets,
+        pagination,
+        page,
+        employees,
+        orgUnits,
+        types,
+        role,
+        typeReq,
+    });
 
     const [searchTerm, setSearchTerm] = useState('');
-    const isFirstRender = useRef(true);
+    const isFirstRenderSearch = useRef(true);
+    const isFirstRenderTipe = useRef(true);
+    const isFirstRenderTab = useRef(true);
 
-
-    const [tab, setTab] = useState<'it' | 'kantor'>('it');
-    const [search, setSearch] = useState('');
-    const [tipe, setTipe] = useState<string>('all'); // Updated default value
+const [tab, setTab] = useState<string>(role ?? 'superadmin');
+    const [tipe, setTipe] = useState<string>(typeReq ?? ''); // Updated default value
     const [qrAsset, setQrAsset] = useState<Asset | null>(null);
 
-    const dataSrc = tab === 'it' ? assetsIT : assetsKantor;
     const qrValue = qrAsset
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${qrAsset.id}`
         : '';
 
+    useDebounce(
+        () => {
+            if (isFirstRenderSearch.current) {
+                isFirstRenderSearch.current = false;
+                return;
+            }
 
+            router.get(
+                `/master/assets?search=${searchTerm}`,
+                {},
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
+        },
+        500,
+        [searchTerm],
+    );
+
+    useDebounce(
+        () => {
+            if (isFirstRenderTipe.current) {
+                isFirstRenderTipe.current = false;
+                return;
+            }
+
+            router.get(
+                `/master/assets?tipe=${tipe === 'all' ? '' : tipe}`,
+                {},
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
+        },
+        500,
+        [tipe],
+    );
+
+    useDebounce(
+        () => {
+            if (isFirstRenderTab.current) {
+                isFirstRenderTab.current = false;
+                return;
+            }
+
+            router.get(
+                `/master/assets?role=${tab}`,
+                {},
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
+        },
+        500,
+        [tab],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -88,12 +148,23 @@ export default function Page({ dataAssets, pagination, page, employees, orgUnits
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                             <Input
                                 placeholder="Pencarian…"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    if (e.target.value === 'all') {
+                                        setSearchTerm('');
+                                    } else {
+                                        setSearchTerm(e.target.value);
+                                    }
+                                }}
                                 className="w-full sm:w-48 md:w-64"
                             />
                             <div className="flex items-center gap-2">
-                                <Select value={tipe} onValueChange={setTipe}>
+                                <Select
+                                    value={tipe}
+                                    onValueChange={(v) => {
+                                        setTipe(v);
+                                    }}
+                                >
                                     <SelectTrigger className="w-full sm:w-40">
                                         <SelectValue placeholder="Tipe" />
                                     </SelectTrigger>
@@ -101,9 +172,12 @@ export default function Page({ dataAssets, pagination, page, employees, orgUnits
                                         <SelectItem value="all">
                                             Semua
                                         </SelectItem>
-                                        {assetTypes.map((t) => (
-                                            <SelectItem key={t} value={t}>
-                                                {t}
+                                        {types.data.map((t) => (
+                                            <SelectItem
+                                                key={t.id}
+                                                value={t.name}
+                                            >
+                                                {t.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -125,137 +199,137 @@ export default function Page({ dataAssets, pagination, page, employees, orgUnits
                         onValueChange={(v) => setTab(v as 'it' | 'kantor')}
                     >
                         <TabsList>
-                            <TabsTrigger value="it">Admin IT</TabsTrigger>
-                            <TabsTrigger value="kantor">Kantor</TabsTrigger>
+                            <TabsTrigger value="superadmin">
+                                Superadmin
+                            </TabsTrigger>
+                            <TabsTrigger value="admin_it">Admin IT</TabsTrigger>
+                            <TabsTrigger value="admin_kantor">
+                                Kantor
+                            </TabsTrigger>
                         </TabsList>
-                        <TabsContent value="it" className="mt-4">
-                            <div className="rounded-md border">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>No. Invent</TableHead>
-                                            <TableHead>Item</TableHead>
-                                            <TableHead>Tipe</TableHead>
-                                            <TableHead>Brand</TableHead>
-                                            <TableHead>Lokasi</TableHead>
-                                            <TableHead>Created By</TableHead>
-                                            <TableHead className="text-center">
-                                                Action
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {dataAssets.map((data) => (
-                                            <TableRow key={data.id}>
-                                                <TableCell className="whitespace-nowrap">
-                                                    {data.inventory_number}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.item_name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.type.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.model.brand}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.location.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.creator.name}
-                                                </TableCell>
-                                                <TableCell className="space-x-2 text-center">
-                                                    <Link
-                                                        preserveScroll
-                                                        href={`/master/assets/view/${data.id}`}
-                                                    >
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="inline-flex gap-1 bg-transparent"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                            View
-                                                        </Button>
-                                                    </Link>
-                                                    <Link
-                                                        href={`/master/assets/${data.id}/edit`}
-                                                    >
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="inline-flex gap-1 bg-transparent"
-                                                        >
-                                                            <Pencil className="h-4 w-4" />
-                                                            Edit
-                                                        </Button>
-                                                    </Link>
-                                                    <AssignForm
-                                                        key={data.id}
-                                                        asset_id={data.id}
-                                                        employees={employees}
-                                                        orgUnits={orgUnits}
-                                                    />
-
-                                                    <DeleteAssetBtn
-                                                        assetId={data.id}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-
-                                        {pagination.current_page <
-                                            pagination.last_page && (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={7}
-                                                    className="text-center"
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>No. Invent</TableHead>
+                                        <TableHead>Item</TableHead>
+                                        <TableHead>Tipe</TableHead>
+                                        <TableHead>Brand</TableHead>
+                                        <TableHead>Lokasi</TableHead>
+                                        <TableHead>Created By</TableHead>
+                                        <TableHead className="text-center">
+                                            Action
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {dataAssets.map((data) => (
+                                        <TableRow key={data.id}>
+                                            <TableCell className="whitespace-nowrap">
+                                                {data.inventory_number}
+                                            </TableCell>
+                                            <TableCell>
+                                                {data.item_name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {data.type.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {data.model.brand}
+                                            </TableCell>
+                                            <TableCell>
+                                                {data.location.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {data.creator.name}
+                                            </TableCell>
+                                            <TableCell className="space-x-2 text-center">
+                                                <Link
+                                                    preserveScroll
+                                                    href={`/master/assets/view/${data.id}`}
                                                 >
-                                                    <WhenVisible
-                                                        always={
-                                                            pagination.current_page <
-                                                            pagination.last_page
-                                                        }
-                                                        params={{
-                                                            data: {
-                                                                data_asset_page:
-                                                                    pagination.current_page <
-                                                                    pagination.last_page
-                                                                        ? pagination.current_page +
-                                                                          1
-                                                                        : pagination.current_page,
-                                                            },
-                                                            only: [
-                                                                'dataAssets',
-                                                                'pagination',
-                                                            ],
-                                                        }}
-                                                        buffer={0.1}
-                                                        fallback={
-                                                            <p>
-                                                                data not found.
-                                                            </p>
-                                                        }
-                                                        as="div"
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="inline-flex gap-1 bg-transparent"
                                                     >
-                                                        {pagination.current_page >=
-                                                        pagination.last_page ? (
-                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                                        ) : (
-                                                            <div className="w-full p-2 text-center text-sm text-muted-foreground">
-                                                                Loading more
-                                                                data...
-                                                            </div>
-                                                        )}
-                                                    </WhenVisible>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        </TabsContent>{' '}
+                                                        <Eye className="h-4 w-4" />
+                                                        View
+                                                    </Button>
+                                                </Link>
+                                                <Link
+                                                    href={`/master/assets/${data.id}/edit`}
+                                                >
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="inline-flex gap-1 bg-transparent"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                        Edit
+                                                    </Button>
+                                                </Link>
+                                                <AssignForm
+                                                    key={data.id}
+                                                    asset_id={data.id}
+                                                    employees={employees}
+                                                    orgUnits={orgUnits}
+                                                />
+
+                                                <DeleteAssetBtn
+                                                    assetId={data.id}
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+
+                                    {pagination.current_page <
+                                        pagination.last_page && (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={7}
+                                                className="text-center"
+                                            >
+                                                <WhenVisible
+                                                    always={
+                                                        pagination.current_page <
+                                                        pagination.last_page
+                                                    }
+                                                    params={{
+                                                        data: {
+                                                            data_asset_page:
+                                                                pagination.current_page <
+                                                                pagination.last_page
+                                                                    ? pagination.current_page +
+                                                                      1
+                                                                    : pagination.current_page,
+                                                        },
+                                                        only: [
+                                                            'dataAssets',
+                                                            'pagination',
+                                                        ],
+                                                    }}
+                                                    buffer={0.1}
+                                                    fallback={
+                                                        <p>data not found.</p>
+                                                    }
+                                                    as="div"
+                                                >
+                                                    {pagination.current_page >=
+                                                    pagination.last_page ? (
+                                                        <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                    ) : (
+                                                        <div className="w-full p-2 text-center text-sm text-muted-foreground">
+                                                            Loading more data...
+                                                        </div>
+                                                    )}
+                                                </WhenVisible>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </Tabs>
                 </main>
 

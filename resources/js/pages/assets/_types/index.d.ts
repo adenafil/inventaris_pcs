@@ -103,6 +103,13 @@ interface OrgUnit {
     updated_at: string;
 }
 
+interface DataType {
+    id: number;
+    code: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
 
 export interface PageProps {
     dataAssets: Asset[];
@@ -110,5 +117,8 @@ export interface PageProps {
     orgUnits: PaginatedResponse<OrgUnit>;
     page: number;
     pagination: PaginatedResponse<Asset>;
+    types: PaginatedResponse<DataType>;
+    role: string;
+    typeReq: string;
 }
 

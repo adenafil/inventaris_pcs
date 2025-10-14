@@ -26,13 +26,15 @@ class DataAssetController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search', '');
+        $tipe = $request->get('tipe', '');
+        $role = $request->get('role', '');
 
         // Buat query dengan relasi
         $query = Asset::with('type', 'model', 'location', 'creator');
 
         // Tambahkan kondisi search untuk multiple fields
         if ($search) {
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search, $role, $tipe) {
                 $q->where('inventory_number', 'like', '%' . $search . '%')
                     ->orWhere('item_name', 'like', '%' . $search . '%')
                     ->orWhereHas('location', function ($q) use ($search) {
@@ -48,10 +50,23 @@ class DataAssetController extends Controller
                         $q->where('name', 'like', '%' . $search . '%');
                     })
                     ->orWhereHas('creator', function ($q) use ($search) {
-                    $q->where('role', 'like', '%' . $search . '%');
+                        $q->where('role', 'like', '%' . $search . '%');
                     });
             });
         }
+
+        if ($tipe) {
+            $query->whereHas('type', function ($q) use ($tipe) {
+                $q->where('name', 'like', '%' . $tipe . '%');
+            });
+        }
+
+        if ($role) {
+            $query->whereHas('creator', function ($q) use ($role) {
+                $q->where('role', 'like', '%' . $role . '%');
+            });
+        }
+
 
         $page = request()->get('data_asset_page', 1);
         $dataAssets = $query->paginate(pageName: 'data_asset_page', perPage: 14)->withQueryString();
@@ -87,6 +102,20 @@ class DataAssetController extends Controller
                     });
                 }
 
+                if ($tipe) {
+                    $pageQuery->whereHas('type', function ($q) use ($tipe) {
+                        $q->where('name', 'like', '%' . $tipe . '%');
+                    });
+                }
+
+                // Filter role secara terpisah
+                if ($role) {
+                    $pageQuery->whereHas('creator', function ($q) use ($role) {
+                        $q->where('role', 'like', '%' . $role . '%');
+                    });
+                }
+
+
                 $pageResults = $pageQuery->paginate(14, ['*'], 'data_asset_page', $initialPage);
                 $allResults = $allResults->concat($pageResults->items());
             }
@@ -103,7 +132,9 @@ class DataAssetController extends Controller
                 'page' => $page,
                 'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
                 'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
-
+                'types' => Inertia::scroll(fn() => DataType::paginate(pageName: 'type_page')),
+                'role' => $role,
+                'tipe' => $tipe,
             ]);
         }
 
@@ -113,6 +144,9 @@ class DataAssetController extends Controller
             'page' => $page,
             'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
             'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
+            'types' => Inertia::scroll(fn() => DataType::paginate(pageName: 'type_page')),
+            'role' => $role,
+            'tipe' => $tipe,
         ]);
     }
 
