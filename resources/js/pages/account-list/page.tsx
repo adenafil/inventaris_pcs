@@ -48,7 +48,8 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, WhenVisible } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
+import { useDebounce } from 'react-use';
 import { toast } from 'sonner';
 
 type AccountRole = 'admin' | 'manager' | 'staff';
@@ -137,19 +138,17 @@ export default function AccountsPage({
     );
 
     const [query, setQuery] = useState('');
+    const isFirstRenderQuery = useRef(true);
 
     // Add Dialog state
     const [openAdd, setOpenAdd] = useState(false);
 
-    // Edit Dialog state
     const [openEdit, setOpenEdit] = useState(false);
     const [editing, setEditing] = useState<Account | null>(null);
 
-    // View Log Sheet state
     const [openLog, setOpenLog] = useState(false);
     const [logAccount, setLogAccount] = useState<Account | null>(null);
 
-    // Disable AlertDialog state
     const [openDisable, setOpenDisable] = useState(false);
     const [disableTarget, setDisableTarget] = useState<Account | null>(null);
 
@@ -243,6 +242,19 @@ export default function AccountsPage({
                 return 'outline';
         }
     }
+
+    useDebounce(() => {
+        if (isFirstRenderQuery.current) {
+            isFirstRenderQuery.current = false;
+            return;
+        }
+
+        router.get('/master/accounts', { search: query }, {
+            preserveState: true,
+            replace: true,
+            preserveScroll: true,
+        });
+    }, 400, [query]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -711,7 +723,9 @@ export default function AccountsPage({
                                             )
                                         }
                                         onBlur={() =>
-                                            updateAccountForm.validate('username')
+                                            updateAccountForm.validate(
+                                                'username',
+                                            )
                                         }
                                         required
                                     />
