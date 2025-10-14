@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DataPegawaiController;
 use App\Http\Controllers\Admin\DataTipeController;
 use App\Http\Controllers\Admin\UserAccountController;
 use App\Http\Controllers\DetailAssetController;
+use App\Http\Middleware\SuperadminMiddleware;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,26 +24,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('master')->group(function () {
-        Route::get('/org-units', [DataBidangController::class, 'index'])->name('org-units.index');
-        Route::post('/org-units', [DataBidangController::class, 'store'])->name('org-units.store')->middleware([
-            HandlePrecognitiveRequests::class
-        ]);
-        Route::delete('/org-units/{orgunit}', [DataBidangController::class, 'destroy'])->name('org-units.destroy');
-        Route::patch('/org-units/{orgunit}', [DataBidangController::class, 'update'])->name('org-units.update')->middleware([
-            HandlePrecognitiveRequests::class
-        ]);
-
-        Route::get('/employees', [DataPegawaiController::class, 'index'])->name('employees.index');
-        Route::get('/employees/create', [DataPegawaiController::class, 'create'])->name('employees.create');
-        Route::get('/employees/{employee}/edit', [DataPegawaiController::class, 'edit'])->name('employees.edit');
-        Route::patch('/employees/{employee}', [DataPegawaiController::class, 'update'])->name('employees.update')->middleware([
-            HandlePrecognitiveRequests::class
-        ]);
-        Route::post('/employees', [DataPegawaiController::class, 'store'])->name('employees.store')->middleware([
-            HandlePrecognitiveRequests::class
-        ]);
-        Route::delete('/employees/{employee}', [DataPegawaiController::class, 'destroy'])->name('employees.destroy');
-
         Route::get('/locations', [DataLocationController::class, 'index'])->name('locations.index');
         Route::post('/locations', [DataLocationController::class, 'store'])->name('locations.store')->middleware([
             HandlePrecognitiveRequests::class
@@ -92,15 +73,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/assets/testing', [DataAssetController::class, 'testing'])->name('assets.testing');
 
-        Route::get('accounts', [UserAccountController::class, 'index'])->name('accounts.index');
-        Route::post('accounts', [UserAccountController::class, 'store'])->name('accounts.store')->middleware([
-            HandlePrecognitiveRequests::class
-        ]);
-        Route::patch('accounts', [UserAccountController::class, 'update'])->name('accounts.update')->middleware([
-            HandlePrecognitiveRequests::class
-        ]);
-        Route::patch('accounts/{id}/toggle', [UserAccountController::class, 'toggleSoftDelete'])->name('accounts.toggle-soft-delete');
+
+        Route::middleware([SuperadminMiddleware::class])->group(function () {
+            // User Account Management
+            Route::get('accounts', [UserAccountController::class, 'index'])->name('accounts.index');
+            Route::post('accounts', [UserAccountController::class, 'store'])->name('accounts.store')->middleware([
+                HandlePrecognitiveRequests::class
+            ]);
+            Route::patch('accounts', [UserAccountController::class, 'update'])->name('accounts.update')->middleware([
+                HandlePrecognitiveRequests::class
+            ]);
+            Route::patch('accounts/{id}/toggle', [UserAccountController::class, 'toggleSoftDelete'])->name('accounts.toggle-soft-delete');
+
+            // Organizational Units Management
+            Route::get('/org-units', [DataBidangController::class, 'index'])->name('org-units.index');
+            Route::post('/org-units', [DataBidangController::class, 'store'])->name('org-units.store')->middleware([
+                HandlePrecognitiveRequests::class
+            ]);
+            Route::delete('/org-units/{orgunit}', [DataBidangController::class, 'destroy'])->name('org-units.destroy');
+            Route::patch('/org-units/{orgunit}', [DataBidangController::class, 'update'])->name('org-units.update')->middleware([
+                HandlePrecognitiveRequests::class
+            ]);
+
+            // Employee Management
+            Route::get('/employees', [DataPegawaiController::class, 'index'])->name('employees.index');
+            Route::get('/employees/create', [DataPegawaiController::class, 'create'])->name('employees.create');
+            Route::get('/employees/{employee}/edit', [DataPegawaiController::class, 'edit'])->name('employees.edit');
+            Route::patch('/employees/{employee}', [DataPegawaiController::class, 'update'])->name('employees.update')->middleware([
+                HandlePrecognitiveRequests::class
+            ]);
+            Route::post('/employees', [DataPegawaiController::class, 'store'])->name('employees.store')->middleware([
+                HandlePrecognitiveRequests::class
+            ]);
+            Route::delete('/employees/{employee}', [DataPegawaiController::class, 'destroy'])->name('employees.destroy');
+        });
     });
+
 });
 
 Route::get('/detail-asset/{key}', [DetailAssetController::class, 'index'])->name('detail-asset');
