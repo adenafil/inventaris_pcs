@@ -88,6 +88,7 @@ class UserAccountController extends Controller
 
         $user = new User();
         $user->name = $validatedData['name'];
+        $user->username = $validatedData['username'];
         $user->email = $validatedData['email'];
         $user->password = bcrypt($validatedData['password']);
         $user->role = $validatedData['role'];
@@ -114,6 +115,7 @@ class UserAccountController extends Controller
         $user = User::findOrFail($validatedData['id']);
         $user->name = $validatedData['name'];
         $user->email = $validatedData['email'];
+        $user->username = $validatedData['username'];
         if (!empty($validatedData['password']) && $validatedData['password'] !== null) {
             $user->password = bcrypt($validatedData['password']);
         }

@@ -27,6 +27,7 @@ class AddAccountRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
+            'username' => 'nullable|string|max:50|unique:users,username',
             'password' => 'nullable|string|min:8',
             'role' => 'required|in:superadmin,admin_it,admin_kantor',
             'org_unit_id' => 'nullable|exists:org_units,id',

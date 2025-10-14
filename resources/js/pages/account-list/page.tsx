@@ -48,7 +48,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router, WhenVisible } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 
 type AccountRole = 'admin' | 'manager' | 'staff';
@@ -62,171 +62,20 @@ type Account = {
     id: string;
     name: string;
     email: string;
+    username: string;
     role: AccountRole;
     org_unit_id?: string;
     active: boolean;
     password?: string | null;
     last_active_at: string | null;
-    createdAt: string;
-    updatedAt: string;
+    created_at: string;
+    updated_at: string;
     logs: AccountLog[];
 };
 
 function isoNow() {
     return new Date().toISOString();
 }
-
-const initialAccounts: Account[] = [
-    {
-        id: 'u-1001',
-        name: 'Siti Rahma',
-        email: 'siti.rahma@example.com',
-        role: 'admin',
-        bidang: 'Operasional',
-        active: true,
-        online: true,
-        createdAt: new Date('2024-11-10T08:20:00Z').toISOString(),
-        updatedAt: new Date('2025-01-02T10:15:00Z').toISOString(),
-        logs: [
-            {
-                id: 'l-1',
-                timestamp: '2024-11-10T08:20:00Z',
-                action: 'Account Created',
-                detail: 'Akun dibuat oleh sistem',
-            },
-            {
-                id: 'l-2',
-                timestamp: '2024-12-01T09:40:00Z',
-                action: 'Role Updated',
-                detail: 'Role diubah menjadi admin',
-            },
-            {
-                id: 'l-3',
-                timestamp: '2025-01-02T10:15:00Z',
-                action: 'Profile Edited',
-                detail: 'Perubahan pada bidang',
-            },
-        ],
-    },
-    {
-        id: 'u-1002',
-        name: 'Budi Santoso',
-        email: 'budi.santoso@example.com',
-        role: 'manager',
-        bidang: 'Keuangan',
-        active: true,
-        online: false,
-        createdAt: new Date('2024-12-05T07:00:00Z').toISOString(),
-        updatedAt: new Date('2025-02-11T12:05:00Z').toISOString(),
-        logs: [
-            {
-                id: 'l-4',
-                timestamp: '2024-12-05T07:00:00Z',
-                action: 'Account Created',
-            },
-            {
-                id: 'l-5',
-                timestamp: '2025-02-11T12:05:00Z',
-                action: 'Password Changed',
-            },
-        ],
-    },
-    {
-        id: 'u-1003',
-        name: 'Dewi Lestari',
-        email: 'dewi.lestari@example.com',
-        role: 'staff',
-        bidang: 'HR',
-        active: true,
-        online: true,
-        createdAt: new Date('2025-01-15T11:25:00Z').toISOString(),
-        updatedAt: new Date('2025-03-02T09:10:00Z').toISOString(),
-        logs: [
-            {
-                id: 'l-6',
-                timestamp: '2025-01-15T11:25:00Z',
-                action: 'Account Created',
-            },
-            {
-                id: 'l-7',
-                timestamp: '2025-03-02T09:10:00Z',
-                action: 'Profile Edited',
-                detail: 'Perubahan email',
-            },
-        ],
-    },
-    {
-        id: 'u-1004',
-        name: 'Andi Pratama',
-        email: 'andi.pratama@example.com',
-        role: 'staff',
-        bidang: 'Operasional',
-        active: true,
-        online: false,
-        createdAt: new Date('2024-10-21T14:00:00Z').toISOString(),
-        updatedAt: new Date('2025-02-01T08:00:00Z').toISOString(),
-        logs: [
-            {
-                id: 'l-8',
-                timestamp: '2024-10-21T14:00:00Z',
-                action: 'Account Created',
-            },
-            {
-                id: 'l-9',
-                timestamp: '2025-02-01T08:00:00Z',
-                action: 'Role Updated',
-                detail: 'Role diubah menjadi staff',
-            },
-        ],
-    },
-    {
-        id: 'u-1005',
-        name: 'Rina Kurnia',
-        email: 'rina.kurnia@example.com',
-        role: 'manager',
-        bidang: 'Produksi',
-        active: false,
-        online: false,
-        createdAt: new Date('2024-09-10T10:10:00Z').toISOString(),
-        updatedAt: new Date('2025-04-05T13:30:00Z').toISOString(),
-        logs: [
-            {
-                id: 'l-10',
-                timestamp: '2024-09-10T10:10:00Z',
-                action: 'Account Created',
-            },
-            {
-                id: 'l-11',
-                timestamp: '2025-04-05T13:30:00Z',
-                action: 'Account Disabled',
-                detail: 'Dinonaktifkan oleh admin',
-            },
-        ],
-    },
-    {
-        id: 'u-1006',
-        name: 'Yoga Mahendra',
-        email: 'yoga.mahendra@example.com',
-        role: 'admin',
-        bidang: 'IT',
-        active: true,
-        online: false,
-        createdAt: new Date('2025-02-20T09:00:00Z').toISOString(),
-        updatedAt: new Date('2025-02-28T15:45:00Z').toISOString(),
-        logs: [
-            {
-                id: 'l-12',
-                timestamp: '2025-02-20T09:00:00Z',
-                action: 'Account Created',
-            },
-            {
-                id: 'l-13',
-                timestamp: '2025-02-28T15:45:00Z',
-                action: '2FA Enabled',
-            },
-        ],
-    },
-];
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -264,6 +113,7 @@ export default function AccountsPage({
 
     const addAccountForm = useForm('post', '/master/accounts', {
         name: '',
+        username: '',
         email: '',
         password: '',
         role: '',
@@ -278,6 +128,7 @@ export default function AccountsPage({
             id: '',
             name: '',
             email: '',
+            username: '',
             password: null,
             role: '',
             org_unit_id: '',
@@ -286,7 +137,6 @@ export default function AccountsPage({
     );
 
     const [query, setQuery] = useState('');
-    const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
 
     // Add Dialog state
     const [openAdd, setOpenAdd] = useState(false);
@@ -303,48 +153,9 @@ export default function AccountsPage({
     const [openDisable, setOpenDisable] = useState(false);
     const [disableTarget, setDisableTarget] = useState<Account | null>(null);
 
-    // Form states (single page, reuse for add/edit)
-    const [fName, setFName] = useState('');
-    const [fEmail, setFEmail] = useState('');
-    const [fRole, setFRole] = useState<AccountRole>('staff');
-    const [fBidang, setFBidang] = useState('');
-    const [fActive, setFActive] = useState(true);
-    const [fOnline, setFOnline] = useState(false);
-
-    function resetForm() {
-        setFName('');
-        setFEmail('');
-        setFRole('staff');
-        setFBidang('');
-        setFActive(true);
-        setFOnline(false);
-    }
-
-    function fillFormFromAccount(acc: Account) {
-        setFName(acc.name);
-        setFEmail(acc.email);
-        setFRole(acc.role);
-        setFBidang(acc.bidang);
-        setFActive(acc.active);
-        setFOnline(acc.online);
-    }
-
-    const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return accounts;
-        return accounts.filter((a) => {
-            return (
-                a.name.toLowerCase().includes(q) ||
-                a.email.toLowerCase().includes(q) ||
-                a.role.toLowerCase().includes(q) ||
-                a.bidang.toLowerCase().includes(q)
-            );
-        });
-    }, [query, accounts]);
-
     function openAddDialog() {
-        resetForm();
         setOpenAdd(true);
+        addAccountForm.reset();
     }
 
     function onSubmitAdd(e: FormEvent) {
@@ -365,6 +176,7 @@ export default function AccountsPage({
         setEditing(acc);
         updateAccountForm.reset();
         updateAccountForm.setData('id', acc.id);
+        updateAccountForm.setData('username', acc.username);
         updateAccountForm.setData('name', acc.name);
         updateAccountForm.setData('email', acc.email);
         updateAccountForm.setData('password', acc.password ?? null);
@@ -373,7 +185,6 @@ export default function AccountsPage({
         updateAccountForm.setData('is_active', acc.active);
         console.log('acc', acc);
 
-        fillFormFromAccount(acc);
         setOpenEdit(true);
     }
 
@@ -415,27 +226,6 @@ export default function AccountsPage({
     function confirmDisable() {
         if (!disableTarget) return;
         const now = isoNow();
-        setAccounts((prev) =>
-            prev.map((a) =>
-                a.id === disableTarget.id
-                    ? {
-                          ...a,
-                          active: false,
-                          online: false,
-                          updatedAt: now,
-                          logs: [
-                              ...a.logs,
-                              {
-                                  id: `l-${Date.now()}`,
-                                  timestamp: now,
-                                  action: 'Account Disabled',
-                                  detail: 'Dinonaktifkan oleh admin',
-                              },
-                          ],
-                      }
-                    : a,
-            ),
-        );
         setOpenDisable(false);
         setDisableTarget(null);
     }
@@ -497,6 +287,7 @@ export default function AccountsPage({
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
+                                    <TableHead>Username</TableHead>
                                     <TableHead>Email</TableHead>
                                     <TableHead>Role</TableHead>
                                     <TableHead>Bidang</TableHead>
@@ -504,7 +295,7 @@ export default function AccountsPage({
                                     <TableHead>Online</TableHead>
                                     <TableHead>Created At</TableHead>
                                     <TableHead>Updated At</TableHead>
-                                    <TableHead className="text-right">
+                                    <TableHead className="text-center">
                                         Actions
                                     </TableHead>
                                 </TableRow>
@@ -521,6 +312,9 @@ export default function AccountsPage({
                                         <TableCell className="font-medium">
                                             {acc.name}
                                         </TableCell>
+                                        <TableCell className="font-medium">
+                                            {acc.username}
+                                        </TableCell>
                                         <TableCell className="text-muted-foreground">
                                             {acc.email}
                                         </TableCell>
@@ -535,7 +329,8 @@ export default function AccountsPage({
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {acc.org_unit?.name}
+                                            {acc.org_unit?.name ??
+                                                'Belum diatur'}
                                         </TableCell>
                                         <TableCell>
                                             {acc.deleted_at === null ? (
@@ -562,10 +357,10 @@ export default function AccountsPage({
                                             )}
                                         </TableCell>
                                         <TableCell className="text-muted-foreground">
-                                            {formatDate(acc.createdAt)}
+                                            {formatDate(acc.created_at)}
                                         </TableCell>
                                         <TableCell className="text-muted-foreground">
-                                            {formatDate(acc.updatedAt)}
+                                            {formatDate(acc.updated_at)}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -603,7 +398,7 @@ export default function AccountsPage({
                                     </TableRow>
                                 ))}
 
-                                {paginationUser.data.length > 20 && (
+                                {paginationUser.data.length > 19 && (
                                     <TableRow>
                                         <TableCell colSpan={9} className="p-0">
                                             <WhenVisible
@@ -647,7 +442,7 @@ export default function AccountsPage({
                                 {paginationUser.data.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={9}
+                                            colSpan={10}
                                             className="text-center text-muted-foreground"
                                         >
                                             Tidak ada data yang cocok.
@@ -712,6 +507,30 @@ export default function AccountsPage({
                                     {addAccountForm.invalid('email') && (
                                         <div className="text-sm text-red-600">
                                             {addAccountForm.errors.email}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="username">Username</Label>
+                                    <Input
+                                        id="username"
+                                        type="text"
+                                        placeholder="username"
+                                        value={addAccountForm.data.username}
+                                        onChange={(e) =>
+                                            addAccountForm.setData(
+                                                'username',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            addAccountForm.validate('username')
+                                        }
+                                        required
+                                    />
+                                    {addAccountForm.invalid('username') && (
+                                        <div className="text-sm text-red-600">
+                                            {addAccountForm.errors.username}
                                         </div>
                                     )}
                                 </div>
@@ -855,9 +674,9 @@ export default function AccountsPage({
                                     )}
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="eemail">Email</Label>
+                                    <Label htmlFor="email">Email</Label>
                                     <Input
-                                        id="eemail"
+                                        id="email"
                                         type="email"
                                         value={updateAccountForm.data.email}
                                         onChange={(e) =>
@@ -874,6 +693,31 @@ export default function AccountsPage({
                                     {updateAccountForm.invalid('email') && (
                                         <div className="text-sm text-red-600">
                                             {updateAccountForm.errors.email}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="username">Username</Label>
+                                    <Input
+                                        id="username"
+                                        type="text"
+                                        placeholder="username"
+                                        value={updateAccountForm.data.username}
+                                        onChange={(e) =>
+                                            updateAccountForm.setData(
+                                                'username',
+                                                e.target.value,
+                                            )
+                                        }
+                                        onBlur={() =>
+                                            updateAccountForm.validate('username')
+                                        }
+                                        required
+                                    />
+                                    {updateAccountForm.invalid('username') && (
+                                        <div className="text-sm text-red-600">
+                                            {updateAccountForm.errors.username}
                                         </div>
                                     )}
                                 </div>
@@ -905,7 +749,7 @@ export default function AccountsPage({
                                 <div className="grid gap-2">
                                     <Label>Role</Label>
                                     <Select
-                                        value={fRole}
+                                        value={updateAccountForm.data.role}
                                         onValueChange={(v) =>
                                             updateAccountForm.setData('role', v)
                                         }

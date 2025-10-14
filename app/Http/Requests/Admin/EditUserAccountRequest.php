@@ -28,6 +28,7 @@ class EditUserAccountRequest extends FormRequest
         return [
             'id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:50',
             'email' => 'required|string|email|max:255',
             'password' => 'nullable|string|min:8',
             'role' => 'required|in:superadmin,admin_it,admin_kantor',
