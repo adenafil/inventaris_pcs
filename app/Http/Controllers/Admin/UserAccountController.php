@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\EditUserAccountRequest;
 use App\Models\OrgUnit;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Log\Logger;
 use Inertia\Inertia;
 
 class UserAccountController extends Controller
@@ -99,6 +100,7 @@ class UserAccountController extends Controller
     public function update(EditUserAccountRequest $request)
     {
         $validatedData = $request->validated();
+        Logger()->info('Validated Data: ', $validatedData);
 
         // check email unique except for current user
         $user = User::where('email', $validatedData['email'])
@@ -112,7 +114,7 @@ class UserAccountController extends Controller
         $user = User::findOrFail($validatedData['id']);
         $user->name = $validatedData['name'];
         $user->email = $validatedData['email'];
-        if (!empty($validatedData['password'])) {
+        if (!empty($validatedData['password']) && $validatedData['password'] !== null) {
             $user->password = bcrypt($validatedData['password']);
         }
         $user->role = $validatedData['role'];
