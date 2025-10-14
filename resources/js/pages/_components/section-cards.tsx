@@ -8,28 +8,29 @@ import {
 } from '@/components/ui/card';
 import { Computer, Monitor, Shield, Users } from 'lucide-react';
 
-export function SectionCards() {
+
+export function SectionCards({ totalAsset, totalPegawai, totalModel, role }: { totalAsset: number; totalPegawai: number; totalModel: number; role: string }) {
     const stats = [
         {
             title: 'Total Assets',
-            description: 'Komputer yang terdaftar',
-            value: '1',
+            description: 'Jumlah aset terdaftar',
+            value: totalAsset.toString(),
             icon: Computer,
             trend: 'Assets',
             trendType: 'neutral' as const,
         },
         {
             title: 'Role User',
-            description: 'Tingkat akses Anda',
-            value: 'Admin IT',
+            description: 'Role pengguna saat ini',
+            value: role,
             icon: Shield,
-            trend: 'Full Access',
+            trend: role === "superadmin" ? 'Admin Tertinggi' : "User Biasa",
             trendType: 'positive' as const,
         },
         {
             title: 'Total Pegawai',
             description: 'Jumlah pegawai terdaftar',
-            value: '15',
+            value: totalPegawai.toString(),
             icon: Users,
             trend: 'Active',
             trendType: 'positive' as const,
@@ -37,7 +38,7 @@ export function SectionCards() {
         {
             title: 'Total Model',
             description: 'Model perangkat tersedia',
-            value: '8',
+            value: totalModel.toString(),
             icon: Monitor,
             trend: 'Models',
             trendType: 'neutral' as const,

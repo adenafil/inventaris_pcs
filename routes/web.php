@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataAssetController;
 use App\Http\Controllers\Admin\DataBidangController;
 use App\Http\Controllers\Admin\DataLocationController;
@@ -18,9 +19,8 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('master')->group(function () {
         Route::get('/org-units', [DataBidangController::class, 'index'])->name('org-units.index');

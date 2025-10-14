@@ -1,9 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 
 export function WelcomeSection() {
-    const userName = 'Admin'; // 
-    const userRole = 'Admin IT';
+    const { auth } = usePage<SharedData>().props;
+
+    const userName = auth.user.name;
+    const userRole = auth.user.role;
 
     const getCurrentGreeting = () => {
         const hour = new Date().getHours();

@@ -207,129 +207,143 @@ const [tab, setTab] = useState<string>(role ?? 'superadmin');
                                 Kantor
                             </TabsTrigger>
                         </TabsList>
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>No. Invent</TableHead>
-                                        <TableHead>Item</TableHead>
-                                        <TableHead>Tipe</TableHead>
-                                        <TableHead>Brand</TableHead>
-                                        <TableHead>Lokasi</TableHead>
-                                        <TableHead>Created By</TableHead>
-                                        <TableHead className="text-center">
-                                            Action
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {dataAssets.map((data) => (
-                                        <TableRow key={data.id}>
-                                            <TableCell className="whitespace-nowrap">
-                                                {data.inventory_number}
-                                            </TableCell>
-                                            <TableCell>
-                                                {data.item_name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {data.type.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {data.model.brand}
-                                            </TableCell>
-                                            <TableCell>
-                                                {data.location.name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {data.creator.name}
-                                            </TableCell>
-                                            <TableCell className="space-x-2 text-center">
-                                                <Link
-                                                    preserveScroll
-                                                    href={`/master/assets/view/${data.id}`}
-                                                >
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="inline-flex gap-1 bg-transparent"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                        View
-                                                    </Button>
-                                                </Link>
-                                                <Link
-                                                    href={`/master/assets/${data.id}/edit`}
-                                                >
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="inline-flex gap-1 bg-transparent"
-                                                    >
-                                                        <Pencil className="h-4 w-4" />
-                                                        Edit
-                                                    </Button>
-                                                </Link>
-                                                <AssignForm
-                                                    key={data.id}
-                                                    asset_id={data.id}
-                                                    employees={employees}
-                                                    orgUnits={orgUnits}
-                                                />
 
-                                                <DeleteAssetBtn
-                                                    assetId={data.id}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                        {dataAssets.length === 0 && (
+                            <div className="mt-8 rounded-lg border border-dashed p-12 text-center">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Tidak ada data aset yang ditemukan.
+                                </p>
+                            </div>
+                        )}
 
-                                    {pagination.current_page <
-                                        pagination.last_page && (
+                        {dataAssets.length > 0 && (
+                            <div className="rounded-md border">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell
-                                                colSpan={7}
-                                                className="text-center"
-                                            >
-                                                <WhenVisible
-                                                    always={
-                                                        pagination.current_page <
-                                                        pagination.last_page
-                                                    }
-                                                    params={{
-                                                        data: {
-                                                            data_asset_page:
-                                                                pagination.current_page <
-                                                                pagination.last_page
-                                                                    ? pagination.current_page +
-                                                                      1
-                                                                    : pagination.current_page,
-                                                        },
-                                                        only: [
-                                                            'dataAssets',
-                                                            'pagination',
-                                                        ],
-                                                    }}
-                                                    buffer={0.1}
-                                                    fallback={
-                                                        <p>data not found.</p>
-                                                    }
-                                                    as="div"
-                                                >
-                                                    {pagination.current_page >=
-                                                    pagination.last_page ? (
-                                                        <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                                    ) : (
-                                                        <div className="w-full p-2 text-center text-sm text-muted-foreground">
-                                                            Loading more data...
-                                                        </div>
-                                                    )}
-                                                </WhenVisible>
-                                            </TableCell>
+                                            <TableHead>No. Invent</TableHead>
+                                            <TableHead>Item</TableHead>
+                                            <TableHead>Tipe</TableHead>
+                                            <TableHead>Brand</TableHead>
+                                            <TableHead>Lokasi</TableHead>
+                                            <TableHead>Created By</TableHead>
+                                            <TableHead className="text-center">
+                                                Action
+                                            </TableHead>
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {dataAssets.map((data) => (
+                                            <TableRow key={data.id}>
+                                                <TableCell className="whitespace-nowrap">
+                                                    {data.inventory_number}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.item_name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.type.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.model.brand}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.location.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {data.creator.name}
+                                                </TableCell>
+                                                <TableCell className="space-x-2 text-center">
+                                                    <Link
+                                                        preserveScroll
+                                                        href={`/master/assets/view/${data.id}`}
+                                                    >
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="inline-flex gap-1 bg-transparent"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                            View
+                                                        </Button>
+                                                    </Link>
+                                                    <Link
+                                                        href={`/master/assets/${data.id}/edit`}
+                                                    >
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="inline-flex gap-1 bg-transparent"
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                            Edit
+                                                        </Button>
+                                                    </Link>
+                                                    <AssignForm
+                                                        key={data.id}
+                                                        asset_id={data.id}
+                                                        employees={employees}
+                                                        orgUnits={orgUnits}
+                                                    />
+
+                                                    <DeleteAssetBtn
+                                                        assetId={data.id}
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+
+                                        {pagination.current_page <
+                                            pagination.last_page && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={7}
+                                                    className="text-center"
+                                                >
+                                                    <WhenVisible
+                                                        always={
+                                                            pagination.current_page <
+                                                            pagination.last_page
+                                                        }
+                                                        params={{
+                                                            data: {
+                                                                data_asset_page:
+                                                                    pagination.current_page <
+                                                                    pagination.last_page
+                                                                        ? pagination.current_page +
+                                                                          1
+                                                                        : pagination.current_page,
+                                                            },
+                                                            only: [
+                                                                'dataAssets',
+                                                                'pagination',
+                                                            ],
+                                                        }}
+                                                        buffer={0.1}
+                                                        fallback={
+                                                            <p>
+                                                                data not found.
+                                                            </p>
+                                                        }
+                                                        as="div"
+                                                    >
+                                                        {pagination.current_page >=
+                                                        pagination.last_page ? (
+                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                        ) : (
+                                                            <div className="w-full p-2 text-center text-sm text-muted-foreground">
+                                                                Loading more
+                                                                data...
+                                                            </div>
+                                                        )}
+                                                    </WhenVisible>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
                     </Tabs>
                 </main>
 
