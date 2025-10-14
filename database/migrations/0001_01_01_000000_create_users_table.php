@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('org_unit_id')->nullable();
             $table->rememberToken();
             $table->timestamp('last_active_at')->nullable();
+            $table->string('username')->nullable()->unique();
             $table->timestamps();
         });
 

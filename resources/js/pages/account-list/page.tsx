@@ -594,51 +594,55 @@ export default function AccountsPage({
                                                         onClickDisable(acc)
                                                     }
                                                 >
-                                                    {acc.deleted_at === null ?
-                                                        'Disable' :
-                                                        'Enable'}
+                                                    {acc.deleted_at === null
+                                                        ? 'Disable'
+                                                        : 'Enable'}
                                                 </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
 
-                                <TableRow>
-                                    <TableCell colSpan={9} className="p-0">
-                                        <WhenVisible
-                                            always={
-                                                paginationUser.current_page <
-                                                paginationUser.last_page
-                                            }
-                                            params={{
-                                                data: {
-                                                    page:
-                                                        paginationUser.current_page <
-                                                        paginationUser.last_page
-                                                            ? paginationUser.current_page +
-                                                              1
-                                                            : paginationUser.current_page,
-                                                },
-                                                only: [
-                                                    'users',
-                                                    'paginationUser',
-                                                ],
-                                            }}
-                                            buffer={0.1}
-                                            fallback={<p>data not found.</p>}
-                                            as="div"
-                                        >
-                                            {paginationUser.current_page >=
-                                            paginationUser.last_page ? (
-                                                <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                            ) : (
-                                                <div className="w-full p-2 text-center text-sm text-muted-foreground">
-                                                    Loading more data...
-                                                </div>
-                                            )}
-                                        </WhenVisible>
-                                    </TableCell>
-                                </TableRow>
+                                {paginationUser.data.length > 20 && (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="p-0">
+                                            <WhenVisible
+                                                always={
+                                                    paginationUser.current_page <
+                                                    paginationUser.last_page
+                                                }
+                                                params={{
+                                                    data: {
+                                                        page:
+                                                            paginationUser.current_page <
+                                                            paginationUser.last_page
+                                                                ? paginationUser.current_page +
+                                                                  1
+                                                                : paginationUser.current_page,
+                                                    },
+                                                    only: [
+                                                        'users',
+                                                        'paginationUser',
+                                                    ],
+                                                }}
+                                                buffer={0.1}
+                                                fallback={
+                                                    <p>data not found.</p>
+                                                }
+                                                as="div"
+                                            >
+                                                {paginationUser.current_page >=
+                                                paginationUser.last_page ? (
+                                                    <div className="p-2 text-center text-sm text-muted-foreground"></div>
+                                                ) : (
+                                                    <div className="w-full p-2 text-center text-sm text-muted-foreground">
+                                                        Loading more data...
+                                                    </div>
+                                                )}
+                                            </WhenVisible>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
 
                                 {paginationUser.data.length === 0 && (
                                     <TableRow>
