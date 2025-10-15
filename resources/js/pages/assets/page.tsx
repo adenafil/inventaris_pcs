@@ -19,11 +19,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, WhenVisible } from '@inertiajs/react';
-import { Eye, Pencil } from 'lucide-react';
-import AssignForm from './_components/assign-form';
-import DeleteAssetBtn from './_components/delete-asset-btn';
 import { PageProps } from './_types';
 import useAssetFilters from './_hooks/use-asset-filter';
+import DataAssetNotFound from './_components/data-asset-not-found';
+import TableDataAsset from './_components/table-data-asset';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -135,11 +134,7 @@ export default function Page({
                         </TabsList>
 
                         {dataAssets.length === 0 && (
-                            <div className="mt-8 rounded-lg border border-dashed p-12 text-center">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Tidak ada data aset yang ditemukan.
-                                </p>
-                            </div>
+                            <DataAssetNotFound />
                         )}
 
                         {dataAssets.length > 0 && (
@@ -160,64 +155,12 @@ export default function Page({
                                     </TableHeader>
                                     <TableBody>
                                         {dataAssets.map((data) => (
-                                            <TableRow key={data.id}>
-                                                <TableCell className="whitespace-nowrap">
-                                                    {data.inventory_number}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.item_name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.type.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.model.brand}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.location.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {data.creator.name}
-                                                </TableCell>
-                                                <TableCell className="space-x-2 text-center">
-                                                    <Link
-                                                        preserveScroll
-                                                        href={`/master/assets/view/${data.id}`}
-                                                    >
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="inline-flex gap-1 bg-transparent"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                            View
-                                                        </Button>
-                                                    </Link>
-                                                    <Link
-                                                        href={`/master/assets/${data.id}/edit`}
-                                                    >
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="inline-flex gap-1 bg-transparent"
-                                                        >
-                                                            <Pencil className="h-4 w-4" />
-                                                            Edit
-                                                        </Button>
-                                                    </Link>
-                                                    <AssignForm
-                                                        key={data.id}
-                                                        asset_id={data.id}
-                                                        employees={employees}
-                                                        orgUnits={orgUnits}
-                                                    />
-
-                                                    <DeleteAssetBtn
-                                                        className="inline-flex gap-1 bg-transparent"
-                                                        assetId={data.id}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
+                                            <TableDataAsset
+                                                key={data.id}
+                                                data={data}
+                                                employees={employees}
+                                                orgUnits={orgUnits}
+                                            />
                                         ))}
 
                                         {pagination.current_page <
