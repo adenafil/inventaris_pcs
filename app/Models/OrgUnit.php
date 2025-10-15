@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LogsUserActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class OrgUnit extends Model
 {
+    use LogsUserActivity;
+
     protected $table = 'org_units';
     protected $primaryKey = 'id';
     protected $keyType = 'int';

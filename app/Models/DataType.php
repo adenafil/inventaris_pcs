@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LogsUserActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class DataType extends Model
 {
+    use LogsUserActivity;
+    
     protected $table = 'data_types';
     protected $primaryKey = 'id';
     protected $keyType = 'int';

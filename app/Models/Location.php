@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LogsUserActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Location extends Model
 {
+    use LogsUserActivity;
+
     protected $table = 'locations';
     protected $primaryKey = 'id';
     protected $keyType = 'int';

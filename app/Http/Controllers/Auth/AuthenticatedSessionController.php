@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\UserLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,15 @@ class AuthenticatedSessionController extends Controller
 
         Auth::login($user, $request->boolean('remember'));
 
+        UserLog::create([
+            'user_id' => $user->id,
+            'action' => 'login',
+            'model_type' => 'Auth',
+            'description' => 'Login ke sistem',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
@@ -53,6 +63,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if (auth()->check()) {
+            UserLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'logout',
+                'model_type' => 'Auth',
+                'description' => 'Logout dari sistem',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

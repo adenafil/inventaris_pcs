@@ -19,7 +19,7 @@ class UserAccountController extends Controller
         $orgUnits = OrgUnit::all();
 
         // Buat query dengan relasi
-        $query = User::with('orgUnit')->withTrashed();
+        $query = User::with('orgUnit', 'logs')->withTrashed();
 
         // Tambahkan kondisi search untuk multiple fields
         if ($search) {
@@ -36,13 +36,18 @@ class UserAccountController extends Controller
         $page = request()->get('page', 1);
         $users = $query->paginate(20)->withQueryString();
 
+        $users->getCollection()->transform(function ($user) {
+            $user->logs = $user->logs->map->toFrontendFormat();
+            return $user;
+        });
+
 
         if (!request()->header('X-inertia')) {
             $allResults = collect();
 
             for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
                 // Buat query baru dengan relasi untuk setiap halaman
-                $pageQuery = User::with('orgUnit')->withTrashed();
+                $pageQuery = User::with('orgUnit', 'logs')->withTrashed();
 
                 // Tambahkan kondisi search yang sama
                 if ($search) {

@@ -13,6 +13,20 @@ interface PaginationLink {
     active: boolean;
 }
 
+export interface AccountLog {
+    id: string;
+    user_id: number;
+    action: string;
+    model_type: string;
+    model_id: number;
+    description: string;
+    changes: string | null;
+    ip_address: string;
+    user_agent: string;
+    created_at: string;
+    updated_at: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -30,6 +44,7 @@ interface User {
     created_at: string;
     updated_at: string;
     org_unit: OrgUnit | null;
+    logs: AccountLog[];
 }
 
 interface PaginationUser {

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LogsUserActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
+    use LogsUserActivity;
+
     protected $table = 'documents';
 
     protected $fillable = [

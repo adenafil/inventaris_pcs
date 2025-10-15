@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LogsUserActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Asset extends Model
 {
+    use LogsUserActivity;
+
     protected $table = 'assets';
     protected $primaryKey = 'id';
     protected $keyType = 'int';

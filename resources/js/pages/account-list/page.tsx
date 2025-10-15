@@ -51,14 +51,10 @@ import { useForm } from 'laravel-precognition-react';
 import { FormEvent, useRef, useState } from 'react';
 import { useDebounce } from 'react-use';
 import { toast } from 'sonner';
+import { AccountLog } from './_types';
+import { Info } from 'lucide-react';
 
 type AccountRole = 'admin' | 'manager' | 'staff';
-type AccountLog = {
-    id: string;
-    timestamp: string;
-    action: string;
-    detail?: string;
-};
 type Account = {
     id: string;
     name: string;
@@ -147,7 +143,7 @@ export default function AccountsPage({
     const [editing, setEditing] = useState<Account | null>(null);
 
     const [openLog, setOpenLog] = useState(false);
-    const [logAccount, setLogAccount] = useState<Account | null>(null);
+    const [logAccount, setLogAccount] = useState<AccountLog[] | null>(null);
 
     const [openDisable, setOpenDisable] = useState(false);
     const [disableTarget, setDisableTarget] = useState<Account | null>(null);
@@ -202,7 +198,8 @@ export default function AccountsPage({
         });
     }
 
-    function onClickViewLog(acc: Account) {
+    function onClickViewLog(acc: AccountLog[]) {
+        console.log('acc', acc);
         setLogAccount(acc);
         setOpenLog(true);
     }
@@ -243,18 +240,26 @@ export default function AccountsPage({
         }
     }
 
-    useDebounce(() => {
-        if (isFirstRenderQuery.current) {
-            isFirstRenderQuery.current = false;
-            return;
-        }
+    useDebounce(
+        () => {
+            if (isFirstRenderQuery.current) {
+                isFirstRenderQuery.current = false;
+                return;
+            }
 
-        router.get('/master/accounts', { search: query }, {
-            preserveState: true,
-            replace: true,
-            preserveScroll: true,
-        });
-    }, 400, [query]);
+            router.get(
+                '/master/accounts',
+                { search: query },
+                {
+                    preserveState: true,
+                    replace: true,
+                    preserveScroll: true,
+                },
+            );
+        },
+        400,
+        [query],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -380,7 +385,7 @@ export default function AccountsPage({
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() =>
-                                                        onClickViewLog(acc)
+                                                        onClickViewLog(acc.logs)
                                                     }
                                                 >
                                                     View Log
@@ -842,43 +847,54 @@ export default function AccountsPage({
                             <SheetHeader>
                                 <SheetTitle>Aktivitas Akun</SheetTitle>
                                 <SheetDescription>
-                                    Log apa saja yang dilakukan oleh akun{' '}
-                                    {logAccount?.name ?? '-'}.
+                                    Berikut adalah log aktivitas dari akun ini.
                                 </SheetDescription>
                             </SheetHeader>
-                            <div className="mt-4 grid gap-3">
-                                {logAccount?.logs?.length ? (
-                                    logAccount.logs
-                                        .slice()
-                                        .sort((a, b) =>
-                                            a.timestamp < b.timestamp ? 1 : -1,
-                                        )
-                                        .map((log) => (
-                                            <div
-                                                key={log.id}
-                                                className="rounded-md border p-3"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <p className="text-sm font-medium">
-                                                        {log.action}
-                                                    </p>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {formatDate(
-                                                            log.timestamp,
-                                                        )}
+                            <div className="grid gap-3 overflow-y-auto px-4">
+                                {logAccount && logAccount.length > 0 ? (
+                                    logAccount.map((log) => (
+                                        <div
+                                            key={log.id}
+                                            className="rounded-lg border p-4"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-medium">
+                                                    {log.action}{' '}
+                                                    <span className="text-sm text-muted-foreground">
+                                                        on {log.model_type}
                                                     </span>
-                                                </div>
-                                                {log.detail ? (
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-                                                        {log.detail}
-                                                    </p>
-                                                ) : null}
+                                                </span>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {formatDate(log.created_at)}
+                                                </span>
                                             </div>
-                                        ))
+                                            <p className="mt-2 text-sm text-muted-foreground">
+                                                {log.description}
+                                            </p>
+                                            {log.changes && (
+                                                <pre className="mt-2 max-h-40 overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
+                                                    {JSON.stringify(
+                                                        log.changes,
+                                                        null,
+                                                        2,
+                                                    )}
+                                                </pre>
+                                            )}
+                                            <div className="mt-2 text-sm text-muted-foreground">
+                                                <div>IP: {log.ip_address}</div>
+                                                <div>
+                                                    User Agent: {log.user_agent}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        Belum ada aktivitas.
-                                    </p>
+                                    <div className="rounded-lg border p-4 text-center text-sm text-muted-foreground">
+                                        <Info className="mx-auto mb-2 h-6 w-6" />
+                                        <p className="text-sm text-muted-foreground">
+                                            Tidak ada log aktivitas.
+                                        </p>
+                                    </div>
                                 )}
                             </div>
                         </SheetContent>
