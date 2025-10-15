@@ -150,12 +150,6 @@ class DataAssetController extends Controller
         ]);
     }
 
-
-    public function testing()
-    {
-        return Inertia::render('assets/testing/page');
-    }
-
     public function create()
     {
         return Inertia::render('assets/add/page', [

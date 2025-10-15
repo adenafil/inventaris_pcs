@@ -14,48 +14,55 @@ import { useState } from "react";
 import { Employee, OrgUnit, PaginatedResponse } from "../_types";
 import { toast } from "sonner";
 
-export default function AssignForm({ employees, orgUnits, asset_id }: { employees: PaginatedResponse<Employee>, orgUnits: PaginatedResponse<OrgUnit>, asset_id: number }) {
-
+export default function AssignForm({
+    employees,
+    orgUnits,
+    asset_id,
+    className = 'inline-flex gap-1 bg-transparent',
+}: {
+    employees: PaginatedResponse<Employee>;
+    orgUnits: PaginatedResponse<OrgUnit>;
+    asset_id: number;
+    className?: string;
+}) {
     const [isOpenPegawai, setOpenPegawai] = useState(false);
     const [isOpenBidang, setOpenBidang] = useState(false);
     const [typePengguna, setTypePengguna] = useState<
         'pegawai' | 'bidang' | 'tidak-diassign' | ''
     >('');
 
+    const formAssign = useForm('post', '/master/assets/assignment', {
+        asset_id: asset_id.toString(),
+        employee_id: '',
+        org_unit_id: '',
+        notes: '',
+        dokument_peminjaman: '',
+        status: 'assigned',
+        assigned_at: '',
+        returned_at: '',
+    });
 
-        const formAssign = useForm('post', '/master/assets/assignment', {
-            asset_id: asset_id.toString(),
-            employee_id: '',
-            org_unit_id: '',
-            notes: '',
-            dokument_peminjaman: '',
-            status: 'assigned',
-            assigned_at: '',
-            returned_at: '',
+    const handleAssign = () => {
+        formAssign.setData(
+            'assigned_at',
+            new Date().toISOString().split('T')[0],
+        );
+        formAssign.submit({
+            onSuccess: () => {
+                setTypePengguna('');
+                setOpenBidang(false);
+                setOpenPegawai(false);
+                formAssign.reset();
+                toast.success('Asset assigned successfully');
+            },
+            onValidationError: (error) => {
+                toast.error(
+                    error.data.message.split('(')[0] ||
+                        'Sorry, something went wrong. Please try again later.',
+                );
+            },
         });
-
-        const handleAssign = () => {
-            formAssign.setData(
-                'assigned_at',
-                new Date().toISOString().split('T')[0],
-            );
-            formAssign.submit({
-                onSuccess: () => {
-                    setTypePengguna('');
-                    setOpenBidang(false);
-                    setOpenPegawai(false);
-                    formAssign.reset();
-                    toast.success('Asset assigned successfully');
-                },
-                onValidationError: (error) => {
-                    toast.error(
-                        error.data.message.split('(')[0] ||
-                            'Sorry, something went wrong. Please try again later.',
-                    );
-                },
-            });
-        };
-
+    };
 
     return (
         <Sheet>
@@ -63,7 +70,7 @@ export default function AssignForm({ employees, orgUnits, asset_id }: { employee
                 <Button
                     size="sm"
                     variant="outline"
-                    className="w-full sm:w-auto"
+                    className={className}
                 >
                     <UserCheck className="h-4 w-4" />
                     Assign

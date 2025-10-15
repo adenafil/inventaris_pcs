@@ -309,7 +309,6 @@ export default function AccountsPage({
                                     <TableHead>Role</TableHead>
                                     <TableHead>Bidang</TableHead>
                                     <TableHead>Active</TableHead>
-                                    <TableHead>Online</TableHead>
                                     <TableHead>Created At</TableHead>
                                     <TableHead>Updated At</TableHead>
                                     <TableHead className="text-center">
@@ -357,19 +356,6 @@ export default function AccountsPage({
                                             ) : (
                                                 <Badge variant="destructive">
                                                     Disabled
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {isUserOnline(
-                                                acc.last_active_at,
-                                            ) ? (
-                                                <Badge variant="secondary">
-                                                    Online
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline">
-                                                    Offline
                                                 </Badge>
                                             )}
                                         </TableCell>
@@ -459,7 +445,7 @@ export default function AccountsPage({
                                 {paginationUser.data.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={10}
+                                            colSpan={9}
                                             className="text-center text-muted-foreground"
                                         >
                                             Tidak ada data yang cocok.
@@ -643,7 +629,7 @@ export default function AccountsPage({
                                     >
                                         Batal
                                     </Button>
-                                    <Button type="submit">Simpan</Button>
+                                    <Button type="submit" disabled={addAccountForm.processing}>{addAccountForm.processing ? 'Menyimpan...' : 'Simpan'}</Button>
                                 </DialogFooter>
                             </form>
                         </DialogContent>
@@ -832,7 +818,7 @@ export default function AccountsPage({
                                     >
                                         Batal
                                     </Button>
-                                    <Button type="submit">Simpan</Button>
+                                    <Button type="submit" disabled={updateAccountForm.processing}>{ updateAccountForm.processing ? 'Menyimpan...' : 'Simpan' }</Button>
                                 </DialogFooter>
                             </form>
                         </DialogContent>

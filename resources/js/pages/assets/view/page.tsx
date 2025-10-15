@@ -214,6 +214,7 @@ export default function Page({
                                         asset_id={dataAsset.id}
                                         employees={employees}
                                         orgUnits={orgUnits}
+                                        className="w-full sm:w-auto"
                                     />
                                     <DeleteAssetBtn assetId={dataAsset.id} />
                                 </div>{' '}
@@ -316,7 +317,9 @@ export default function Page({
                                         </div>
                                         <div className="flex justify-end gap-2">
                                             {a.status === 'assigned' && (
-                                                <ReturnBtn assignmentId={a.id }/>
+                                                <ReturnBtn
+                                                    assignmentId={a.id}
+                                                />
                                             )}
 
                                             <Dialog>
@@ -362,6 +365,7 @@ export default function Page({
                                                                         document.getElementById(
                                                                             'QRCode',
                                                                         );
+                                                                    if (!svg) return;
                                                                     const svgData =
                                                                         new XMLSerializer().serializeToString(
                                                                             svg,
@@ -382,7 +386,7 @@ export default function Page({
                                                                                 img.width;
                                                                             canvas.height =
                                                                                 img.height;
-                                                                            ctx.drawImage(
+                                                                            ctx?.drawImage(
                                                                                 img,
                                                                                 0,
                                                                                 0,

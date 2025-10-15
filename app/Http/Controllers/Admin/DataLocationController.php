@@ -64,8 +64,6 @@ public function destroy(Location $location)
 
 public function update(EditDataLocationRequest $request, Location $location)
 {
-    dd($request->all());
-
     $validatedData = $request->validated();
 
     $location->update($validatedData);

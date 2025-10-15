@@ -15,18 +15,15 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, WhenVisible } from '@inertiajs/react';
+import { Head, Link, WhenVisible } from '@inertiajs/react';
 import { Eye, Pencil } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { useDebounce } from 'react-use';
 import AssignForm from './_components/assign-form';
 import DeleteAssetBtn from './_components/delete-asset-btn';
-import { type Asset } from './_components/lib/assets-data';
-import { QrModal } from './_components/qr-modal';
 import { PageProps } from './_types';
+import useAssetFilters from './_hooks/use-asset-filter';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -56,78 +53,7 @@ export default function Page({
         typeReq,
     });
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const isFirstRenderSearch = useRef(true);
-    const isFirstRenderTipe = useRef(true);
-    const isFirstRenderTab = useRef(true);
-
-const [tab, setTab] = useState<string>(role ?? 'superadmin');
-    const [tipe, setTipe] = useState<string>(typeReq ?? ''); // Updated default value
-    const [qrAsset, setQrAsset] = useState<Asset | null>(null);
-
-    const qrValue = qrAsset
-        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${qrAsset.id}`
-        : '';
-
-    useDebounce(
-        () => {
-            if (isFirstRenderSearch.current) {
-                isFirstRenderSearch.current = false;
-                return;
-            }
-
-            router.get(
-                `/master/assets?search=${searchTerm}`,
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                },
-            );
-        },
-        500,
-        [searchTerm],
-    );
-
-    useDebounce(
-        () => {
-            if (isFirstRenderTipe.current) {
-                isFirstRenderTipe.current = false;
-                return;
-            }
-
-            router.get(
-                `/master/assets?tipe=${tipe === 'all' ? '' : tipe}`,
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                },
-            );
-        },
-        500,
-        [tipe],
-    );
-
-    useDebounce(
-        () => {
-            if (isFirstRenderTab.current) {
-                isFirstRenderTab.current = false;
-                return;
-            }
-
-            router.get(
-                `/master/assets?role=${tab}`,
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                },
-            );
-        },
-        500,
-        [tab],
-    );
+    const { searchTerm, setSearchTerm, tab, setTab, tipe, setTipe } = useAssetFilters(role, typeReq);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -287,6 +213,7 @@ const [tab, setTab] = useState<string>(role ?? 'superadmin');
                                                     />
 
                                                     <DeleteAssetBtn
+                                                        className="inline-flex gap-1 bg-transparent"
                                                         assetId={data.id}
                                                     />
                                                 </TableCell>
@@ -346,13 +273,6 @@ const [tab, setTab] = useState<string>(role ?? 'superadmin');
                         )}
                     </Tabs>
                 </main>
-
-                <QrModal
-                    open={!!qrAsset}
-                    onOpenChange={(v) => !v && setQrAsset(null)}
-                    value={qrValue}
-                    title={qrAsset ? `QR - ${qrAsset.nomorInvent}` : 'QR'}
-                />
             </div>
         </AppLayout>
     );

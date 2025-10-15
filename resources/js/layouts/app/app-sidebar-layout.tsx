@@ -47,7 +47,7 @@ export default function AppSidebarLayout({
                     {children}
                 </AppContent>
             </AppShell>
-            <Toaster position="bottom-right" richColors />
+            <Toaster position="top-center" />
         </>
     );
 }
