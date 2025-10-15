@@ -40,6 +40,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                         as="button"
                         prefetch
                         onClick={cleanup}
+                        preserveScroll
                     >
                         <Settings className="mr-2" />
                         Settings

@@ -68,10 +68,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             HandlePrecognitiveRequests::class
         ]);
         Route::patch('/assets/assignment/{assignment}', [DataAssetController::class, 'returnTheAsset'])->name('assets.assignment.update');
+        Route::patch('/assets/assignment/{assignment}/update-qr', [DataAssetController::class, 'updateKeyQr'])->name('assets.assignment.update-qr');
 
         Route::get('/assets/view/{id}', [DataAssetController::class, 'view'])->name('assets.view');
-
-        Route::get('/assets/testing', [DataAssetController::class, 'testing'])->name('assets.testing');
 
 
         Route::middleware([SuperadminMiddleware::class])->group(function () {
@@ -112,15 +111,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('/detail-asset/{key}', [DetailAssetController::class, 'index'])->name('detail-asset');
-
-// a special goddamn route for updating activity user so we know that user is online
-Route::get('/geez', function (Request $request) {
-    $user = $request->user();
-    $user->last_active_at = now();
-    $user->save();
-
-    return response()->json(['message' => 'Genesis 1:1']);
-});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

@@ -29,10 +29,9 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Loader2, QrCodeIcon, Undo2 } from 'lucide-react';
+import { ArrowLeft, Edit, QrCodeIcon} from 'lucide-react';
 import { useState } from 'react';
 import QRCode from 'react-qr-code';
-import { toast } from 'sonner';
 import AssignForm from '../_components/assign-form';
 import DeleteAssetBtn from '../_components/delete-asset-btn';
 import { PageProps } from './_types';
@@ -102,22 +101,6 @@ export default function Page({
         ? image
         : `/storage/${image}`;
 
-    const [loading, setLoading] = useState(false);
-
-    const handleReturn = (assignmentId: number) => {
-        router.post(
-            `/master/assets/assignment/${assignmentId}?_method=PATCH`,
-            {},
-            {
-                onBefore: () => setLoading(true),
-                onFinish: () => setLoading(false),
-                onSuccess: () => {
-                    toast.success('Asset returned successfully');
-                },
-                preserveScroll: true,
-            },
-        );
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

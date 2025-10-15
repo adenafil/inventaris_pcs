@@ -345,4 +345,13 @@ class DataAssetController extends Controller
             return redirect()->back()->with('error', 'Failed to return asset.');
         }
     }
+
+
+    public function updateKeyQr(Assignment $assignment)
+    {
+        $assignment->key_qr = Str::uuid();
+        $assignment->save();
+
+        return redirect()->back()->with('success', 'QR code updated successfully.');
+    }
 }
