@@ -36,6 +36,7 @@ import AssignForm from '../_components/assign-form';
 import DeleteAssetBtn from '../_components/delete-asset-btn';
 import { PageProps } from './_types';
 import ReturnBtn from './_components/return-btn';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -90,6 +91,8 @@ export default function Page({
         (l) => filter === 'all' || l.type === filter,
     );
 
+    const [qrKey, setQrKey] = useState<string>();
+
     const image =
         dataAsset.documents.find(
             (doc) =>
@@ -100,6 +103,24 @@ export default function Page({
     const urlAssetImage = image.startsWith('https')
         ? image
         : `/storage/${image}`;
+
+    const handleUpdateQR = (id: number) => {
+        router.post(
+            `/master/assets/assignment/${id}/update-qr?_method=PATCH`,
+            {
+                key_qr: qrKey,
+            },
+            {
+                onSuccess: () => {
+                    toast.success('QR Key updated');
+                },
+                onError: (errors) => {
+                    toast.error(errors.key_qr || 'Failed to update QR Key');
+                },
+                preserveScroll: true,
+            },
+        );
+    }
 
 
     return (
@@ -402,6 +423,7 @@ export default function Page({
                                                                 <Input
                                                                     id="qr-key"
                                                                     name="qr-key"
+                                                                    onChange={e => setQrKey(e.target.value)}
                                                                     defaultValue={
                                                                         a.key_qr
                                                                     }
@@ -416,7 +438,7 @@ export default function Page({
                                                                     Cancel
                                                                 </Button>
                                                             </DialogClose>
-                                                            <Button type="submit">
+                                                            <Button onClick={() => handleUpdateQR(a.id)} type="submit">
                                                                 Save changes
                                                             </Button>
                                                         </DialogFooter>

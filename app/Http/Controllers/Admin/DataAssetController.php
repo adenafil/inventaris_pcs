@@ -347,11 +347,19 @@ class DataAssetController extends Controller
     }
 
 
-    public function updateKeyQr(Assignment $assignment)
+    public function updateKeyQr(Assignment $assignment, Request $request)
     {
-        $assignment->key_qr = Str::uuid();
-        $assignment->save();
+        if ($request->has('key_qr')) {
+            $request->validate([
+                'key_qr' => 'required|string|unique:assignments,key_qr,' . $assignment->id,
+            ]);
 
-        return redirect()->back()->with('success', 'QR code updated successfully.');
+            $assignment->key_qr = $request->input('key_qr');
+            $assignment->save();
+
+            return redirect()->back()->with('success', 'QR key updated successfully.');
+        } else {
+            return redirect()->back()->with('error', 'QR key is required.');
+        }
     }
 }
