@@ -266,6 +266,7 @@ class DataAssetController extends Controller
             'assignments' => $assignments,
             'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
             'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
+            'hostUrl' => env('APP_URL'),
         ]);
     }
 

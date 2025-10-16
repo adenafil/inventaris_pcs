@@ -138,4 +138,5 @@ export interface PageProps {
     assignments: Assignment[];
     employees: PaginatedResponse<Employee>;
     orgUnits: PaginatedResponse<OrgUnit>;
+    hostUrl: string;
 }

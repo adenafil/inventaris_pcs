@@ -15,7 +15,8 @@ class DetailAssetController extends Controller
         }
 
         return Inertia::render('assets/view/public/page', [
-            'assignment' => $assignment
+            'assignment' => $assignment,
+            'hostUrl' => env('APP_URL'),
         ]);
     }
 }

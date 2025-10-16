@@ -66,7 +66,7 @@ const logsDummy = [
     },
 ];
 
-export default function Page({ assignment }: { assignment: Assignment }) {
+export default function Page({ assignment, hostUrl }: { assignment: Assignment, hostUrl: string }) {
     console.log(assignment);
 
     // in the meantime, let the fake data appear, until the api is ready
@@ -285,7 +285,7 @@ export default function Page({ assignment }: { assignment: Assignment }) {
                                                     <div className="flex flex-col items-center justify-center">
                                                         <QRCode
                                                             id="QRCode"
-                                                            value={`http://localhost/detail-asset/${assignment.key_qr}`}
+                                                            value={`${hostUrl}/detail-asset/${assignment.key_qr}`}
                                                             size={256}
                                                             viewBox={`0 0 21 21`}
                                                         />

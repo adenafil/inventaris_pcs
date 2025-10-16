@@ -78,8 +78,9 @@ export default function Page({
     assignments,
     employees,
     orgUnits,
+    hostUrl
 }: PageProps) {
-    console.log({ dataAsset, assignments, employees, orgUnits });
+    console.log({ dataAsset, assignments, employees, orgUnits, hostUrl });
 
     // in the meantime, let the fake data appear, until the api is ready
     const [filter, setFilter] = useState<
@@ -358,7 +359,11 @@ export default function Page({
                                                         <div className="flex flex-col items-center justify-center">
                                                             <QRCode
                                                                 id="QRCode"
-                                                                value={a.key_qr}
+                                                                value={
+                                                                    hostUrl +
+                                                                    '/detail-assset/' +
+                                                                    a.key_qr
+                                                                }
                                                                 size={256}
                                                                 viewBox={`0 0 21 21`}
                                                             />
@@ -369,7 +374,8 @@ export default function Page({
                                                                         document.getElementById(
                                                                             'QRCode',
                                                                         );
-                                                                    if (!svg) return;
+                                                                    if (!svg)
+                                                                        return;
                                                                     const svgData =
                                                                         new XMLSerializer().serializeToString(
                                                                             svg,
@@ -423,7 +429,15 @@ export default function Page({
                                                                 <Input
                                                                     id="qr-key"
                                                                     name="qr-key"
-                                                                    onChange={e => setQrKey(e.target.value)}
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setQrKey(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
                                                                     defaultValue={
                                                                         a.key_qr
                                                                     }
@@ -438,7 +452,14 @@ export default function Page({
                                                                     Cancel
                                                                 </Button>
                                                             </DialogClose>
-                                                            <Button onClick={() => handleUpdateQR(a.id)} type="submit">
+                                                            <Button
+                                                                onClick={() =>
+                                                                    handleUpdateQR(
+                                                                        a.id,
+                                                                    )
+                                                                }
+                                                                type="submit"
+                                                            >
                                                                 Save changes
                                                             </Button>
                                                         </DialogFooter>
