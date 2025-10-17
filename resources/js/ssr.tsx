@@ -18,5 +18,5 @@ createServer((page) =>
         setup: ({ App, props }) => {
             return <App {...props} />;
         },
-    }),
+    }), { port: 6666}
 );
