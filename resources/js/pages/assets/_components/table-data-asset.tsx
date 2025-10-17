@@ -54,7 +54,7 @@ export default function TableDataAsset({
                 />
 
                 <DeleteAssetBtn
-                    className="inline-flex gap-1 bg-transparent"
+                    className="inline-flex gap-1"
                     assetId={data.id}
                 />
             </TableCell>
