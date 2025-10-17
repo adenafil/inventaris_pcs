@@ -29,14 +29,14 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, QrCodeIcon} from 'lucide-react';
+import { ArrowLeft, Edit, QrCodeIcon } from 'lucide-react';
 import { useState } from 'react';
 import QRCode from 'react-qr-code';
+import { toast } from 'sonner';
 import AssignForm from '../_components/assign-form';
 import DeleteAssetBtn from '../_components/delete-asset-btn';
-import { PageProps } from './_types';
 import ReturnBtn from './_components/return-btn';
-import { toast } from 'sonner';
+import { PageProps } from './_types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -78,7 +78,7 @@ export default function Page({
     assignments,
     employees,
     orgUnits,
-    hostUrl
+    hostUrl,
 }: PageProps) {
     console.log({ dataAsset, assignments, employees, orgUnits, hostUrl });
 
@@ -121,8 +121,7 @@ export default function Page({
                 preserveScroll: true,
             },
         );
-    }
-
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -357,16 +356,26 @@ export default function Page({
                                                             </DialogDescription>
                                                         </AlertDialogHeader>
                                                         <div className="flex flex-col items-center justify-center">
-                                                            <QRCode
-                                                                id="QRCode"
-                                                                value={
-                                                                    hostUrl +
-                                                                    '/detail-assset/' +
-                                                                    a.key_qr
-                                                                }
-                                                                size={256}
-                                                                viewBox={`0 0 21 21`}
-                                                            />
+                                                            <div
+                                                                style={{
+                                                                    background:
+                                                                        'white',
+                                                                    padding:
+                                                                        '16px',
+                                                                }}
+                                                            >
+                                                                <QRCode
+                                                                    id="QRCode"
+                                                                    value={
+                                                                        hostUrl +
+                                                                        '/detail-assset/' +
+                                                                        a.key_qr
+                                                                    }
+                                                                    size={256}
+                                                                    viewBox={`0 0 21 21`}
+                                                                />
+                                                            </div>
+
                                                             <Button
                                                                 variant="outline"
                                                                 onClick={() => {

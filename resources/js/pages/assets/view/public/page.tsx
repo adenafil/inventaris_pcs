@@ -25,11 +25,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/react';
 import { QrCodeIcon } from 'lucide-react';
 import { useState } from 'react';
 import QRCode from 'react-qr-code';
 import { Assignment } from './_types';
-import { Head } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -66,7 +66,13 @@ const logsDummy = [
     },
 ];
 
-export default function Page({ assignment, hostUrl }: { assignment: Assignment, hostUrl: string }) {
+export default function Page({
+    assignment,
+    hostUrl,
+}: {
+    assignment: Assignment;
+    hostUrl: string;
+}) {
     console.log(assignment);
 
     // in the meantime, let the fake data appear, until the api is ready
@@ -283,12 +289,20 @@ export default function Page({ assignment, hostUrl }: { assignment: Assignment, 
                                                         </DialogDescription>
                                                     </AlertDialogHeader>
                                                     <div className="flex flex-col items-center justify-center">
-                                                        <QRCode
-                                                            id="QRCode"
-                                                            value={`${hostUrl}/detail-asset/${assignment.key_qr}`}
-                                                            size={256}
-                                                            viewBox={`0 0 21 21`}
-                                                        />
+                                                        <div
+                                                            style={{
+                                                                background:
+                                                                    'white',
+                                                                padding: '16px',
+                                                            }}
+                                                        >
+                                                            <QRCode
+                                                                id="QRCode"
+                                                                value={`${hostUrl}/detail-asset/${assignment.key_qr}`}
+                                                                size={256}
+                                                                viewBox={`0 0 21 21`}
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <DialogFooter className="mt-4">
                                                         <DialogClose asChild>

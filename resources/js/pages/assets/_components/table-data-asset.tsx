@@ -40,7 +40,7 @@ export default function TableDataAsset({
                     <Button
                         size="sm"
                         variant="outline"
-                        className="inline-flex gap-1 bg-transparent"
+                    className="inline-flex gap-1 bg-transparent"
                     >
                         <Pencil className="h-4 w-4" />
                         Edit
