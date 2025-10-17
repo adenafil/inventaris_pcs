@@ -368,7 +368,7 @@ export default function Page({
                                                                     id="QRCode"
                                                                     value={
                                                                         hostUrl +
-                                                                        '/detail-assset/' +
+                                                                        '/detail-asset/' +
                                                                         a.key_qr
                                                                     }
                                                                     size={256}
