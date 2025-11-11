@@ -280,11 +280,10 @@ export default function Page({
                         {/* Borrowers / Assignees */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>
-                                    Informasi Peminjam (Assigned)
-                                </CardTitle>
+                                <CardTitle>Informasi Pengguna</CardTitle>
                                 <CardDescription>
-                                    Riwayat peminjaman dan status pengembalian.
+                                    Riwayat peminjaman pengguna dan status
+                                    pengembalian pengguna.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
