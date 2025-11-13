@@ -23,6 +23,7 @@ import { PageProps } from './_types';
 import useAssetFilters from './_hooks/use-asset-filter';
 import DataAssetNotFound from './_components/data-asset-not-found';
 import TableDataAsset from './_components/table-data-asset';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -133,9 +134,7 @@ export default function Page({
                             </TabsTrigger>
                         </TabsList>
 
-                        {dataAssets.length === 0 && (
-                            <DataAssetNotFound />
-                        )}
+                        {dataAssets.length === 0 && <DataAssetNotFound />}
 
                         {dataAssets.length > 0 && (
                             <div className="rounded-md border">
@@ -162,57 +161,65 @@ export default function Page({
                                                 orgUnits={orgUnits}
                                             />
                                         ))}
-
-                                        {pagination.current_page <
-                                            pagination.last_page && (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={7}
-                                                    className="text-center"
-                                                >
-                                                    <WhenVisible
-                                                        always={
-                                                            pagination.current_page <
-                                                            pagination.last_page
-                                                        }
-                                                        params={{
-                                                            data: {
-                                                                data_asset_page:
-                                                                    pagination.current_page <
-                                                                    pagination.last_page
-                                                                        ? pagination.current_page +
-                                                                          1
-                                                                        : pagination.current_page,
-                                                            },
-                                                            only: [
-                                                                'dataAssets',
-                                                                'pagination',
-                                                            ],
-                                                        }}
-                                                        buffer={0.1}
-                                                        fallback={
-                                                            <p>
-                                                                data not found.
-                                                            </p>
-                                                        }
-                                                        as="div"
-                                                    >
-                                                        {pagination.current_page >=
-                                                        pagination.last_page ? (
-                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                                        ) : (
-                                                            <div className="w-full p-2 text-center text-sm text-muted-foreground">
-                                                                Loading more
-                                                                data...
-                                                            </div>
-                                                        )}
-                                                    </WhenVisible>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
+                        )}
+
+                        {dataAssets.length > 0 && (
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            href={
+                                                pagination.links[0].url ?? '#'
+                                            }
+                                            aria-disabled={
+                                                pagination.prev_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                pagination.prev_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                    {pagination.links.map(
+                                        (link, index) =>
+                                            !isNaN(Number(link.label)) && (
+                                                <PaginationItem key={index}>
+                                                    <PaginationLink
+                                                        href={link.url ?? '#'}
+                                                        isActive={link.active}
+                                                    >
+                                                        {link.label}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ),
+                                    )}
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            href={
+                                                pagination.links[
+                                                    pagination.links.length - 1
+                                                ].url ?? '#'
+                                            }
+                                            aria-disabled={
+                                                pagination.next_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                pagination.next_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
                         )}
                     </Tabs>
                 </main>

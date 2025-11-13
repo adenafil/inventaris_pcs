@@ -4,6 +4,6 @@
 - ganti data asset nama admin it jadi it
 - halaman view asset informasi peminjaman jadi informasi pengguna [done]
 - nambah fitur manage no inventaris berdasarkan 2 input depan baku belakang id
-- pagination min 20 baris
+- pagination min 20 baris [working on it]
 - thema preference to light mode [done]
 - tambah logo di tengah QR dan ID dari inventaris

@@ -69,74 +69,8 @@ class DataAssetController extends Controller
 
 
         $page = request()->get('data_asset_page', 1);
-        $dataAssets = $query->paginate(pageName: 'data_asset_page', perPage: 14)->withQueryString();
+        $dataAssets = $query->paginate(pageName: 'data_asset_page', perPage: 1)->withQueryString();
 
-
-        if (!request()->header('X-inertia')) {
-            $allResults = collect();
-
-            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
-                // Buat query baru dengan relasi untuk setiap halaman
-                $pageQuery = Asset::with('type', 'model', 'location', 'creator');
-
-                // Tambahkan kondisi search yang sama
-                if ($search) {
-                    $pageQuery->where(function ($q) use ($search) {
-                        $q->where('inventory_number', 'like', '%' . $search . '%')
-                            ->orWhere('item_name', 'like', '%' . $search . '%')
-                            ->orWhereHas('location', function ($q) use ($search) {
-                                $q->where('name', 'like', '%' . $search . '%');
-                            })
-                            ->orWhereHas('model', function ($q) use ($search) {
-                                $q->where('model', 'like', '%' . $search . '%');
-                            })
-                            ->orWhereHas('model', function ($q) use ($search) {
-                                $q->where('brand', 'like', '%' . $search . '%');
-                            })
-                            ->orWhereHas('type', function ($q) use ($search) {
-                                $q->where('name', 'like', '%' . $search . '%');
-                            })
-                            ->orWhereHas('creator', function ($q) use ($search) {
-                                $q->where('role', 'like', '%' . $search . '%');
-                            });
-                    });
-                }
-
-                if ($tipe) {
-                    $pageQuery->whereHas('type', function ($q) use ($tipe) {
-                        $q->where('name', 'like', '%' . $tipe . '%');
-                    });
-                }
-
-                // Filter role secara terpisah
-                if ($role) {
-                    $pageQuery->whereHas('creator', function ($q) use ($role) {
-                        $q->where('role', 'like', '%' . $role . '%');
-                    });
-                }
-
-
-                $pageResults = $pageQuery->paginate(14, ['*'], 'data_asset_page', $initialPage);
-                $allResults = $allResults->concat($pageResults->items());
-            }
-
-            return Inertia::render('assets/page', [
-                'dataAssets' => $allResults,
-                'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
-                    $allResults,
-                    $dataAssets->total(),
-                    $dataAssets->perPage(),
-                    $page,
-                    ['path' => request()->url(), 'query' => request()->query()]
-                ),
-                'page' => $page,
-                'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
-                'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
-                'types' => Inertia::scroll(fn() => DataType::paginate(pageName: 'type_page')),
-                'role' => $role,
-                'tipe' => $tipe,
-            ]);
-        }
 
         return Inertia::render('assets/page', [
             'dataAssets' => Inertia::merge(fn() => $dataAssets->items()),
