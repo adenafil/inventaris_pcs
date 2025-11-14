@@ -15,30 +15,9 @@ class DataTipeController extends Controller
     {
         $search = $request->get('search', '');
         $page = request()->get('page', 1);
-        $types = $search ? DataType::where('name', 'like', '%' . $search . '%')->paginate(20)->withQueryString()
-            : DataType::paginate(20);
+        $types = $search ? DataType::where('name', 'like', '%' . $search . '%')->paginate(1)->withQueryString()
+            : DataType::paginate(1);
         $page = request()->get('page', 1);
-        if (!request()->header('X-inertia')) {
-            $allResults = collect();
-
-            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
-                $pageResults = $search ? DataType::where('name', 'like', '%' . $search . '%')->paginate(20, ['*'], 'page', $initialPage)
-                    : DataType::paginate(20, ['*'], 'page', $initialPage);
-                $allResults = $allResults->concat($pageResults->items());
-            }
-
-            return Inertia::render('data-tipe/page', [
-                'dataTypes' => $allResults,
-                'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
-                    $allResults,
-                    $types->total(),
-                    $types->perPage(),
-                    $page,
-                    ['path' => request()->url(), 'query' => request()->query()]
-                ),
-                'page' => $page,
-            ]);
-        }
 
 
         return Inertia::render('data-tipe/page', [
