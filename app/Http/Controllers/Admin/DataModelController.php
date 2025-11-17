@@ -35,42 +35,6 @@ class DataModelController extends Controller
         $assetModels = $query->paginate(20)->withQueryString();
 
 
-        if (!request()->header('X-inertia')) {
-            $allResults = collect();
-
-            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
-                // Buat query baru dengan relasi untuk setiap halaman
-                $pageQuery = AssetModel::with('type');
-
-                // Tambahkan kondisi search yang sama
-                if ($search) {
-                    $pageQuery->where(function ($q) use ($search) {
-                        $q->where('brand', 'like', '%' . $search . '%')
-                            ->orWhere('model', 'like', '%' . $search . '%')
-                            ->orWhere('details', 'like', '%' . $search . '%')
-                            ->orWhereHas('type', function ($q) use ($search) {
-                                $q->where('name', 'like', '%' . $search . '%');
-                            });
-                    });
-                }
-
-                $pageResults = $pageQuery->paginate(20, ['*'], 'page', $initialPage);
-                $allResults = $allResults->concat($pageResults->items());
-            }
-
-            return Inertia::render('data-model/page', [
-                'assetModels' => $allResults,
-                'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
-                    $allResults,
-                    $assetModels->total(),
-                    $assetModels->perPage(),
-                    $page,
-                    ['path' => request()->url(), 'query' => request()->query()]
-                ),
-                'page' => $page,
-            ]);
-        }
-
         return Inertia::render('data-model/page', [
             'assetModels' => Inertia::merge(fn() => $assetModels->items()),
             'pagination' => $assetModels,
