@@ -37,6 +37,7 @@ import { useRef, useState } from 'react';
 import { useDebounce } from 'react-use';
 import { toast } from 'sonner';
 import { Location, PageProps } from './_types';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -195,7 +196,10 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                         <DialogDescription asChild>
                                             <div className="">
                                                 <div className="mb-4 flex flex-col gap-4">
-                                                    <Label htmlFor="new-location-name" className=''>
+                                                    <Label
+                                                        htmlFor="new-location-name"
+                                                        className=""
+                                                    >
                                                         Nama Lokasi
                                                     </Label>
                                                     <Input
@@ -386,54 +390,6 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                                 </TableRow>
                                             ))
                                         )}
-
-                                        {pagination.current_page <
-                                            pagination.last_page && (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={2}
-                                                    className="text-center"
-                                                >
-                                                    <WhenVisible
-                                                        always={
-                                                            pagination.current_page <
-                                                            pagination.last_page
-                                                        }
-                                                        params={{
-                                                            data: {
-                                                                page:
-                                                                    pagination.current_page <
-                                                                    pagination.last_page
-                                                                        ? pagination.current_page +
-                                                                          1
-                                                                        : pagination.current_page,
-                                                            },
-                                                            only: [
-                                                                'locations',
-                                                                'pagination',
-                                                            ],
-                                                        }}
-                                                        buffer={0.1}
-                                                        fallback={
-                                                            <p>
-                                                                data not found.
-                                                            </p>
-                                                        }
-                                                        as="div"
-                                                    >
-                                                        {pagination.current_page >=
-                                                        pagination.last_page ? (
-                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                                        ) : (
-                                                            <div className="p-2 text-center text-sm text-muted-foreground">
-                                                                Loading more
-                                                                data...
-                                                            </div>
-                                                        )}
-                                                    </WhenVisible>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -498,6 +454,62 @@ export default function Page({ locations, pagination, page }: PageProps) {
                                 </DialogContent>
                             </Dialog>
                         </CardContent>
+
+                        {locations.length > 0 && (
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            href={
+                                                pagination.links[0].url ?? '#'
+                                            }
+                                            aria-disabled={
+                                                pagination.prev_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                pagination.prev_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                    {pagination.links.map(
+                                        (link, index) =>
+                                            !isNaN(Number(link.label)) && (
+                                                <PaginationItem key={index}>
+                                                    <PaginationLink
+                                                        href={link.url ?? '#'}
+                                                        isActive={link.active}
+                                                    >
+                                                        {link.label}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ),
+                                    )}
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            href={
+                                                pagination.links[
+                                                    pagination.links.length - 1
+                                                ].url ?? '#'
+                                            }
+                                            aria-disabled={
+                                                pagination.next_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                pagination.next_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        )}
                     </Card>
                 </div>
             </div>
