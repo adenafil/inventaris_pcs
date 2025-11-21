@@ -284,9 +284,16 @@ export default function Page({ assetModels, pagination, page }: PageProps) {
                                 <PaginationContent>
                                     <PaginationItem>
                                         <PaginationPrevious
-                                            href={
-                                                pagination.links[0].url ?? '#'
-                                            }
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                router.visit(
+                                                    pagination.links[0].url ??
+                                                        '#',
+                                                    {
+                                                        preserveScroll: true,
+                                                    },
+                                                );
+                                            }}
                                             aria-disabled={
                                                 pagination.prev_page_url ===
                                                 null
@@ -304,8 +311,16 @@ export default function Page({ assetModels, pagination, page }: PageProps) {
                                             !isNaN(Number(link.label)) && (
                                                 <PaginationItem key={index}>
                                                     <PaginationLink
-                                                        href={link.url ?? '#'}
                                                         isActive={link.active}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            router.visit(
+                                                                link.url ?? '#',
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            );
+                                                        }}
                                                     >
                                                         {link.label}
                                                     </PaginationLink>
@@ -314,11 +329,18 @@ export default function Page({ assetModels, pagination, page }: PageProps) {
                                     )}
                                     <PaginationItem>
                                         <PaginationNext
-                                            href={
-                                                pagination.links[
-                                                    pagination.links.length - 1
-                                                ].url ?? '#'
-                                            }
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                router.visit(
+                                                    pagination.links[
+                                                        pagination.links
+                                                            .length - 1
+                                                    ].url ?? '#',
+                                                    {
+                                                        preserveScroll: true,
+                                                    },
+                                                );
+                                            }}
                                             aria-disabled={
                                                 pagination.next_page_url ===
                                                 null

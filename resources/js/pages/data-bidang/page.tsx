@@ -11,6 +11,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
     Table,
     TableBody,
     TableCell,
@@ -28,8 +36,6 @@ import { toast } from 'sonner';
 import AddDialogDataBidang from './_components/add-dialog-data-bidang';
 import EditDialogDataBidang from './_components/edit-dialog-data-bidang';
 import { OrgUnit, PageProps } from './_types';
-import orgUnits from '@/routes/org-units';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -269,10 +275,16 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                     <PaginationContent>
                                         <PaginationItem>
                                             <PaginationPrevious
-                                                href={
-                                                    pagination.links[0].url ??
-                                                    '#'
-                                                }
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    router.visit(
+                                                        pagination.links[0]
+                                                            .url ?? '#',
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
+                                                }}
                                                 aria-disabled={
                                                     pagination.prev_page_url ===
                                                     null
@@ -290,12 +302,19 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                                 !isNaN(Number(link.label)) && (
                                                     <PaginationItem key={index}>
                                                         <PaginationLink
-                                                            href={
-                                                                link.url ?? '#'
-                                                            }
                                                             isActive={
                                                                 link.active
                                                             }
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                router.visit(
+                                                                    link.url ??
+                                                                        '#',
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                    },
+                                                                );
+                                                            }}
                                                         >
                                                             {link.label}
                                                         </PaginationLink>
@@ -304,12 +323,18 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                         )}
                                         <PaginationItem>
                                             <PaginationNext
-                                                href={
-                                                    pagination.links[
-                                                        pagination.links
-                                                            .length - 1
-                                                    ].url ?? '#'
-                                                }
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    router.visit(
+                                                        pagination.links[
+                                                            pagination.links
+                                                                .length - 1
+                                                        ].url ?? '#',
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
+                                                }}
                                                 aria-disabled={
                                                     pagination.next_page_url ===
                                                     null

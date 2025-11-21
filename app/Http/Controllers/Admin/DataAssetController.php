@@ -69,7 +69,7 @@ class DataAssetController extends Controller
 
 
         $page = request()->get('data_asset_page', 1);
-        $dataAssets = $query->paginate(pageName: 'data_asset_page', perPage: 20)->withQueryString();
+        $dataAssets = $query->paginate(pageName: 'data_asset_page', perPage: 1)->withQueryString();
 
 
         return Inertia::render('assets/page', [

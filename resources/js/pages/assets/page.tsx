@@ -18,7 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, WhenVisible } from '@inertiajs/react';
+import { Head, Link, router, WhenVisible } from '@inertiajs/react';
 import { PageProps } from './_types';
 import useAssetFilters from './_hooks/use-asset-filter';
 import DataAssetNotFound from './_components/data-asset-not-found';
@@ -166,61 +166,86 @@ export default function Page({
                             </div>
                         )}
 
-                        {dataAssets.length > 0 && (
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            href={
-                                                pagination.links[0].url ?? '#'
-                                            }
-                                            aria-disabled={
-                                                pagination.prev_page_url ===
-                                                null
-                                            }
-                                            className={
-                                                pagination.prev_page_url ===
-                                                null
-                                                    ? 'pointer-events-none opacity-50'
-                                                    : ''
-                                            }
-                                        />
-                                    </PaginationItem>
-                                    {pagination.links.map(
-                                        (link, index) =>
-                                            !isNaN(Number(link.label)) && (
-                                                <PaginationItem key={index}>
-                                                    <PaginationLink
-                                                        href={link.url ?? '#'}
-                                                        isActive={link.active}
-                                                    >
-                                                        {link.label}
-                                                    </PaginationLink>
-                                                </PaginationItem>
-                                            ),
-                                    )}
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            href={
-                                                pagination.links[
-                                                    pagination.links.length - 1
-                                                ].url ?? '#'
-                                            }
-                                            aria-disabled={
-                                                pagination.next_page_url ===
-                                                null
-                                            }
-                                            className={
-                                                pagination.next_page_url ===
-                                                null
-                                                    ? 'pointer-events-none opacity-50'
-                                                    : ''
-                                            }
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        )}
+                            {dataAssets.length > 0 && (
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    router.visit(
+                                                        pagination.links[0]
+                                                            .url ?? '#',
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
+                                                }}
+                                                aria-disabled={
+                                                    pagination.prev_page_url ===
+                                                    null
+                                                }
+                                                className={
+                                                    pagination.prev_page_url ===
+                                                    null
+                                                        ? 'pointer-events-none opacity-50'
+                                                        : ''
+                                                }
+                                            />
+                                        </PaginationItem>
+                                        {pagination.links.map(
+                                            (link, index) =>
+                                                !isNaN(Number(link.label)) && (
+                                                    <PaginationItem key={index}>
+                                                        <PaginationLink
+                                                            isActive={
+                                                                link.active
+                                                            }
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                router.visit(
+                                                                    link.url ??
+                                                                        '#',
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                    },
+                                                                );
+                                                            }}
+                                                        >
+                                                            {link.label}
+                                                        </PaginationLink>
+                                                    </PaginationItem>
+                                                ),
+                                        )}
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    router.visit(
+                                                        pagination.links[
+                                                            pagination.links
+                                                                .length - 1
+                                                        ].url ?? '#',
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
+                                                }}
+                                                aria-disabled={
+                                                    pagination.next_page_url ===
+                                                    null
+                                                }
+                                                className={
+                                                    pagination.next_page_url ===
+                                                    null
+                                                        ? 'pointer-events-none opacity-50'
+                                                        : ''
+                                                }
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            )}
                     </Tabs>
                 </main>
             </div>
