@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, WhenVisible } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Edit, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -28,6 +28,8 @@ import { toast } from 'sonner';
 import AddDialogDataBidang from './_components/add-dialog-data-bidang';
 import EditDialogDataBidang from './_components/edit-dialog-data-bidang';
 import { OrgUnit, PageProps } from './_types';
+import orgUnits from '@/routes/org-units';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -170,7 +172,9 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                                 colSpan={2}
                                                 className="text-center"
                                             >
-                                                <div className='mt-6'>Data tidak ditemukan.</div>
+                                                <div className="mt-6">
+                                                    Data tidak ditemukan.
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -257,53 +261,70 @@ export default function Page({ orgunits, pagination, page }: PageProps) {
                                             </TableCell>
                                         </TableRow>
                                     ))}
-
-                                    {pagination.current_page <
-                                        pagination.last_page && (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={2}
-                                                className="text-center"
-                                            >
-                                                <WhenVisible
-                                                    always={
-                                                        pagination.current_page <
-                                                        pagination.last_page
-                                                    }
-                                                    params={{
-                                                        data: {
-                                                            page:
-                                                                pagination.current_page <
-                                                                pagination.last_page
-                                                                    ? pagination.current_page +
-                                                                      1
-                                                                    : pagination.current_page,
-                                                        },
-                                                        only: [
-                                                            'orgunits',
-                                                            'pagination',
-                                                        ],
-                                                    }}
-                                                    buffer={0.1}
-                                                    fallback={
-                                                        <p>data not found.</p>
-                                                    }
-                                                    as="div"
-                                                >
-                                                    {pagination.current_page >=
-                                                    pagination.last_page ? (
-                                                        <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                                    ) : (
-                                                        <div className="p-2 text-center text-sm text-muted-foreground">
-                                                            Loading more data...
-                                                        </div>
-                                                    )}
-                                                </WhenVisible>
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
                                 </TableBody>
                             </Table>
+
+                            {orgunits.length > 0 && (
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                href={
+                                                    pagination.links[0].url ??
+                                                    '#'
+                                                }
+                                                aria-disabled={
+                                                    pagination.prev_page_url ===
+                                                    null
+                                                }
+                                                className={
+                                                    pagination.prev_page_url ===
+                                                    null
+                                                        ? 'pointer-events-none opacity-50'
+                                                        : ''
+                                                }
+                                            />
+                                        </PaginationItem>
+                                        {pagination.links.map(
+                                            (link, index) =>
+                                                !isNaN(Number(link.label)) && (
+                                                    <PaginationItem key={index}>
+                                                        <PaginationLink
+                                                            href={
+                                                                link.url ?? '#'
+                                                            }
+                                                            isActive={
+                                                                link.active
+                                                            }
+                                                        >
+                                                            {link.label}
+                                                        </PaginationLink>
+                                                    </PaginationItem>
+                                                ),
+                                        )}
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                href={
+                                                    pagination.links[
+                                                        pagination.links
+                                                            .length - 1
+                                                    ].url ?? '#'
+                                                }
+                                                aria-disabled={
+                                                    pagination.next_page_url ===
+                                                    null
+                                                }
+                                                className={
+                                                    pagination.next_page_url ===
+                                                    null
+                                                        ? 'pointer-events-none opacity-50'
+                                                        : ''
+                                                }
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

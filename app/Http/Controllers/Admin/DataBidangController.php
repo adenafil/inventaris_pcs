@@ -14,31 +14,8 @@ class DataBidangController extends Controller
 {
     public function index()
     {
-        $orgUnits = OrgUnit::paginate(20);
+        $orgUnits = OrgUnit::paginate(1);
         $page = request()->get('page', 1);
-
-        if (!request()->header('X-inertia')) {
-            $allResults = collect();
-
-            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
-                $pageResults = OrgUnit::paginate(20, ['*'], 'page', $initialPage);
-                $allResults = $allResults->concat($pageResults->items());
-            }
-
-            return Inertia::render('data-bidang/page', [
-                'orgunits' => $allResults,
-                'pagination' => new LengthAwarePaginator(
-                    $allResults,
-                    $orgUnits->total(),
-                    $orgUnits->perPage(),
-                    $page,
-                    ['path' => request()->url(), 'query' => request()->query()]
-                ),
-                'page' => $page,
-            ]);
-
-
-        }
 
         return Inertia::render('data-bidang/page', [
             'orgunits' => Inertia::merge(fn () => $orgUnits->items()),
