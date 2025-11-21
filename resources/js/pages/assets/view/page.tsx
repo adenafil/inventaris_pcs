@@ -31,7 +31,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { ArrowLeft, Edit, QrCodeIcon } from 'lucide-react';
 import { useState } from 'react';
-import QRCode from 'react-qr-code';
+import { QRCode } from 'react-qrcode-logo';
 import { toast } from 'sonner';
 import AssignForm from '../_components/assign-form';
 import DeleteAssetBtn from '../_components/delete-asset-btn';
@@ -371,7 +371,8 @@ export default function Page({
                                                                         a.key_qr
                                                                     }
                                                                     size={256}
-                                                                    viewBox={`0 0 21 21`}
+                                                                    logoImage="/assets/images/logo-pcs.png"
+                                                                    logoWidth={80}
                                                                 />
                                                             </div>
 

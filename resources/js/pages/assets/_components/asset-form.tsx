@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { InfiniteScroll, Link } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Link2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -32,6 +32,8 @@ import {
 } from '../add/_types';
 import { Asset } from '../edit/_types';
 import { FileUpload, type UploadItem } from './file-upload';
+import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 
 type Props = {
     defaultValue?: Partial<Asset>;
@@ -116,17 +118,29 @@ export function AssetForm({
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Nomor Inventaris</Label>
-                    <Input
-                        placeholder="INV-2025-0001"
-                        value={formAsset.data.nomor_inventaris}
-                        onChange={(e) =>
-                            formAsset.setData(
-                                'nomor_inventaris',
-                                e.target.value,
-                            )
-                        }
-                        onBlur={() => formAsset.validate('nomor_inventaris')}
-                    />
+                    <div className="grid w-full gap-6">
+                        <ButtonGroup className='w-full'>
+                            <ButtonGroupText asChild>
+                                <Label htmlFor="url">INV</Label>
+                            </ButtonGroupText>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id="url"
+                                    value={formAsset.data.nomor_inventaris}
+                                    onChange={(e) =>
+                                        formAsset.setData(
+                                            'nomor_inventaris',
+                                            e.target.value,
+                                        )
+                                    }
+                                    onBlur={() =>
+                                        formAsset.validate('nomor_inventaris')
+                                    }
+                                />
+                            </InputGroup>
+                        </ButtonGroup>
+                    </div>
+
                     {formAsset.invalid('nomor_inventaris') && (
                         <p className="mt-1 text-sm text-red-600">
                             {formAsset.errors.nomor_inventaris}
@@ -423,8 +437,12 @@ export function AssetForm({
                 <Button type="submit" disabled={formAsset.processing}>
                     {formAsset.processing ? 'Saving...' : 'Save'}
                 </Button>
-                <Link href={"/master/assets"} preserveScroll>
-                    <Button type="button" className='cursor-pointer' variant="secondary">
+                <Link href={'/master/assets'} preserveScroll>
+                    <Button
+                        type="button"
+                        className="cursor-pointer"
+                        variant="secondary"
+                    >
                         Back
                     </Button>
                 </Link>
