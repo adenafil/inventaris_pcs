@@ -19,6 +19,7 @@ import { useDebounce } from 'react-use';
 import { PageProps } from './_types';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -229,7 +230,7 @@ export default function Page({ employees, pagination, page }: PageProps) {
                                                                             className="flex items-center gap-1"
                                                                             onClick={() =>
                                                                                 handleDelete(
-                                                                                    employee.id
+                                                                                    employee.id,
                                                                                 )
                                                                             }
                                                                         >
@@ -246,58 +247,88 @@ export default function Page({ employees, pagination, page }: PageProps) {
                                                 </TableRow>
                                             ))
                                         )}
-
-                                        {pagination.current_page <
-                                            pagination.last_page && (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={6}
-                                                    className="text-center"
-                                                >
-                                                    <WhenVisible
-                                                        always={
-                                                            pagination.current_page <
-                                                            pagination.last_page
-                                                        }
-                                                        params={{
-                                                            data: {
-                                                                page:
-                                                                    pagination.current_page <
-                                                                    pagination.last_page
-                                                                        ? pagination.current_page +
-                                                                          1
-                                                                        : pagination.current_page,
-                                                            },
-                                                            only: [
-                                                                'employees',
-                                                                'pagination',
-                                                            ],
-                                                        }}
-                                                        buffer={0.1}
-                                                        fallback={
-                                                            <p>
-                                                                data not found.
-                                                            </p>
-                                                        }
-                                                        as="div"
-                                                    >
-                                                        {pagination.current_page >=
-                                                        pagination.last_page ? (
-                                                            <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                                        ) : (
-                                                            <div className="w-full p-2 text-center text-sm text-muted-foreground">
-                                                                Loading more
-                                                                data...
-                                                            </div>
-                                                        )}
-                                                    </WhenVisible>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
                         </CardContent>
+
+                        {employees.length > 0 && (
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                router.visit(
+                                                    pagination.links[0].url ??
+                                                        '#',
+                                                    {
+                                                        preserveScroll: true,
+                                                    },
+                                                );
+                                            }}
+                                            aria-disabled={
+                                                pagination.prev_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                pagination.prev_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                    {pagination.links.map(
+                                        (link, index) =>
+                                            !isNaN(Number(link.label)) && (
+                                                <PaginationItem key={index}>
+                                                    <PaginationLink
+                                                        isActive={link.active}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            router.visit(
+                                                                link.url ?? '#',
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            );
+                                                        }}
+                                                    >
+                                                        {link.label}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ),
+                                    )}
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                router.visit(
+                                                    pagination.links[
+                                                        pagination.links
+                                                            .length - 1
+                                                    ].url ?? '#',
+                                                    {
+                                                        preserveScroll: true,
+                                                    },
+                                                );
+                                            }}
+                                            aria-disabled={
+                                                pagination.next_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                pagination.next_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        )}
                     </Card>
                 </div>
             </div>

@@ -35,42 +35,6 @@ class DataPegawaiController extends Controller
         $employees = $query->paginate(20)->withQueryString();
 
 
-        if (!request()->header('X-inertia')) {
-            $allResults = collect();
-
-            for ($initialPage = 1; $initialPage <= $page; $initialPage++) {
-                // Buat query baru dengan relasi untuk setiap halaman
-                $pageQuery = Employee::with('orgUnit');
-
-                // Tambahkan kondisi search yang sama
-                if ($search) {
-                    $pageQuery->where(function ($q) use ($search) {
-                        $q->where('nip', 'like', '%' . $search . '%')
-                            ->orWhere('name', 'like', '%' . $search . '%')
-                            ->orWhere('email', 'like', '%' . $search . '%')
-                            ->orWhereHas('orgUnit', function ($q) use ($search) {
-                                $q->where('name', 'like', '%' . $search . '%');
-                            });
-                    });
-                }
-
-                $pageResults = $pageQuery->paginate(20, ['*'], 'page', $initialPage);
-                $allResults = $allResults->concat($pageResults->items());
-            }
-
-            return Inertia::render('data-pegawai/page', [
-                'employees' => $allResults,
-                'pagination' => new \Illuminate\Pagination\LengthAwarePaginator(
-                    $allResults,
-                    $employees->total(),
-                    $employees->perPage(),
-                    $page,
-                    ['path' => request()->url(), 'query' => request()->query()]
-                ),
-                'page' => $page,
-            ]);
-        }
-
         return Inertia::render('data-pegawai/page', [
             'employees' => Inertia::merge(fn() => $employees->items()),
             'pagination' => $employees,
