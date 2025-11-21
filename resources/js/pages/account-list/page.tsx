@@ -51,8 +51,9 @@ import { useForm } from 'laravel-precognition-react';
 import { FormEvent, useRef, useState } from 'react';
 import { useDebounce } from 'react-use';
 import { toast } from 'sonner';
-import { AccountLog } from './_types';
+import { AccountLog, PageProps } from './_types';
 import { Info } from 'lucide-react';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 type AccountRole = 'admin' | 'manager' | 'staff';
 type Account = {
@@ -401,47 +402,6 @@ export default function AccountsPage({
                                     </TableRow>
                                 ))}
 
-                                {paginationUser.data.length > 19 && (
-                                    <TableRow>
-                                        <TableCell colSpan={9} className="p-0">
-                                            <WhenVisible
-                                                always={
-                                                    paginationUser.current_page <
-                                                    paginationUser.last_page
-                                                }
-                                                params={{
-                                                    data: {
-                                                        page:
-                                                            paginationUser.current_page <
-                                                            paginationUser.last_page
-                                                                ? paginationUser.current_page +
-                                                                  1
-                                                                : paginationUser.current_page,
-                                                    },
-                                                    only: [
-                                                        'users',
-                                                        'paginationUser',
-                                                    ],
-                                                }}
-                                                buffer={0.1}
-                                                fallback={
-                                                    <p>data not found.</p>
-                                                }
-                                                as="div"
-                                            >
-                                                {paginationUser.current_page >=
-                                                paginationUser.last_page ? (
-                                                    <div className="p-2 text-center text-sm text-muted-foreground"></div>
-                                                ) : (
-                                                    <div className="w-full p-2 text-center text-sm text-muted-foreground">
-                                                        Loading more data...
-                                                    </div>
-                                                )}
-                                            </WhenVisible>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-
                                 {paginationUser.data.length === 0 && (
                                     <TableRow>
                                         <TableCell
@@ -455,6 +415,87 @@ export default function AccountsPage({
                             </TableBody>
                         </Table>
                     </section>
+                    {paginationUser.data.length > 0 && (
+                        <div className="flex items-center justify-end p-4">
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                router.visit(
+                                                    paginationUser.links[0]
+                                                        .url ?? '#',
+                                                    {
+                                                        preserveScroll: true,
+                                                    },
+                                                );
+                                            }}
+                                            aria-disabled={
+                                                paginationUser.prev_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                paginationUser.prev_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                    {paginationUser.links.map(
+                                        (link, index) =>
+                                            !isNaN(Number(link.label)) && (
+                                                <PaginationItem key={index}>
+                                                    <PaginationLink
+                                                        isActive={link.active}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            router.visit(
+                                                                link.url ?? '#',
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            );
+                                                        }}
+                                                    >
+                                                        {link.label}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ),
+                                    )}
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                router.visit(
+                                                    paginationUser.links[
+                                                        paginationUser.links
+                                                            .length -
+                                                            (1).length -
+                                                            1
+                                                    ].url ?? '#',
+                                                    {
+                                                        preserveScroll: true,
+                                                    },
+                                                );
+                                            }}
+                                            aria-disabled={
+                                                paginationUser.next_page_url ===
+                                                null
+                                            }
+                                            className={
+                                                paginationUser.next_page_url ===
+                                                null
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : ''
+                                            }
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    )}
 
                     {/* Add Dialog */}
                     <Dialog open={openAdd} onOpenChange={setOpenAdd}>
@@ -629,7 +670,14 @@ export default function AccountsPage({
                                     >
                                         Batal
                                     </Button>
-                                    <Button type="submit" disabled={addAccountForm.processing}>{addAccountForm.processing ? 'Menyimpan...' : 'Simpan'}</Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={addAccountForm.processing}
+                                    >
+                                        {addAccountForm.processing
+                                            ? 'Menyimpan...'
+                                            : 'Simpan'}
+                                    </Button>
                                 </DialogFooter>
                             </form>
                         </DialogContent>
@@ -818,7 +866,14 @@ export default function AccountsPage({
                                     >
                                         Batal
                                     </Button>
-                                    <Button type="submit" disabled={updateAccountForm.processing}>{ updateAccountForm.processing ? 'Menyimpan...' : 'Simpan' }</Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={updateAccountForm.processing}
+                                    >
+                                        {updateAccountForm.processing
+                                            ? 'Menyimpan...'
+                                            : 'Simpan'}
+                                    </Button>
                                 </DialogFooter>
                             </form>
                         </DialogContent>
