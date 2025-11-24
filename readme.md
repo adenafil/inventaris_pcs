@@ -6,6 +6,6 @@
 - pagination min 20 baris [<b>done</b>]
 - thema preference to light mode [<b>done</b>]
 - halaman view asset informasi peminjaman jadi informasi pengguna [<b>done</b>]
-- tambah logo di tengah QR dan ID dari inventaris [<b>done sisa halaman public saja</b>]
+- tambah logo di tengah QR dan ID dari inventaris [<b>done</b>]
 
 

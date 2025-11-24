@@ -50,6 +50,7 @@ interface Asset {
     documents: Document[];
     type: AssetType;
     model: Model;
+    assignments?: Assignment[];
     location: Location;
     purchase_date: string;
     purchase_year: string;

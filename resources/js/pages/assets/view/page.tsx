@@ -16,7 +16,6 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -30,7 +29,6 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Edit, QrCodeIcon } from 'lucide-react';
 import { domToPng } from 'modern-screenshot';
-import { useEffect, useRef, useState } from 'react';
 import { QRCode } from 'react-qrcode-logo';
 import { toast } from 'sonner';
 import AssignForm from '../_components/assign-form';
@@ -38,6 +36,8 @@ import DeleteAssetBtn from '../_components/delete-asset-btn';
 import ReturnBtn from './_components/return-btn';
 import { PageProps } from './_types';
 import CustomeQr from './_components/custome-qr';
+import { useRef, useState } from 'react';
+import { logoPCS } from '@/constants/app';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -108,6 +108,7 @@ export default function Page({
 
     const [qrConfig, setQrConfig] = useState({
         logoImage: '/assets/images/logo-pcs.png',
+        imageBinary: logoPCS,
         ecLevel: 'M',
         enableCors: true,
         size: 290,
@@ -372,7 +373,11 @@ export default function Page({
                                                                     size={
                                                                         qrConfig.size
                                                                     }
-                                                                    logoImage="/assets/images/logo-pcs.png"
+                                                                    logoImage={
+                                                                        qrConfig.imageBinary
+                                                                            ? qrConfig.imageBinary
+                                                                            : '/assets/images/logo-pcs.png'
+                                                                    }
                                                                     logoWidth={
                                                                         qrConfig.logoWidth
                                                                     }

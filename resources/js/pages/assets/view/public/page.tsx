@@ -27,9 +27,15 @@ import {
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { QrCodeIcon } from 'lucide-react';
-import { useState } from 'react';
-import QRCode from 'react-qr-code';
-import { Assignment } from './_types';
+import { useRef, useState } from 'react';
+import { QRCode } from 'react-qrcode-logo';
+import { Asset, Assignment } from './_types';
+import { domToPng } from 'modern-screenshot';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import CustomeQr from '../_components/custome-qr';
+import { toast } from 'sonner';
+import { logoPCS } from '@/constants/app';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,13 +73,13 @@ const logsDummy = [
 ];
 
 export default function Page({
-    assignment,
+    asset,
     hostUrl,
 }: {
-    assignment: Assignment;
+    asset: Asset;
     hostUrl: string;
 }) {
-    console.log(assignment);
+    console.log(asset);
 
     // in the meantime, let the fake data appear, until the api is ready
     const [filter, setFilter] = useState<
@@ -86,7 +92,7 @@ export default function Page({
     );
 
     const image =
-        assignment.asset.documents.find(
+        asset.documents.find(
             (doc) =>
                 doc.file_path.endsWith('.jpg') ||
                 doc.file_path.endsWith('.png'),
@@ -96,10 +102,34 @@ export default function Page({
         ? image
         : `/storage/${image}`;
 
+        const qrRef = useRef<any>(null);
+
+        const [qrConfig, setQrConfig] = useState({
+            logoImage: '/assets/images/logo-pcs.png',
+            ecLevel: 'M',
+            enableCors: true,
+            size: 290,
+            imageBinary: logoPCS,
+            quietZone: 2,
+            bgColor: '#ffffff',
+            fgColor: '#000000',
+            logoWidth: 85,
+            logoHeight: 85,
+            logoOpacity: 1,
+            qrStyle: 'squares',
+            removeQrCodeBehindLogo: false,
+            logoPadding: 0,
+            logoPaddingStyle: 'square',
+            logoPaddingRadius: 0,
+        });
+
+        const [isQrConfigEnabled, setIsQrConfigEnabled] = useState(false);
+
+
     return (
         <div className="flex h-full min-h-screen flex-1 flex-col">
             {/* Navbar */}
-            <Head title={`Detail Asset - ${assignment.asset.item_name}`} />
+            <Head title={`Detail Asset - ${asset.item_name}`} />
             <nav className="sticky top-0 z-50 border-b bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
                 <div className="mx-auto flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4">
@@ -140,35 +170,23 @@ export default function Page({
                                 <div className="grid gap-2 text-sm">
                                     <Row
                                         k="Nomor Inventaris"
-                                        v={assignment.asset.inventory_number}
+                                        v={asset.inventory_number}
                                     />
-                                    <Row
-                                        k="Item"
-                                        v={assignment.asset.item_name}
-                                    />
-                                    <Row
-                                        k="Tipe"
-                                        v={assignment.asset.type.name}
-                                    />
+                                    <Row k="Item" v={asset.item_name} />
+                                    <Row k="Tipe" v={asset.type.name} />
                                     <Row
                                         k="Brand/Model"
-                                        v={assignment.asset.model.brand}
+                                        v={asset.model.brand}
                                     />
-                                    <Row
-                                        k="Serial"
-                                        v={assignment.asset.serial_number}
-                                    />
-                                    <Row
-                                        k="Lokasi"
-                                        v={assignment.asset.location.name}
-                                    />
+                                    <Row k="Serial" v={asset.serial_number} />
+                                    <Row k="Lokasi" v={asset.location.name} />
                                     <Row
                                         k="Tanggal Pembelian"
-                                        v={assignment.asset.purchase_date}
+                                        v={asset.purchase_date}
                                     />
                                     <Row
                                         k="Akhir Garansi"
-                                        v={assignment.asset.warranty_expiration}
+                                        v={asset.warranty_expiration}
                                     />
                                 </div>
                             </CardContent>
@@ -229,144 +247,250 @@ export default function Page({
                         {/* Borrowers / Assignees */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>
-                                    Informasi Pengguna
-                                </CardTitle>
+                                <CardTitle>Informasi Pengguna</CardTitle>
                                 <CardDescription>
-                                    Riwayat peminjaman pengguna dan status pengembalian pengguna.
+                                    Riwayat peminjaman pengguna dan status
+                                    pengembalian pengguna.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                <div className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between">
-                                    <div className="space-y-1">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <span className="text-sm font-medium">
-                                                {assignment.employee?.name
-                                                    ? assignment.employee.name
-                                                    : assignment.org_unit?.name}
-                                            </span>
-                                            {assignment.employee && (
-                                                <Badge variant="outline">
-                                                    {assignment.employee.email}
-                                                </Badge>
-                                            )}
+                                {asset.assignments?.map((a) => (
+                                    <div
+                                        key={a.id}
+                                        className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between"
+                                    >
+                                        <div className="space-y-1">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-sm font-medium">
+                                                    {a.employee?.name
+                                                        ? a.employee.name
+                                                        : a.org_unit?.name}
+                                                </span>
+                                                {a.employee && (
+                                                    <Badge variant="outline">
+                                                        {a.employee.email}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                Status:{' '}
+                                                <span className="capitalize">
+                                                    {a.status}
+                                                </span>{' '}
+                                                • Tgl Pinjam:{' '}
+                                                {new Date(
+                                                    a.created_at,
+                                                ).toLocaleString()}{' '}
+                                                • Kembali:{' '}
+                                                {a.returned_at || '-'}
+                                            </div>
                                         </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Status:{' '}
-                                            <span className="capitalize">
-                                                {assignment.status}
-                                            </span>{' '}
-                                            • Tgl Pinjam:{' '}
-                                            {new Date(
-                                                assignment.created_at,
-                                            ).toLocaleString()}{' '}
-                                            • Kembali:{' '}
-                                            {assignment.returned_at || '-'}
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-end gap-2">
-                                        <Dialog>
-                                            <form>
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        <QrCodeIcon />
-                                                        QR
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="sm:max-w-[425px]">
-                                                    <AlertDialogHeader>
-                                                        <DialogTitle>
-                                                            QR Code
-                                                        </DialogTitle>
-                                                        <DialogDescription>
-                                                            Scan this QR to
-                                                            access the asset
-                                                            information on your
-                                                            device.
-                                                        </DialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <div className="flex flex-col items-center justify-center">
-                                                        <div
-                                                            style={{
-                                                                background:
-                                                                    'white',
-                                                                padding: '16px',
-                                                            }}
-                                                        >
-                                                            <QRCode
-                                                                id="QRCode"
-                                                                value={`${hostUrl}/detail-asset/${assignment.key_qr}`}
-                                                                size={256}
-                                                                viewBox={`0 0 21 21`}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <DialogFooter className="mt-4">
-                                                        <DialogClose asChild>
-                                                            <Button variant="outline">
-                                                                Back
-                                                            </Button>
-                                                        </DialogClose>
+                                        <div className="flex justify-end gap-2">
+                                            <Dialog>
+                                                <form>
+                                                    <DialogTrigger asChild>
                                                         <Button
-                                                            type="submit"
-                                                            onClick={() => {
-                                                                const svg =
-                                                                    document.getElementById(
-                                                                        'QRCode',
-                                                                    );
-                                                                const svgData =
-                                                                    new XMLSerializer().serializeToString(
-                                                                        svg,
-                                                                    );
-                                                                const canvas =
-                                                                    document.createElement(
-                                                                        'canvas',
-                                                                    );
-                                                                const ctx =
-                                                                    canvas.getContext(
-                                                                        '2d',
-                                                                    );
-                                                                const img =
-                                                                    new Image();
-                                                                img.onload =
-                                                                    () => {
-                                                                        canvas.width =
-                                                                            img.width;
-                                                                        canvas.height =
-                                                                            img.height;
-                                                                        ctx.drawImage(
-                                                                            img,
-                                                                            0,
-                                                                            0,
-                                                                        );
-                                                                        const pngFile =
-                                                                            canvas.toDataURL(
-                                                                                'image/png',
-                                                                            );
-                                                                        const downloadLink =
-                                                                            document.createElement(
-                                                                                'a',
-                                                                            );
-                                                                        downloadLink.download =
-                                                                            'QRCode';
-                                                                        downloadLink.href = `${pngFile}`;
-                                                                        downloadLink.click();
-                                                                    };
-                                                                img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
-                                                            }}
+                                                            variant="outline"
+                                                            size="sm"
                                                         >
                                                             <QrCodeIcon />
-                                                            Download QR
+                                                            QR
                                                         </Button>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </form>
-                                        </Dialog>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="sm:max-w-[425px]">
+                                                        <AlertDialogHeader>
+                                                            <DialogTitle>
+                                                                QR Code
+                                                            </DialogTitle>
+                                                            <DialogDescription>
+                                                                Scan this QR to
+                                                                access the asset
+                                                                information on
+                                                                your device or
+                                                                download it
+                                                            </DialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <div className="flex flex-col items-center justify-center">
+                                                            <div
+                                                                style={{
+                                                                    background:
+                                                                        'white',
+                                                                }}
+                                                                id={`qr-code-container-${asset.inventory_number}`}
+                                                                className="bg-white"
+                                                            >
+                                                                <QRCode
+                                                                    ref={qrRef}
+                                                                    id={`QRCode-${asset.inventory_number}`}
+                                                                    value={
+                                                                        hostUrl +
+                                                                        '/detail-asset/' +
+                                                                        asset.inventory_number
+                                                                    }
+                                                                    size={
+                                                                        qrConfig.size
+                                                                    }
+                                                                    logoImage={
+                                                                        qrConfig.imageBinary
+                                                                            ? qrConfig.imageBinary
+                                                                            : '/assets/images/logo-pcs.png'
+                                                                    }
+                                                                    logoWidth={
+                                                                        qrConfig.logoWidth
+                                                                    }
+                                                                    logoHeight={
+                                                                        qrConfig.logoHeight
+                                                                    }
+                                                                    ecLevel={
+                                                                        qrConfig.ecLevel as
+                                                                            | 'L'
+                                                                            | 'M'
+                                                                            | 'Q'
+                                                                            | 'H'
+                                                                    }
+                                                                    enableCORS={
+                                                                        qrConfig.enableCors
+                                                                    }
+                                                                    quietZone={
+                                                                        qrConfig.quietZone
+                                                                    }
+                                                                    bgColor={
+                                                                        qrConfig.bgColor
+                                                                    }
+                                                                    fgColor={
+                                                                        qrConfig.fgColor
+                                                                    }
+                                                                    logoOpacity={
+                                                                        qrConfig.logoOpacity
+                                                                    }
+                                                                    qrStyle={
+                                                                        qrConfig.qrStyle as
+                                                                            | 'squares'
+                                                                            | 'dots'
+                                                                            | 'fluid'
+                                                                    }
+                                                                    removeQrCodeBehindLogo={
+                                                                        qrConfig.removeQrCodeBehindLogo
+                                                                    }
+                                                                    logoPadding={
+                                                                        qrConfig.logoPadding
+                                                                    }
+                                                                    logoPaddingStyle={
+                                                                        qrConfig.logoPaddingStyle as
+                                                                            | 'square'
+                                                                            | 'circle'
+                                                                    }
+                                                                    logoPaddingRadius={
+                                                                        qrConfig.logoPaddingRadius
+                                                                    }
+                                                                />
+
+                                                                <p className="text-center">
+                                                                    Inventaris
+                                                                    ID:{' '}
+                                                                    {
+                                                                        asset.inventory_number
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                            `
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    const qrContainer =
+                                                                        document.querySelector(
+                                                                            `#qr-code-container-${a.id}`,
+                                                                        );
+
+                                                                    if (
+                                                                        qrContainer
+                                                                    ) {
+                                                                        domToPng(
+                                                                            qrContainer,
+                                                                        )
+                                                                            .then(
+                                                                                (
+                                                                                    dataUrl,
+                                                                                ) => {
+                                                                                    const link =
+                                                                                        document.createElement(
+                                                                                            'a',
+                                                                                        );
+                                                                                    link.download = `QRCode-${a.id}.png`;
+                                                                                    link.href =
+                                                                                        dataUrl;
+                                                                                    link.click();
+                                                                                },
+                                                                            )
+                                                                            .catch(
+                                                                                (
+                                                                                    error,
+                                                                                ) => {
+                                                                                    console.error(
+                                                                                        'Failed to download QR code:',
+                                                                                        error,
+                                                                                    );
+                                                                                    toast.error(
+                                                                                        'Failed to download QR code',
+                                                                                    );
+                                                                                },
+                                                                            );
+                                                                    } else {
+                                                                        toast.error(
+                                                                            'QR code container not found',
+                                                                        );
+                                                                    }
+                                                                }}
+                                                                size="sm"
+                                                            >
+                                                                Download QR
+                                                            </Button>
+                                                            <div className="mt-4 flex w-full items-center justify-end gap-3">
+                                                                <Label
+                                                                    htmlFor="custome-qr"
+                                                                    className="mt-4 text-xs"
+                                                                >
+                                                                    Enable QR
+                                                                    Config
+                                                                </Label>
+                                                                <Checkbox
+                                                                    id="custome-qr"
+                                                                    className="mt-4"
+                                                                    checked={
+                                                                        isQrConfigEnabled
+                                                                    }
+                                                                    onCheckedChange={(
+                                                                        checked,
+                                                                    ) => {
+                                                                        setIsQrConfigEnabled(
+                                                                            checked ===
+                                                                                true,
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            {isQrConfigEnabled && (
+                                                                <CustomeQr
+                                                                    qrConfig={
+                                                                        qrConfig
+                                                                    }
+                                                                    setQrConfig={
+                                                                        setQrConfig
+                                                                    }
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </DialogContent>
+                                                </form>
+                                            </Dialog>
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
+                                {asset?.assignments?.length === 0 && (
+                                    <div className="text-sm text-muted-foreground">
+                                        Belum ada riwayat peminjaman.
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

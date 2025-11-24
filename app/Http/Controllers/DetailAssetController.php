@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Asset;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DetailAssetController extends Controller
 {
     public function index($key) {
-        $assignment = \App\Models\Assignment::with(['asset', 'asset.documents', 'asset.type', 'asset.location', 'asset.model', 'employee', 'orgUnit', 'creator'])->where('key_qr', $key)->first();
+        $asset = Asset::with(['documents', 'type', 'location', 'model', 'assignments'])->where('inventory_number', $key)->first();
 
-        if (!$assignment) {
+        if (!$asset) {
             return Inertia::render('assets/view/public/not-found-page');
         }
 
         return Inertia::render('assets/view/public/page', [
-            'assignment' => $assignment,
+            'asset' => $asset,
             'hostUrl' => env('APP_URL'),
         ]);
     }
