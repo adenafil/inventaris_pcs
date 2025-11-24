@@ -7,10 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { InfiniteScroll } from "@inertiajs/react";
+import { InfiniteScroll, usePage } from "@inertiajs/react";
 import { useForm } from "laravel-precognition-react";
 import { Check, ChevronsUpDown, UserCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Employee, OrgUnit, PaginatedResponse } from "../_types";
 import { toast } from "sonner";
 
@@ -42,17 +42,19 @@ export default function AssignForm({
         returned_at: '',
     });
 
+
     const handleAssign = () => {
         formAssign.setData(
             'assigned_at',
             new Date().toISOString().split('T')[0],
         );
         formAssign.submit({
-            onSuccess: () => {
+            onSuccess: (data) => {
                 setTypePengguna('');
                 setOpenBidang(false);
                 setOpenPegawai(false);
                 formAssign.reset();
+
                 toast.success('Asset assigned successfully');
             },
             onValidationError: (error) => {

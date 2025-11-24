@@ -211,6 +211,31 @@ class DataAssetController extends Controller
     {
         $validated = $request->validated();
 
+        // check the constraint first
+        // only one employee could be assigned to one asset at the same time
+        // and also only one org unit could be assigned to one asset at the same time
+        $existingAssignment = Assignment::where('asset_id', $validated['asset_id'])
+            ->where('status', 'assigned')
+            ->where(function ($query) use ($validated) {
+                if (isset($validated['employee_id'])) {
+                    $query->where('employee_id', $validated['employee_id']);
+                }
+                if (isset($validated['org_unit_id'])) {
+                    $query->orWhere('org_unit_id', $validated['org_unit_id']);
+                }
+            })
+            ->first();
+
+        logger()->info('Existing Assignment Check:', ['existingAssignment' => $existingAssignment]);
+
+        if ($existingAssignment) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'asset_id' => ['This asset is already assigned to the selected employee or organizational unit.'],
+            ]);
+        }
+
+        logger()->info('No existing assignment found, proceeding to create a new assignment.');
+
         $assignment = new Assignment();
         $assignment->asset_id = $validated['asset_id'];
         $assignment->employee_id = $validated['employee_id'] ?? null;

@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Edit, QrCodeIcon } from 'lucide-react';
 import { domToPng } from 'modern-screenshot';
 import { useEffect, useRef, useState } from 'react';
@@ -82,7 +82,6 @@ export default function Page({
     hostUrl,
 }: PageProps) {
     console.log({ dataAsset, assignments, employees, orgUnits, hostUrl });
-
     // in the meantime, let the fake data appear, until the api is ready
     const [filter, setFilter] = useState<
         'all' | 'service' | 'repair' | 'other'
