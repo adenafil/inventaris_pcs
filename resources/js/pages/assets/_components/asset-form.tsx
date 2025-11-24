@@ -72,7 +72,7 @@ export function AssetForm({
     uniqueId,
 }: Props) {
     const formAsset = useForm('post', url, {
-        nomor_inventaris: asset?.inventory_number ?? uniqueId ?? '',
+        nomor_inventaris: asset?.inventory_number ?? ("inv-" + (uniqueId ?? '')),
         item_name: asset?.item_name ?? '',
         tipe: asset?.type.id.toString() ?? '',
         model: asset?.model.id.toString() ?? '',
@@ -148,7 +148,7 @@ export function AssetForm({
                                                 );
                                             formAsset.setData(
                                                 'nomor_inventaris',
-                                                uniqueId,
+                                                "inv-" + uniqueId,
                                             );
                                         }}
                                     >

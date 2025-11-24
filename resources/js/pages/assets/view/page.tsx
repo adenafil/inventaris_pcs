@@ -349,7 +349,8 @@ export default function Page({
                                                                 Scan this QR to
                                                                 access the asset
                                                                 information on
-                                                                your device or download it.
+                                                                your device or
+                                                                download it
                                                             </DialogDescription>
                                                         </AlertDialogHeader>
                                                         <div className="flex flex-col items-center justify-center">
@@ -358,16 +359,16 @@ export default function Page({
                                                                     background:
                                                                         'white',
                                                                 }}
-                                                                id={`qr-code-container-${a.id}`}
+                                                                id={`qr-code-container-${dataAsset.inventory_number}`}
                                                                 className="bg-white"
                                                             >
                                                                 <QRCode
                                                                     ref={qrRef}
-                                                                    id={`QRCode-${a.id}`}
+                                                                    id={`QRCode-${dataAsset.inventory_number}`}
                                                                     value={
                                                                         hostUrl +
                                                                         '/detail-asset/' +
-                                                                        a.key_qr
+                                                                        dataAsset.inventory_number
                                                                     }
                                                                     size={
                                                                         qrConfig.size
@@ -425,7 +426,10 @@ export default function Page({
 
                                                                 <p className="text-center">
                                                                     Inventaris
-                                                                    ID: {a.id}
+                                                                    ID:{' '}
+                                                                    {
+                                                                        dataAsset.inventory_number
+                                                                    }
                                                                 </p>
                                                             </div>
                                                             `
@@ -481,7 +485,10 @@ export default function Page({
                                                                 Download QR
                                                             </Button>
                                                             <div className="mt-4 flex w-full items-center justify-end gap-3">
-                                                                <Label htmlFor='custome-qr' className="text-xs mt-4">
+                                                                <Label
+                                                                    htmlFor="custome-qr"
+                                                                    className="mt-4 text-xs"
+                                                                >
                                                                     Enable QR
                                                                     Config
                                                                 </Label>
@@ -495,13 +502,21 @@ export default function Page({
                                                                         checked,
                                                                     ) => {
                                                                         setIsQrConfigEnabled(
-                                                                            checked === true,
+                                                                            checked ===
+                                                                                true,
                                                                         );
                                                                     }}
                                                                 />
                                                             </div>
                                                             {isQrConfigEnabled && (
-                                                                <CustomeQr qrConfig={qrConfig} setQrConfig={setQrConfig} />
+                                                                <CustomeQr
+                                                                    qrConfig={
+                                                                        qrConfig
+                                                                    }
+                                                                    setQrConfig={
+                                                                        setQrConfig
+                                                                    }
+                                                                />
                                                             )}
                                                         </div>
                                                     </DialogContent>
