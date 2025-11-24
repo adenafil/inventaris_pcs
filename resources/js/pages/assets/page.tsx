@@ -128,7 +128,7 @@ export default function Page({
                             <TabsTrigger value="superadmin">
                                 Superadmin
                             </TabsTrigger>
-                            <TabsTrigger value="admin_it">Admin IT</TabsTrigger>
+                            <TabsTrigger value="admin_it">IT</TabsTrigger>
                             <TabsTrigger value="admin_kantor">
                                 Kantor
                             </TabsTrigger>
