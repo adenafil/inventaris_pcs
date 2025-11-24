@@ -416,7 +416,7 @@ export default function Page({
                                                                                         document.createElement(
                                                                                             'a',
                                                                                         );
-                                                                                    link.download = `QRCode-${a.id}.png`;
+                                                                                    link.download = `QRCode-${asset.inventory_number}.png`;
                                                                                     link.href =
                                                                                         dataUrl;
                                                                                     link.click();
