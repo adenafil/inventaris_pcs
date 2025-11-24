@@ -442,7 +442,7 @@ export default function Page({
                                                                 onClick={() => {
                                                                     const qrContainer =
                                                                         document.querySelector(
-                                                                            `#qr-code-container-${a.id}`,
+                                                                            `#qr-code-container-${dataAsset.inventory_number}`,
                                                                         );
 
                                                                     if (
