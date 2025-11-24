@@ -107,7 +107,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/employees/{employee}', [DataPegawaiController::class, 'destroy'])->name('employees.destroy');
         });
     });
-
 });
 
 Route::get('/detail-asset/{key}', [DetailAssetController::class, 'index'])->name('detail-asset');

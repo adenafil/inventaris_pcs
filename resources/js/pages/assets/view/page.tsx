@@ -8,12 +8,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
@@ -30,13 +29,15 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { ArrowLeft, Edit, QrCodeIcon } from 'lucide-react';
-import { useState } from 'react';
+import { domToPng } from 'modern-screenshot';
+import { useEffect, useRef, useState } from 'react';
 import { QRCode } from 'react-qrcode-logo';
 import { toast } from 'sonner';
 import AssignForm from '../_components/assign-form';
 import DeleteAssetBtn from '../_components/delete-asset-btn';
 import ReturnBtn from './_components/return-btn';
 import { PageProps } from './_types';
+import CustomeQr from './_components/custome-qr';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -87,6 +88,7 @@ export default function Page({
         'all' | 'service' | 'repair' | 'other'
     >('all');
     const [qrUrl, setQrUrl] = useState<string>('');
+    const qrRef = useRef<any>(null);
 
     const filtered = logsDummy.filter(
         (l) => filter === 'all' || l.type === filter,
@@ -105,23 +107,25 @@ export default function Page({
         ? image
         : `/storage/${image}`;
 
-    const handleUpdateQR = (id: number) => {
-        router.post(
-            `/master/assets/assignment/${id}/update-qr?_method=PATCH`,
-            {
-                key_qr: qrKey,
-            },
-            {
-                onSuccess: () => {
-                    toast.success('QR Key updated');
-                },
-                onError: (errors) => {
-                    toast.error(errors.key_qr || 'Failed to update QR Key');
-                },
-                preserveScroll: true,
-            },
-        );
-    };
+    const [qrConfig, setQrConfig] = useState({
+        logoImage: '/assets/images/logo-pcs.png',
+        ecLevel: 'M',
+        enableCors: true,
+        size: 290,
+        quietZone: 2,
+        bgColor: '#ffffff',
+        fgColor: '#000000',
+        logoWidth: 85,
+        logoHeight: 85,
+        logoOpacity: 1,
+        qrStyle: 'squares',
+        removeQrCodeBehindLogo: false,
+        logoPadding: 0,
+        logoPaddingStyle: 'square',
+        logoPaddingRadius: 0,
+    });
+
+    const [isQrConfigEnabled, setIsQrConfigEnabled] = useState(false);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -345,13 +349,7 @@ export default function Page({
                                                                 Scan this QR to
                                                                 access the asset
                                                                 information on
-                                                                your device. You
-                                                                can also edit
-                                                                the asset link
-                                                                if the QR has
-                                                                been
-                                                                accidentally
-                                                                spreaded.
+                                                                your device or download it.
                                                             </DialogDescription>
                                                         </AlertDialogHeader>
                                                         <div className="flex flex-col items-center justify-center">
@@ -359,119 +357,153 @@ export default function Page({
                                                                 style={{
                                                                     background:
                                                                         'white',
-                                                                    padding:
-                                                                        '16px',
                                                                 }}
+                                                                id={`qr-code-container-${a.id}`}
+                                                                className="bg-white"
                                                             >
                                                                 <QRCode
-                                                                    id="QRCode"
+                                                                    ref={qrRef}
+                                                                    id={`QRCode-${a.id}`}
                                                                     value={
                                                                         hostUrl +
                                                                         '/detail-asset/' +
                                                                         a.key_qr
                                                                     }
-                                                                    size={256}
+                                                                    size={
+                                                                        qrConfig.size
+                                                                    }
                                                                     logoImage="/assets/images/logo-pcs.png"
-                                                                    logoWidth={80}
+                                                                    logoWidth={
+                                                                        qrConfig.logoWidth
+                                                                    }
+                                                                    logoHeight={
+                                                                        qrConfig.logoHeight
+                                                                    }
+                                                                    ecLevel={
+                                                                        qrConfig.ecLevel as
+                                                                            | 'L'
+                                                                            | 'M'
+                                                                            | 'Q'
+                                                                            | 'H'
+                                                                    }
+                                                                    enableCORS={
+                                                                        qrConfig.enableCors
+                                                                    }
+                                                                    quietZone={
+                                                                        qrConfig.quietZone
+                                                                    }
+                                                                    bgColor={
+                                                                        qrConfig.bgColor
+                                                                    }
+                                                                    fgColor={
+                                                                        qrConfig.fgColor
+                                                                    }
+                                                                    logoOpacity={
+                                                                        qrConfig.logoOpacity
+                                                                    }
+                                                                    qrStyle={
+                                                                        qrConfig.qrStyle as
+                                                                            | 'squares'
+                                                                            | 'dots'
+                                                                            | 'fluid'
+                                                                    }
+                                                                    removeQrCodeBehindLogo={
+                                                                        qrConfig.removeQrCodeBehindLogo
+                                                                    }
+                                                                    logoPadding={
+                                                                        qrConfig.logoPadding
+                                                                    }
+                                                                    logoPaddingStyle={
+                                                                        qrConfig.logoPaddingStyle as
+                                                                            | 'square'
+                                                                            | 'circle'
+                                                                    }
+                                                                    logoPaddingRadius={
+                                                                        qrConfig.logoPaddingRadius
+                                                                    }
                                                                 />
-                                                            </div>
 
+                                                                <p className="text-center">
+                                                                    Inventaris
+                                                                    ID: {a.id}
+                                                                </p>
+                                                            </div>
+                                                            `
                                                             <Button
                                                                 variant="outline"
                                                                 onClick={() => {
-                                                                    const svg =
-                                                                        document.getElementById(
-                                                                            'QRCode',
+                                                                    const qrContainer =
+                                                                        document.querySelector(
+                                                                            `#qr-code-container-${a.id}`,
                                                                         );
-                                                                    if (!svg)
-                                                                        return;
-                                                                    const svgData =
-                                                                        new XMLSerializer().serializeToString(
-                                                                            svg,
-                                                                        );
-                                                                    const canvas =
-                                                                        document.createElement(
-                                                                            'canvas',
-                                                                        );
-                                                                    const ctx =
-                                                                        canvas.getContext(
-                                                                            '2d',
-                                                                        );
-                                                                    const img =
-                                                                        new Image();
-                                                                    img.onload =
-                                                                        () => {
-                                                                            canvas.width =
-                                                                                img.width;
-                                                                            canvas.height =
-                                                                                img.height;
-                                                                            ctx?.drawImage(
-                                                                                img,
-                                                                                0,
-                                                                                0,
+
+                                                                    if (
+                                                                        qrContainer
+                                                                    ) {
+                                                                        domToPng(
+                                                                            qrContainer,
+                                                                        )
+                                                                            .then(
+                                                                                (
+                                                                                    dataUrl,
+                                                                                ) => {
+                                                                                    const link =
+                                                                                        document.createElement(
+                                                                                            'a',
+                                                                                        );
+                                                                                    link.download = `QRCode-${a.id}.png`;
+                                                                                    link.href =
+                                                                                        dataUrl;
+                                                                                    link.click();
+                                                                                },
+                                                                            )
+                                                                            .catch(
+                                                                                (
+                                                                                    error,
+                                                                                ) => {
+                                                                                    console.error(
+                                                                                        'Failed to download QR code:',
+                                                                                        error,
+                                                                                    );
+                                                                                    toast.error(
+                                                                                        'Failed to download QR code',
+                                                                                    );
+                                                                                },
                                                                             );
-                                                                            const pngFile =
-                                                                                canvas.toDataURL(
-                                                                                    'image/png',
-                                                                                );
-                                                                            const downloadLink =
-                                                                                document.createElement(
-                                                                                    'a',
-                                                                                );
-                                                                            downloadLink.download =
-                                                                                'QRCode';
-                                                                            downloadLink.href = `${pngFile}`;
-                                                                            downloadLink.click();
-                                                                        };
-                                                                    img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+                                                                    } else {
+                                                                        toast.error(
+                                                                            'QR code container not found',
+                                                                        );
+                                                                    }
                                                                 }}
                                                                 size="sm"
-                                                                className="mt-2"
                                                             >
                                                                 Download QR
                                                             </Button>
-
-                                                            <div className="w-full space-y-2 pt-4">
-                                                                <Label htmlFor="qr-key">
-                                                                    QR Key
+                                                            <div className="mt-4 flex w-full items-center justify-end gap-3">
+                                                                <Label htmlFor='custome-qr' className="text-xs mt-4">
+                                                                    Enable QR
+                                                                    Config
                                                                 </Label>
-                                                                <Input
-                                                                    id="qr-key"
-                                                                    name="qr-key"
-                                                                    onChange={(
-                                                                        e,
-                                                                    ) =>
-                                                                        setQrKey(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        )
+                                                                <Checkbox
+                                                                    id="custome-qr"
+                                                                    className="mt-4"
+                                                                    checked={
+                                                                        isQrConfigEnabled
                                                                     }
-                                                                    defaultValue={
-                                                                        a.key_qr
-                                                                    }
+                                                                    onCheckedChange={(
+                                                                        checked,
+                                                                    ) => {
+                                                                        setIsQrConfigEnabled(
+                                                                            checked === true,
+                                                                        );
+                                                                    }}
                                                                 />
                                                             </div>
+                                                            {isQrConfigEnabled && (
+                                                                <CustomeQr qrConfig={qrConfig} setQrConfig={setQrConfig} />
+                                                            )}
                                                         </div>
-                                                        <DialogFooter>
-                                                            <DialogClose
-                                                                asChild
-                                                            >
-                                                                <Button variant="outline">
-                                                                    Cancel
-                                                                </Button>
-                                                            </DialogClose>
-                                                            <Button
-                                                                onClick={() =>
-                                                                    handleUpdateQR(
-                                                                        a.id,
-                                                                    )
-                                                                }
-                                                                type="submit"
-                                                            >
-                                                                Save changes
-                                                            </Button>
-                                                        </DialogFooter>
                                                     </DialogContent>
                                                 </form>
                                             </Dialog>
