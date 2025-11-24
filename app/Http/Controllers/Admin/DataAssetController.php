@@ -86,7 +86,10 @@ class DataAssetController extends Controller
 
     public function create()
     {
+
+        $uniqueId = bin2hex(random_bytes(4));
         return Inertia::render('assets/add/page', [
+            'uniqueId' => $uniqueId,
             'types' => Inertia::scroll(fn() => DataType::paginate(pageName: 'type_page')),
             'models' => Inertia::scroll(fn() => AssetModel::paginate(pageName: 'model_page')),
             'locations' => Inertia::scroll(fn() => Location::paginate(pageName: 'location_page')),

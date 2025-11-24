@@ -16,8 +16,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Page({ types, models, locations, employees, orgUnits }: PageProps) {
-    console.log({ types, models, locations, employees, orgUnits });
+export default function Page({ types, models, locations, employees, orgUnits, uniqueId }: PageProps) {
+    console.log({ types, models, locations, employees, orgUnits, uniqueId });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -39,7 +39,7 @@ export default function Page({ types, models, locations, employees, orgUnits }: 
 
                 <div className="max-w-8xl mx-auto w-full space-y-4 px-4 sm:px-6 lg:px-8">
                     <Card className="p-4">
-                        <AssetForm mode="create" url='/master/assets' typesPagination={types} modelsPagination={models} locationsPagination={locations} employeesPagination={employees} orgUnitsPagination={orgUnits} />
+                        <AssetForm mode="create" url='/master/assets' typesPagination={types} modelsPagination={models} locationsPagination={locations} employeesPagination={employees} orgUnitsPagination={orgUnits} uniqueId={uniqueId}/>
                     </Card>
                 </div>
             </div>

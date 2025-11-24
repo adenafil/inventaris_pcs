@@ -67,6 +67,7 @@ export interface OrgUnit {
 }
 
 export interface PageProps {
+    uniqueId: string;
     types: Pagination<Type>;
     models: Pagination<Model>;
     locations: Pagination<Location>;

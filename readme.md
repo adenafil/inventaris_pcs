@@ -2,7 +2,7 @@
 - assign itu cuma bisa 1 karyawan dan 1 bidang
 - QR itu dibuat sama untuk 1 alat
 - ganti data asset nama admin it jadi it
-- nambah fitur manage no inventaris berdasarkan 2 input depan baku belakang id [working on it]
+- add input button group id inventaris form and also generating 'em [done]
 - pagination min 20 baris [done]
 - thema preference to light mode [done]
 - halaman view asset informasi peminjaman jadi informasi pengguna [done]

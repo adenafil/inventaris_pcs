@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group';
 import {
     Command,
     CommandEmpty,
@@ -10,6 +11,7 @@ import {
     CommandList,
 } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import {
     Popover,
@@ -19,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { InfiniteScroll, Link } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
-import { Check, ChevronsUpDown, Link2Icon } from 'lucide-react';
+import { Check, ChevronsUpDown, RefreshCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -32,8 +34,6 @@ import {
 } from '../add/_types';
 import { Asset } from '../edit/_types';
 import { FileUpload, type UploadItem } from './file-upload';
-import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 
 type Props = {
     defaultValue?: Partial<Asset>;
@@ -46,6 +46,7 @@ type Props = {
     employeesPagination?: Pagination<Employee>;
     orgUnitsPagination?: Pagination<OrgUnit>;
     asset?: Asset;
+    uniqueId?: string;
 };
 
 const departments = [
@@ -68,9 +69,10 @@ export function AssetForm({
     employeesPagination,
     orgUnitsPagination,
     asset,
+    uniqueId,
 }: Props) {
     const formAsset = useForm('post', url, {
-        nomor_inventaris: asset?.inventory_number ?? '',
+        nomor_inventaris: asset?.inventory_number ?? uniqueId ?? '',
         item_name: asset?.item_name ?? '',
         tipe: asset?.type.id.toString() ?? '',
         model: asset?.model.id.toString() ?? '',
@@ -96,9 +98,6 @@ export function AssetForm({
             },
         });
     };
-    useEffect(() => {
-        console.log(formAsset.data);
-    }, [formAsset]);
 
     useEffect(() => {
         formAsset.setData(
@@ -119,7 +118,7 @@ export function AssetForm({
                 <div className="grid gap-2 sm:col-span-2">
                     <Label>Nomor Inventaris</Label>
                     <div className="grid w-full gap-6">
-                        <ButtonGroup className='w-full'>
+                        <ButtonGroup className="w-full">
                             <ButtonGroupText asChild>
                                 <Label htmlFor="url">INV</Label>
                             </ButtonGroupText>
@@ -127,17 +126,36 @@ export function AssetForm({
                                 <InputGroupInput
                                     id="url"
                                     value={formAsset.data.nomor_inventaris}
-                                    onChange={(e) =>
-                                        formAsset.setData(
-                                            'nomor_inventaris',
-                                            e.target.value,
-                                        )
-                                    }
-                                    onBlur={() =>
-                                        formAsset.validate('nomor_inventaris')
-                                    }
+                                    disabled
                                 />
                             </InputGroup>
+                            {mode === 'create' && (
+                                <ButtonGroupText asChild>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            const uniqueId = window.crypto
+                                                .getRandomValues(
+                                                    new Uint8Array(4),
+                                                )
+                                                .reduce(
+                                                    (str, byte) =>
+                                                        str +
+                                                        byte
+                                                            .toString(16)
+                                                            .padStart(2, '0'),
+                                                    '',
+                                                );
+                                            formAsset.setData(
+                                                'nomor_inventaris',
+                                                uniqueId,
+                                            );
+                                        }}
+                                    >
+                                        <RefreshCcw className="mr-2 h-4 w-4" />
+                                    </Button>
+                                </ButtonGroupText>
+                            )}
                         </ButtonGroup>
                     </div>
 
