@@ -55,6 +55,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $this->pruneLogIfMaxOnConstraint(auth()->id());
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -74,11 +76,25 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        $this->pruneLogIfMaxOnConstraint(auth()->id());
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    private function pruneLogIfMaxOnConstraint($userId): void
+    {
+        $logs = UserLog::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        if ($logs->count() > 10) {
+            $logsToDelete = $logs->slice(10);
+            UserLog::whereIn('id', $logsToDelete->pluck('id'))->delete();
+        }
     }
 }
