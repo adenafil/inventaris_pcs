@@ -18,7 +18,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { InfiniteScroll, Link } from '@inertiajs/react';
+import { InfiniteScroll, Link, router } from '@inertiajs/react';
 import { useForm } from 'laravel-precognition-react';
 import { Check, ChevronsUpDown, RefreshCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -118,6 +118,9 @@ export function AssetForm({
         formAsset.submit({
             onSuccess: () => {
                 toast.success('Asset saved successfully!');
+                setTimeout(() => {
+                    router.visit('/master/assets');
+                }, 1000);
             },
             onValidationError: (error) => {
                 toast.error(error.data.message);

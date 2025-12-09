@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { InfiniteScroll, usePage } from "@inertiajs/react";
+import { InfiniteScroll, router, usePage } from "@inertiajs/react";
 import { useForm } from "laravel-precognition-react";
 import { Check, ChevronsUpDown, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -56,6 +56,9 @@ export default function AssignForm({
                 formAssign.reset();
 
                 toast.success('Asset assigned successfully');
+                
+                // Reload data dari server untuk update state Inertia
+                router.reload({ only: ['employees', 'orgUnits', 'assignments'] });
             },
             onValidationError: (error) => {
                 toast.error(
