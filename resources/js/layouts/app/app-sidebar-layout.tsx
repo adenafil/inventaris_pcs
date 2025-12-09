@@ -40,7 +40,7 @@ export default function AppSidebarLayout({
 
     return (
         <>
-            <SnowfallComponent />
+            {/* <SnowfallComponent /> */}
             <AppShell variant="sidebar">
                 <AppSidebar />
                 <AppContent variant="sidebar" className="overflow-x-hidden">
