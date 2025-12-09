@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DataTipeController;
 use App\Http\Controllers\Admin\UserAccountController;
 use App\Http\Controllers\DetailAssetController;
 use App\Http\Middleware\SuperadminMiddleware;
+use App\Http\Controllers\Admin\PrefixInventarsisController;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/assets/view/{id}', [DataAssetController::class, 'view'])->name('assets.view');
 
+
+        // Prefix Management
+        Route::post('prefixes', [PrefixInventarsisController::class, 'addPrefix'])->name('prefixes.add')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
+        Route::patch('prefixes/{prefix}', [PrefixInventarsisController::class, 'updatePrefix'])->name('prefixes.update')->middleware([
+            HandlePrecognitiveRequests::class
+        ]);
+        Route::delete('prefixes/{prefix}', [PrefixInventarsisController::class, 'deletePrefix'])->name('prefixes.delete');
 
         Route::middleware([SuperadminMiddleware::class])->group(function () {
             // User Account Management

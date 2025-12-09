@@ -73,4 +73,6 @@ export interface PageProps {
     locations: Pagination<Location>;
     employees: Pagination<Employee>;
     orgUnits: Pagination<OrgUnit>;
+    prefixes: Pagination<{ code: string; name: string; description?: string; created_at: string; updated_at: string }>;
+    prexisesSelectBox: { code: string; name: string; description?: string; created_at: string; updated_at: string }[];
 }

@@ -14,6 +14,7 @@ use App\Models\Document;
 use App\Models\Employee;
 use App\Models\Location;
 use App\Models\OrgUnit;
+use App\Models\Prefix;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -95,6 +96,8 @@ class DataAssetController extends Controller
             'locations' => Inertia::scroll(fn() => Location::paginate(pageName: 'location_page')),
             'employees' => Inertia::scroll(fn() => Employee::paginate(pageName: 'employee_page')),
             'orgUnits' => Inertia::scroll(fn() => OrgUnit::paginate(pageName: 'org_unit_page')),
+            'prefixes' => fn() => Prefix::paginate(pageName: 'prefix_page', perPage: 8),
+            'prexisesSelectBox' => fn() => Prefix::all()
         ]);
     }
 
@@ -211,30 +214,43 @@ class DataAssetController extends Controller
     {
         $validated = $request->validated();
 
+        // MY Todo:
         // check the constraint first
         // only one employee could be assigned to one asset at the same time
         // and also only one org unit could be assigned to one asset at the same time
-        $existingAssignment = Assignment::where('asset_id', $validated['asset_id'])
-            ->where('status', 'assigned')
-            ->where(function ($query) use ($validated) {
-                if (isset($validated['employee_id'])) {
-                    $query->where('employee_id', $validated['employee_id']);
-                }
-                if (isset($validated['org_unit_id'])) {
-                    $query->orWhere('org_unit_id', $validated['org_unit_id']);
-                }
-            })
-            ->first();
+        // but both can be assigned simultaneously (1 employee + 1 org unit)
+        
+        // Check if trying to assign an employee
+        if (isset($validated['employee_id'])) {
+            $existingEmployeeAssignment = Assignment::where('asset_id', $validated['asset_id'])
+                ->where('status', 'assigned')
+                ->whereNotNull('employee_id')
+                ->first();
 
-        logger()->info('Existing Assignment Check:', ['existingAssignment' => $existingAssignment]);
-
-        if ($existingAssignment) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'asset_id' => ['This asset is already assigned to the selected employee or organizational unit.'],
-            ]);
+            if ($existingEmployeeAssignment) {
+                $employee = Employee::find($existingEmployeeAssignment->employee_id);
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'employee_id' => ['This asset is already assigned to employee: ' . ($employee ? $employee->name : 'Unknown') . '. Please return the asset from this employee first before assigning to another employee.'],
+                ]);
+            }
         }
 
-        logger()->info('No existing assignment found, proceeding to create a new assignment.');
+        // Check if trying to assign an organization
+        if (isset($validated['org_unit_id'])) {
+            $existingOrgAssignment = Assignment::where('asset_id', $validated['asset_id'])
+                ->where('status', 'assigned')
+                ->whereNotNull('org_unit_id')
+                ->first();
+
+            if ($existingOrgAssignment) {
+                $orgUnit = OrgUnit::find($existingOrgAssignment->org_unit_id);
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'org_unit_id' => ['This asset is already assigned to organizational unit: ' . ($orgUnit ? $orgUnit->name : 'Unknown') . '. Please return the asset from this organizational unit first before assigning to another organizational unit.'],
+                ]);
+            }
+        }
+
+        logger()->info('No conflicting assignment found, proceeding to create a new assignment.');
 
         $assignment = new Assignment();
         $assignment->asset_id = $validated['asset_id'];

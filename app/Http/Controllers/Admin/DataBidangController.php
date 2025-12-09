@@ -14,7 +14,7 @@ class DataBidangController extends Controller
 {
     public function index()
     {
-        $orgUnits = OrgUnit::paginate(1);
+        $orgUnits = OrgUnit::paginate(20);
         $page = request()->get('page', 1);
 
         return Inertia::render('data-bidang/page', [

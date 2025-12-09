@@ -15,8 +15,8 @@ class DataTipeController extends Controller
     {
         $search = $request->get('search', '');
         $page = request()->get('page', 1);
-        $types = $search ? DataType::where('name', 'like', '%' . $search . '%')->paginate(1)->withQueryString()
-            : DataType::paginate(1);
+        $types = $search ? DataType::where('name', 'like', '%' . $search . '%')->paginate(20)->withQueryString()
+            : DataType::paginate(20);
         $page = request()->get('page', 1);
 
 

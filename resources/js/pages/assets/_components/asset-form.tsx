@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group';
 import {
     Command,
     CommandEmpty,
@@ -34,6 +33,7 @@ import {
 } from '../add/_types';
 import { Asset } from '../edit/_types';
 import { FileUpload, type UploadItem } from './file-upload';
+import { InventoryPrefixManager, type InventoryPrefix } from './inventory-prefix-manager';
 
 type Props = {
     defaultValue?: Partial<Asset>;
@@ -47,6 +47,8 @@ type Props = {
     orgUnitsPagination?: Pagination<OrgUnit>;
     asset?: Asset;
     uniqueId?: string;
+    prefixes?: Pagination<{ code: string; name: string; description?: string; created_at: string; updated_at: string }>;
+    prexisesSelectBox: { code: string; name: string; description?: string; created_at: string; updated_at: string }[]
 };
 
 const departments = [
@@ -56,6 +58,16 @@ const departments = [
     'Operasional',
     'Marketing',
     'Produksi',
+];
+
+// Mock data untuk prefix - nanti akan diganti dengan data dari backend
+const mockPrefixes: InventoryPrefix[] = [
+    { code: 'HP', name: 'Handphone', description: 'Perangkat mobile smartphone', created_at: '', updated_at: '' },
+    { code: 'PC', name: 'Komputer PC', description: 'Desktop computer', created_at: '', updated_at: '' },
+    { code: 'LPT', name: 'Laptop', description: 'Laptop/notebook', created_at: '', updated_at: '' },
+    { code: 'PRN', name: 'Printer', description: 'Perangkat printer', created_at: '', updated_at: '' },
+    { code: 'RTR', name: 'Router', description: 'Network router', created_at: '', updated_at: '' },
+    { code: 'SW', name: 'Switch', description: 'Network switch', created_at: '', updated_at: '' },
 ];
 
 export function AssetForm({
@@ -70,9 +82,21 @@ export function AssetForm({
     orgUnitsPagination,
     asset,
     uniqueId,
+    prefixes,
+    prexisesSelectBox = mockPrefixes,
 }: Props) {
+    // Extract prefix from existing inventory number
+    const extractPrefix = (inventoryNumber: string) => {
+        const parts = inventoryNumber.split('-');
+        return parts[0]?.toUpperCase() || '?';
+    };
+
+    const initialPrefix = asset?.inventory_number 
+        ? extractPrefix(asset.inventory_number) 
+        : '?';
+
     const formAsset = useForm('post', url, {
-        nomor_inventaris: asset?.inventory_number ?? ("inv-" + (uniqueId ?? '')),
+        nomor_inventaris: asset?.inventory_number ?? (`${initialPrefix.toLowerCase()}-` + (uniqueId ?? '')),
         item_name: asset?.item_name ?? '',
         tipe: asset?.type.id.toString() ?? '',
         model: asset?.model.id.toString() ?? '',
@@ -87,6 +111,8 @@ export function AssetForm({
     const [openTipe, setOpenTipe] = useState(false);
     const [openModel, setOpenModel] = useState(false);
     const [openLokasi, setOpenLokasi] = useState(false);
+    const [openPrefix, setOpenPrefix] = useState(false);
+    const [selectedPrefix, setSelectedPrefix] = useState(initialPrefix);
 
     const handleSave = () => {
         formAsset.submit({
@@ -116,47 +142,124 @@ export function AssetForm({
         >
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2 sm:col-span-2">
-                    <Label>Nomor Inventaris</Label>
-                    <div className="grid w-full gap-6">
-                        <ButtonGroup className="w-full">
-                            <ButtonGroupText asChild>
-                                <Label htmlFor="url">INV</Label>
-                            </ButtonGroupText>
-                            <InputGroup>
+                    <div className="flex items-center justify-between">
+                        <Label>Nomor Inventaris</Label>
+                        {mode === 'create' && (
+                            <InventoryPrefixManager
+                                prefixes={prefixes}
+                            />
+
+                        )}
+                    </div>
+                    <div className="flex w-full gap-2">
+
+                        {mode === 'create' && (
+                                                    <Popover open={openPrefix} onOpenChange={setOpenPrefix}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openPrefix}
+                                    className="w-[180px] justify-between bg-transparent font-normal"
+                                >
+                                    {selectedPrefix ? (
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono font-semibold">
+                                                {selectedPrefix}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {prefixes?.data.find(
+                                                    (p: { code: string; name: string; description?: string; created_at: string; updated_at: string }) =>
+                                                        p.code === selectedPrefix
+                                                )?.name}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        'Pilih prefix'
+                                    )}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[280px] p-0" align="start">
+                                <Command>
+                                    <CommandInput placeholder="Cari prefix..." />
+                                    <CommandList>
+                                        <CommandEmpty>
+                                            Tidak ditemukan.
+                                        </CommandEmpty>
+                                        <CommandGroup>
+                                            {prexisesSelectBox?.map((prefix: { code: string; name: string; description?: string; created_at: string; updated_at: string }) => (
+                                                <CommandItem
+                                                    key={prefix.code}
+                                                    value={`${prefix.code} ${prefix.name}`}
+                                                    onSelect={() => {
+                                                        setSelectedPrefix(prefix.code);
+                                                        const uniquePart = formAsset.data.nomor_inventaris.split('-')[1] || uniqueId;
+                                                        formAsset.setData(
+                                                            'nomor_inventaris',
+                                                            `${prefix.code.toLowerCase()}-${uniquePart}`,
+                                                        );
+                                                        setOpenPrefix(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            'mr-2 h-4 w-4',
+                                                            selectedPrefix === prefix.code
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                    <div className="flex flex-col">
+                                                        <span className="font-mono font-semibold">
+                                                            {prefix.code}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {prefix.name}
+                                                        </span>
+                                                    </div>
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+
+                        )}
+
+                        <div className="flex-1">
+                            <InputGroup className="w-full">
                                 <InputGroupInput
                                     id="url"
                                     value={formAsset.data.nomor_inventaris}
                                     disabled
+                                    className="font-mono"
                                 />
                             </InputGroup>
-                            {mode === 'create' && (
-                                <ButtonGroupText asChild>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => {
-                                            const uniqueId = window.crypto
-                                                .getRandomValues(
-                                                    new Uint8Array(4),
-                                                )
-                                                .reduce(
-                                                    (str, byte) =>
-                                                        str +
-                                                        byte
-                                                            .toString(16)
-                                                            .padStart(2, '0'),
-                                                    '',
-                                                );
-                                            formAsset.setData(
-                                                'nomor_inventaris',
-                                                "inv-" + uniqueId,
-                                            );
-                                        }}
-                                    >
-                                        <RefreshCcw className="mr-2 h-4 w-4" />
-                                    </Button>
-                                </ButtonGroupText>
-                            )}
-                        </ButtonGroup>
+                        </div>
+
+                        {mode === 'create' && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    const uniqueIdNew = window.crypto
+                                        .getRandomValues(new Uint8Array(4))
+                                        .reduce(
+                                            (str, byte) =>
+                                                str + byte.toString(16).padStart(2, '0'),
+                                            '',
+                                        );
+                                    formAsset.setData(
+                                        'nomor_inventaris',
+                                        `${selectedPrefix.toLowerCase()}-${uniqueIdNew}`,
+                                    );
+                                }}
+                            >
+                                <RefreshCcw className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
 
                     {formAsset.invalid('nomor_inventaris') && (
@@ -263,7 +366,9 @@ export function AssetForm({
                                           (m) =>
                                               m.id.toString() ===
                                               formAsset.data.model,
-                                      )?.brand ?? asset?.model.brand)
+                                      )
+                                          ? `${modelsPagination.data.find((m) => m.id.toString() === formAsset.data.model)!.model} - ${modelsPagination.data.find((m) => m.id.toString() === formAsset.data.model)!.brand}`
+                                          : `${asset?.model.model} - ${asset?.model.brand}`)
                                     : 'Pilih model'}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -280,7 +385,7 @@ export function AssetForm({
                                             {modelsPagination!.data.map((m) => (
                                                 <CommandItem
                                                     key={m.id}
-                                                    value={m.brand.toString()}
+                                                    value={`${m.model} ${m.brand}`}
                                                     onSelect={() => {
                                                         formAsset.setData(
                                                             'model',
@@ -299,7 +404,7 @@ export function AssetForm({
                                                                 : 'opacity-0',
                                                         )}
                                                     />
-                                                    {m.brand}
+                                                    {m.model} - {m.brand}
                                                 </CommandItem>
                                             ))}
                                         </InfiniteScroll>
