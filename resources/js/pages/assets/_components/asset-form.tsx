@@ -448,6 +448,8 @@ export function AssetForm({
                                 e.target.value,
                             )
                         }
+                        className="cursor-pointer"
+                        onClick={(e) => e.currentTarget.showPicker?.()}
                     />
                     {formAsset.invalid('tanggal_pembelian') && (
                         <p className="mt-1 text-sm text-red-600">
@@ -463,6 +465,8 @@ export function AssetForm({
                         onChange={(e) =>
                             formAsset.setData('akhir_garansi', e.target.value)
                         }
+                        className="cursor-pointer"
+                        onClick={(e) => e.currentTarget.showPicker?.()}
                     />
                     {formAsset.invalid('akhir_garansi') && (
                         <p className="mt-1 text-sm text-red-600">
