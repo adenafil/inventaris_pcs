@@ -332,6 +332,7 @@ export default function Page({
                                             <Dialog>
                                                 <form>
                                                     <DialogTrigger asChild>
+                                                    {a.status === 'assigned' && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
@@ -339,6 +340,7 @@ export default function Page({
                                                             <QrCodeIcon />
                                                             QR
                                                         </Button>
+                                                    )}
                                                     </DialogTrigger>
                                                     <DialogContent className="sm:max-w-[425px]">
                                                         <AlertDialogHeader>
