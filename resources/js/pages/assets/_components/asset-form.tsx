@@ -236,13 +236,12 @@ export function AssetForm({
                                 <InputGroupInput
                                     id="url"
                                     value={formAsset.data.nomor_inventaris}
-                                    disabled
                                     className="font-mono"
                                 />
                             </InputGroup>
                         </div>
 
-                        {mode === 'create' && (
+                        {/* {mode === 'create' && (
                             <Button
                                 type="button"
                                 variant="outline"
@@ -262,7 +261,7 @@ export function AssetForm({
                             >
                                 <RefreshCcw className="h-4 w-4" />
                             </Button>
-                        )}
+                        )} */}
                     </div>
 
                     {formAsset.invalid('nomor_inventaris') && (
