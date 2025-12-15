@@ -69,7 +69,7 @@ const logsDummy = [
         id: `hello-log-3`,
         type: 'other',
         title: 'Peminjaman Sementara',
-        description: 'Dipinjam oleh tim proyek selama 2 minggu.',
+        description: 'Digunakan oleh tim proyek selama 2 minggu.',
         at: '2025-01-15T09:00:00.000Z',
     },
 ];
@@ -314,7 +314,7 @@ export default function Page({
                                                 <span className="capitalize">
                                                     {a.status}
                                                 </span>{' '}
-                                                • Tgl Pinjam:{' '}
+                                                • Tgl dibuat:{' '}
                                                 {new Date(
                                                     a.created_at,
                                                 ).toLocaleString()}{' '}
