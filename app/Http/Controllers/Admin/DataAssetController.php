@@ -116,7 +116,13 @@ class DataAssetController extends Controller
         $asset->status = 'active';
         $asset->location_id = $validated['lokasi'];
         $asset->created_by = auth()->user()->id;
-        $asset->save();
+        try {
+            $asset->save();
+        } catch (\Exception $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'nomor_inventaris' => ['Nomor inventaris sudah ada.'],
+            ]);
+        }
 
         // push documents to storage and database
         if ($request->hasFile('documents')) {
@@ -149,6 +155,7 @@ class DataAssetController extends Controller
 
     public function update(EditDataAssetModelRequest $request, Asset $asset)
     {
+        // check if inventory number is count more two, which means it is unique
         $validated = $request->validated();
         $asset->inventory_number = $validated['nomor_inventaris'];
         $asset->type_id = $validated['tipe'];
@@ -161,8 +168,14 @@ class DataAssetController extends Controller
         $asset->status = 'active';
         $asset->location_id = $validated['lokasi'];
         $asset->created_by = auth()->user()->id;
-        $asset->save();
 
+        try {
+            $asset->save();
+        } catch (\Exception $e) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'nomor_inventaris' => ['Nomor inventaris sudah ada.'],
+            ]);
+        }
         // push documents to storage and database
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $document) {

@@ -236,6 +236,10 @@ export function AssetForm({
                                 <InputGroupInput
                                     id="url"
                                     value={formAsset.data.nomor_inventaris}
+                                    onChange={(e) => {
+                                        formAsset.setData('nomor_inventaris', e.target.value);
+                                    }}
+                                    onBlur={(e) => formAsset.validate('nomor_inventaris')}
                                     className="font-mono"
                                 />
                             </InputGroup>
