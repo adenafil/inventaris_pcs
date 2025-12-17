@@ -230,54 +230,38 @@ export default function Page({
                         </Card>
 
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>
-                                    Riwayat Servis & Perbaikan
-                                </CardTitle>
-                                <div className="w-40">
-                                    <Select>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Filter" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">
-                                                Semua
-                                            </SelectItem>
-                                            <SelectItem value="service">
-                                                Service
-                                            </SelectItem>
-                                            <SelectItem value="repair">
-                                                Perbaikan
-                                            </SelectItem>
-                                            <SelectItem value="other">
-                                                Lainnya
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                            <CardHeader>
+                                <CardTitle>Riwayat Servis & Perbaikan</CardTitle>
+                                <CardDescription>
+                                    Pelacakan maintenance dan perbaikan aset
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent className="grid gap-4">
-                                {filtered.map((l) => (
-                                    <div
-                                        key={l.id}
-                                        className="rounded-md border p-3"
-                                    >
-                                        <div className="text-sm font-medium">
-                                            {l.title}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {l.description}
-                                        </div>
-                                        <div className="mt-1 text-xs text-muted-foreground">
-                                            {new Date(l.at).toLocaleString()}
-                                        </div>
+                            <CardContent>
+                                <div className="flex min-h-[200px] flex-col items-center justify-center space-y-4 rounded-lg border border-dashed py-12">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-muted">
+                                        <svg
+                                            className="h-6 w-6 text-muted-foreground"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                                            />
+                                        </svg>
                                     </div>
-                                ))}
-                                {filtered.length === 0 && (
-                                    <div className="text-sm text-muted-foreground">
-                                        Tidak ada riwayat dengan filter ini.
+                                    <div className="space-y-1.5 text-center">
+                                        <p className="text-sm font-medium">
+                                            Fitur Dalam Pengembangan
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Riwayat servis dan perbaikan akan segera tersedia, stay tuned!
+                                        </p>
                                     </div>
-                                )}
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -286,8 +270,8 @@ export default function Page({
                             <CardHeader>
                                 <CardTitle>Informasi Pengguna</CardTitle>
                                 <CardDescription>
-                                    Riwayat peminjaman pengguna dan status
-                                    pengembalian pengguna.
+                                    Riwayat penggunaan dan status pengembalian
+                                    pengguna.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
@@ -533,7 +517,7 @@ export default function Page({
                                 ))}
                                 {assignments.length === 0 && (
                                     <div className="text-sm text-muted-foreground">
-                                        Belum ada riwayat peminjaman.
+                                        Belum ada riwayat penggunaan.
                                     </div>
                                 )}
                             </CardContent>

@@ -9,7 +9,7 @@ use Inertia\Inertia;
 class DetailAssetController extends Controller
 {
     public function index($key) {
-        $asset = Asset::with(['documents', 'type', 'location', 'model', 'assignments'])->where('inventory_number', $key)->first();
+        $asset = Asset::with(['documents', 'type', 'location', 'model', 'assignments', 'assignments.employee', 'assignments.orgUnit'])->where('inventory_number', $key)->first();
 
         if (!$asset) {
             return Inertia::render('assets/view/public/not-found-page');
